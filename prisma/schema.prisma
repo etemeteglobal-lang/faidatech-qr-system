@@ -1,0 +1,138 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_URL")
+}
+
+enum OrganizationRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum DestinationType {
+  LANDING_PAGE
+  URL
+  VCARD
+  MENU
+  TOURISM_AUDIO
+  PDF
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ScanDeviceType {
+  MOBILE
+  TABLET
+  DESKTOP
+  BOT
+  UNKNOWN
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users      User[]
+  campaigns  Campaign[]
+  qrCodes    QRCode[]
+  scanEvents ScanAnalytics[]
+
+  @@index([createdAt])
+}
+
+model User {
+  id             String           @id @default(cuid())
+  openId         String           @unique
+  email          String?
+  name           String?
+  role           OrganizationRole @default(MEMBER)
+  organizationId String
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  @@index([organizationId, createdAt])
+}
+
+model Campaign {
+  id             String         @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  status         CampaignStatus @default(DRAFT)
+  startsAt       DateTime?
+  endsAt         DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  qrCodes     QRCode[]
+  scanEvents  ScanAnalytics[]
+
+  // Composite uniqueness lets dependent records enforce same-tenant campaign references.
+  @@unique([id, organizationId])
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, deletedAt])
+}
+
+model QRCode {
+  id              String          @id @default(cuid())
+  organizationId  String
+  campaignId      String?
+  shortCode       String          @unique @db.VarChar(32)
+  title           String          @db.VarChar(160)
+  description     String?         @db.Text
+  destinationType DestinationType
+  payload         Json
+  isActive        Boolean         @default(true)
+  expiresAt       DateTime?
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  campaign     Campaign?       @relation(fields: [campaignId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  scanEvents   ScanAnalytics[]
+
+  @@unique([id, organizationId])
+  @@index([organizationId, deletedAt, createdAt])
+  @@index([organizationId, campaignId])
+  @@index([isActive, expiresAt])
+}
+
+model ScanAnalytics {
+  id             String         @id @default(cuid())
+  organizationId String
+  qrCodeId       String
+  campaignId     String?
+  deviceType     ScanDeviceType @default(UNKNOWN)
+  deviceOS       String?        @db.VarChar(80)
+  userAgent      String?        @db.Text
+  ipHash         String?        @db.VarChar(64)
+  countryCode    String?        @db.VarChar(8)
+  region         String?        @db.VarChar(100)
+  city           String?        @db.VarChar(100)
+  scannedAt      DateTime       @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  qrCode       QRCode       @relation(fields: [qrCodeId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  campaign     Campaign?    @relation(fields: [campaignId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  @@index([organizationId, scannedAt])
+  @@index([qrCodeId, scannedAt])
+  @@index([campaignId, scannedAt])
+}

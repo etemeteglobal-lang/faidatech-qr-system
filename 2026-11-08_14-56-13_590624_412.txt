@@ -1,0 +1,119 @@
+# Terminal Full Output
+# Terminal: faidatech
+# Command: set -e
+git add -A
+git diff --cached --check
+git commit -m "feat: add authenticated FaidATech dashboards"
+git fetch origin main
+git merge --no-edit origin/main
+pnpm typecheck
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm build
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm exec prisma validate
+git push origin HEAD:main
+# PID: 412
+# Timestamp: 2026-11-08_14-56-13.590624
+# Original Length: 5044 characters
+# ----------------------------------------
+
+[32mubuntu@sandbox:~/faidatech$ [0mset -e
+git add -A
+git diff --cached --check
+git commit -m "feat: add authenticated FaidATech dashboards"
+git fetch origin main
+git merge --no-edit origin/main
+pnpm typecheck
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm build
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm exec prisma validate
+git push origin HEAD:main
+[main a5ab5fd] feat: add authenticated FaidATech dashboards
+ 41 files changed, 2496 insertions(+), 95 deletions(-)
+ create mode 100644 src/app/api/auth/callback/route.ts
+ create mode 100644 src/app/api/auth/login/route.ts
+ create mode 100644 src/app/api/auth/logout/route.ts
+ create mode 100644 src/app/api/auth/session/route.ts
+ create mode 100644 src/app/api/qrcodes/[id]/image/route.ts
+ create mode 100644 src/app/api/r/[shortCode]/vcard/route.ts
+ create mode 100644 src/app/dashboard/analytics/page.tsx
+ create mode 100644 src/app/dashboard/campaigns/page.tsx
+ create mode 100644 src/app/dashboard/create/page.tsx
+ create mode 100644 src/app/dashboard/integrations/page.tsx
+ create mode 100644 src/app/dashboard/layout.tsx
+ create mode 100644 src/app/dashboard/page.tsx
+ create mode 100644 src/app/dashboard/qrcodes/page.tsx
+ create mode 100644 src/app/dashboard/settings/page.tsx
+ create mode 100644 src/app/login/page.tsx
+ create mode 100644 src/app/r/[shortCode]/page.tsx
+ delete mode 100644 src/app/r/[shortCode]/route.ts
+ create mode 100644 src/components/dashboard/DashboardShell.tsx
+ create mode 100644 src/components/dashboard/QRCodeManagement.tsx
+ create mode 100644 src/components/dashboard/QRCodeWizard.tsx
+ create mode 100644 src/components/dashboard/wizard/PayloadEditor.tsx
+ create mode 100644 src/components/dashboard/wizard/model.ts
+ create mode 100644 src/components/qr/InteractiveMenu.tsx
+ create mode 100644 src/components/qr/PublicQrExperience.tsx
+ create mode 100644 src/components/qr/TourismGuideExperience.tsx
+ create mode 100644 src/lib/app-origin.ts
+ create mode 100644 src/lib/auth/oauth.ts
+ create mode 100644 src/lib/qr/client-types.ts
+ create mode 100644 src/lib/qr/scan-logging.ts
+From https://7f0548f6b28a1758d9bf7be630d36cb4.artifacts.cloudflare.net/git/prod/wdp_c9cd6a28e9b94914a7b2c13f
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+[2m$ tsc --noEmit
+[22m[2m$ prisma generate && next build
+[22m[2mPrisma schema loaded from prisma/schema.prisma
+[22m✔ Generated [1mPrisma Client[22m (v6.19.3)[2m to ./node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client[22m in 136ms
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+Tip: Need your database queries to be 1000x faster? Accelerate offers you that and more: https://pris.ly/tip-2-accelerate
+[1m[38;2;173;127;168m▲ Next.js 16.4.5[39m[22m (Turbopack)
+[32m[1m✓[22m[39m Running next.config.ts took 68ms
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 679ms
+[37m[1m [22m[39m Running TypeScript ...
+[37m[1m [22m[39m Finished TypeScript in 2.4s ...
+[37m[1m [22m[39m Collecting page data using 5 workers ...
+[32m[1m✓[22m[39m Collecting page data using 5 workers in 774ms
+[37m[1m [22m[39m Generating static pages using 5 workers (0/13) ...
+[37m[1m [22m[39m Generating static pages using 5 workers (3/13) 
+[37m[1m [22m[39m Generating static pages using 5 workers (6/13) 
+[37m[1m [22m[39m Generating static pages using 5 workers (9/13) 
+[32m[1m✓[22m[39m Generating static pages using 5 workers (13/13) in 542ms
+[37m[1m [22m[39m Finalizing page optimization ...
+[32m[1m✓[22m[39m Finalizing page optimization in 8ms
+[4mRoute (app)
+[24m┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/auth/callback
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/session
+├ ƒ /api/qrcodes
+├ ƒ /api/qrcodes/[id]
+├ ƒ /api/qrcodes/[id]/image
+├ ƒ /api/r/[shortCode]
+├ ƒ /api/r/[shortCode]/vcard
+├ ○ /dashboard
+├ ○ /dashboard/analytics
+├ ○ /dashboard/campaigns
+├ ○ /dashboard/create
+├ ○ /dashboard/integrations
+├ ○ /dashboard/qrcodes
+├ ○ /dashboard/settings
+├ ƒ /login
+└ ƒ /r/[shortCode]
+ƒ Proxy (Middleware)
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+[2mPrisma schema loaded from prisma/schema.prisma
+[22mThe schema at [4mprisma/schema.prisma[24m is valid 🚀
+Enumerating objects: 99, done.
+Counting objects: 100% (98/98), done.
+Delta compression using up to 6 threads
+Compressing objects: 100% (58/58), done.
+Writing objects: 100% (74/74), 52.30 KiB | 5.81 MiB/s, done.
+Total 74 (delta 10), reused 0 (delta 0), pack-reused 0
+remote: Processing objects: 4% (3/74)
+remote: Processing objects: 100% (74/74)
+To https://7f0548f6b28a1758d9bf7be630d36cb4.artifacts.cloudflare.net/git/prod/wdp_c9cd6a28e9b94914a7b2c13f.git
+   1c685a6..a5ab5fd  HEAD -> main
+[32mubuntu@sandbox:~/faidatech$ [0m

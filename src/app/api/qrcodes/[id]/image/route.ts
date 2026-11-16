@@ -1,0 +1,48 @@
+import type { NextRequest } from "next/server";
+import { z } from "zod";
+import { ApiError, apiErrorResponse } from "@/lib/api/errors";
+import { requireTenantContext } from "@/lib/auth/tenant-context";
+import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
+import { readBrandIdentity } from "@/lib/qr/brand";
+import { generateQrPng, generateQrSvg } from "@/lib/qr/qr-image";
+
+const idSchema = z.string().cuid();
+const formatSchema = z.enum(["png", "svg"]);
+
+export const runtime = "nodejs";
+
+type RouteContext = {
+  params: Promise<{ id: string }>;
+};
+
+export async function GET(request: NextRequest, context: RouteContext): Promise<Response> {
+  try {
+    const tenant = await requireTenantContext(request);
+    ensurePostgresConfigured();
+    const id = idSchema.parse((await context.params).id);
+    const format = formatSchema.parse(new URL(request.url).searchParams.get("format") ?? "png");
+    const qrCode = await prisma.qRCode.findFirst({
+      where: { id, organizationId: tenant.organizationId, deletedAt: null },
+      select: { shortCode: true, payload: true },
+    });
+
+    if (!qrCode) {
+      throw new ApiError(404, "qr_not_found", "QR code not found.");
+    }
+
+    const qrForeground = readBrandIdentity(qrCode.payload)?.qrForeground;
+    const body = format === "svg"
+      ? await generateQrSvg(qrCode.shortCode, qrForeground)
+      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground));
+    const contentType = format === "svg" ? "image/svg+xml; charset=utf-8" : "image/png";
+    return new Response(body, {
+      headers: {
+        "Content-Type": contentType,
+        "Content-Disposition": `attachment; filename="faidatech-${qrCode.shortCode}.${format}"`,
+        "Cache-Control": "private, no-store",
+      },
+    });
+  } catch (error) {
+    return apiErrorResponse(error);
+  }
+}

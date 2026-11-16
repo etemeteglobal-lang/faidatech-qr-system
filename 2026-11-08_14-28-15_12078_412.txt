@@ -1,0 +1,142 @@
+# Terminal Full Output
+# Terminal: faidatech
+# Command: set -e
+git fetch origin main
+git merge --ff-only origin/main
+pnpm typecheck
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm build
+git add .env.example .gitignore README.md TODO.md app.config.ts next-env.d.ts next.config.ts package.json pnpm-lock.yaml pnpm-workspace.yaml postcss.config.mjs prisma public src tailwind.config.ts tsconfig.json
+git status --short
+git commit -m "feat: build FaidATech QR services"
+git push origin main
+# PID: 412
+# Timestamp: 2026-11-08_14-28-15.012078
+# Original Length: 5632 characters
+# ----------------------------------------
+
+[32mubuntu@sandbox:~/faidatech$ [0mset -e
+git fetch origin main
+git merge --ff-only origin/main
+pnpm typecheck
+POSTGRES_URL='postgresql://faidatech:localdev@127.0.0.1:5432/faidatech?schema=public' pnpm build
+git add .env.example .gitignore README.md TODO.md app.config.ts next-env.d.ts next.config.ts package.json pnpm-lock.yaml pnpm-workspace.yaml postcss.config.mjs prisma public src tailwind.config.ts tsconfig.json
+git status --short
+git commit -m "feat: build FaidATech QR services"
+git push origin main
+From https://7f0548f6b28a1758d9bf7be630d36cb4.artifacts.cloudflare.net/git/prod/wdp_c9cd6a28e9b94914a7b2c13f
+ * branch            main       -> FETCH_HEAD
+Already up to date.
+[2m$ tsc --noEmit
+[22m[2m$ prisma generate && next build
+[22m[2mPrisma schema loaded from prisma/schema.prisma
+[22m✔ Generated [1mPrisma Client[22m (v6.19.3)[2m to ./node_modules/.pnpm/@prisma+client@6.19.3_prisma@6.19.3_typescript@5.9.3__typescript@5.9.3/node_modules/@prisma/client[22m in 115ms
+Start by importing your Prisma Client (See: https://pris.ly/d/importing-client)
+Tip: Interested in query caching in just a few lines of code? Try Accelerate today! https://pris.ly/tip-3-accelerate
+[1m[38;2;173;127;168m▲ Next.js 16.4.5[39m[22m (Turbopack)
+[32m[1m✓[22m[39m Running next.config.ts took 33ms
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 366ms
+[37m[1m [22m[39m Running TypeScript ...
+[37m[1m [22m[39m Finished TypeScript in 2.2s ...
+[37m[1m [22m[39m Collecting page data using 5 workers ...
+[32m[1m✓[22m[39m Collecting page data using 5 workers in 660ms
+[37m[1m [22m[39m Generating static pages using 5 workers (0/4) ...
+[37m[1m [22m[39m Generating static pages using 5 workers (1/4) 
+[37m[1m [22m[39m Generating static pages using 5 workers (2/4) 
+[37m[1m [22m[39m Generating static pages using 5 workers (3/4) 
+[32m[1m✓[22m[39m Generating static pages using 5 workers (4/4) in 326ms
+[37m[1m [22m[39m Finalizing page optimization ...
+[32m[1m✓[22m[39m Finalizing page optimization in 16ms
+[4mRoute (app)
+[24m┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/qrcodes
+├ ƒ /api/qrcodes/[id]
+├ ƒ /api/r/[shortCode]
+└ ƒ /r/[shortCode]
+ƒ Proxy (Middleware)
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+[32mA[m  .env.example
+[32mA[m  .gitignore
+[32mA[m  README.md
+[32mA[m  TODO.md
+[32mA[m  app.config.ts
+[32mA[m  next-env.d.ts
+[32mA[m  next.config.ts
+[32mA[m  package.json
+[32mA[m  pnpm-lock.yaml
+[32mA[m  pnpm-workspace.yaml
+[32mA[m  postcss.config.mjs
+[32mA[m  prisma/migrations/20261108170000_init/migration.sql
+[32mA[m  prisma/migrations/migration_lock.toml
+[32mA[m  prisma/schema.prisma
+[32mA[m  public/faidatech-mark.svg
+[32mA[m  public/manus-routes.json
+[32mA[m  src/app/api/qrcodes/[id]/route.ts
+[32mA[m  src/app/api/qrcodes/route.ts
+[32mA[m  src/app/api/r/[shortCode]/route.ts
+[32mA[m  src/app/globals.css
+[32mA[m  src/app/layout.tsx
+[32mA[m  src/app/page.tsx
+[32mA[m  src/app/r/[shortCode]/route.ts
+[32mA[m  src/lib/api/errors.ts
+[32mA[m  src/lib/auth/manus-jwt.ts
+[32mA[m  src/lib/auth/tenant-context.ts
+[32mA[m  src/lib/prisma.ts
+[32mA[m  src/lib/qr/payload-schemas.ts
+[32mA[m  src/lib/qr/qr-image.ts
+[32mA[m  src/lib/qr/resolve-request.ts
+[32mA[m  src/lib/qr/scan-metadata.ts
+[32mA[m  src/lib/qr/short-code.ts
+[32mA[m  src/proxy.ts
+[32mA[m  tailwind.config.ts
+[32mA[m  tsconfig.json
+[main 1c685a6] feat: build FaidATech QR services
+ 35 files changed, 3358 insertions(+)
+ create mode 100644 .env.example
+ create mode 100644 .gitignore
+ create mode 100644 README.md
+ create mode 100644 TODO.md
+ create mode 100644 app.config.ts
+ create mode 100644 next-env.d.ts
+ create mode 100644 next.config.ts
+ create mode 100644 package.json
+ create mode 100644 pnpm-lock.yaml
+ create mode 100644 pnpm-workspace.yaml
+ create mode 100644 postcss.config.mjs
+ create mode 100644 prisma/migrations/20261108170000_init/migration.sql
+ create mode 100644 prisma/migrations/migration_lock.toml
+ create mode 100644 prisma/schema.prisma
+ create mode 100644 public/faidatech-mark.svg
+ create mode 100644 public/manus-routes.json
+ create mode 100644 src/app/api/qrcodes/[id]/route.ts
+ create mode 100644 src/app/api/qrcodes/route.ts
+ create mode 100644 src/app/api/r/[shortCode]/route.ts
+ create mode 100644 src/app/globals.css
+ create mode 100644 src/app/layout.tsx
+ create mode 100644 src/app/page.tsx
+ create mode 100644 src/app/r/[shortCode]/route.ts
+ create mode 100644 src/lib/api/errors.ts
+ create mode 100644 src/lib/auth/manus-jwt.ts
+ create mode 100644 src/lib/auth/tenant-context.ts
+ create mode 100644 src/lib/prisma.ts
+ create mode 100644 src/lib/qr/payload-schemas.ts
+ create mode 100644 src/lib/qr/qr-image.ts
+ create mode 100644 src/lib/qr/resolve-request.ts
+ create mode 100644 src/lib/qr/scan-metadata.ts
+ create mode 100644 src/lib/qr/short-code.ts
+ create mode 100644 src/proxy.ts
+ create mode 100644 tailwind.config.ts
+ create mode 100644 tsconfig.json
+Enumerating objects: 52, done.
+Counting objects: 100% (52/52), done.
+Delta compression using up to 6 threads
+Compressing objects: 100% (45/45), done.
+Writing objects: 100% (51/51), 40.99 KiB | 5.12 MiB/s, done.
+Total 51 (delta 1), reused 0 (delta 0), pack-reused 0
+remote: Processing objects: 7% (4/51)
+remote: Processing objects: 100% (51/51)
+To https://7f0548f6b28a1758d9bf7be630d36cb4.artifacts.cloudflare.net/git/prod/wdp_c9cd6a28e9b94914a7b2c13f.git
+   1c7001c..1c685a6  main -> main
+[32mubuntu@sandbox:~/faidatech$ [0m

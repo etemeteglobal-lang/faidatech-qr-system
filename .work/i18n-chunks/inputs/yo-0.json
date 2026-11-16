@@ -1,0 +1,924 @@
+{
+  "locale": "yo",
+  "start": 0,
+  "end": 229,
+  "total": 458,
+  "entries": [
+    [
+      "locale.choose",
+      "Choose language"
+    ],
+    [
+      "locale.globalTier",
+      "Global languages"
+    ],
+    [
+      "locale.africanTier",
+      "African languages"
+    ],
+    [
+      "locale.ethiopianTier",
+      "Ethiopian languages"
+    ],
+    [
+      "app.qrOperations",
+      "Dynamic QR operations"
+    ],
+    [
+      "nav.dashboard",
+      "Dashboard"
+    ],
+    [
+      "nav.qrcodes",
+      "My QR Codes"
+    ],
+    [
+      "nav.analytics",
+      "Analytics"
+    ],
+    [
+      "nav.campaigns",
+      "Campaigns"
+    ],
+    [
+      "nav.integrations",
+      "Integrations"
+    ],
+    [
+      "nav.settings",
+      "Settings"
+    ],
+    [
+      "common.home",
+      "Home"
+    ],
+    [
+      "common.workspace",
+      "Workspace"
+    ],
+    [
+      "common.signIn",
+      "Sign in"
+    ],
+    [
+      "common.signOut",
+      "Sign out"
+    ],
+    [
+      "common.continue",
+      "Continue"
+    ],
+    [
+      "common.createQr",
+      "Create QR code"
+    ],
+    [
+      "common.save",
+      "Save"
+    ],
+    [
+      "common.cancel",
+      "Cancel"
+    ],
+    [
+      "common.back",
+      "Back"
+    ],
+    [
+      "common.edit",
+      "Edit"
+    ],
+    [
+      "common.delete",
+      "Delete"
+    ],
+    [
+      "common.pause",
+      "Pause"
+    ],
+    [
+      "common.resume",
+      "Resume"
+    ],
+    [
+      "common.search",
+      "Search"
+    ],
+    [
+      "common.copy",
+      "Copy"
+    ],
+    [
+      "common.viewAll",
+      "View all"
+    ],
+    [
+      "common.downloadSvg",
+      "Download SVG"
+    ],
+    [
+      "common.downloadPng",
+      "Download PNG"
+    ],
+    [
+      "common.loading",
+      "Loading…"
+    ],
+    [
+      "common.tryAgain",
+      "Try again"
+    ],
+    [
+      "common.unavailable",
+      "Unavailable"
+    ],
+    [
+      "common.ready",
+      "Ready"
+    ],
+    [
+      "status.active",
+      "Active"
+    ],
+    [
+      "status.paused",
+      "Paused"
+    ],
+    [
+      "status.expired",
+      "Expired"
+    ],
+    [
+      "dashboard.eyebrow",
+      "Workspace overview"
+    ],
+    [
+      "dashboard.title",
+      "Make every scan count."
+    ],
+    [
+      "dashboard.description",
+      "Create a QR once, then update the experience behind it as your business grows."
+    ],
+    [
+      "dashboard.totalCodes",
+      "Total QR codes"
+    ],
+    [
+      "dashboard.activeDestinations",
+      "Active destinations"
+    ],
+    [
+      "dashboard.totalScans",
+      "Total scans"
+    ],
+    [
+      "dashboard.recentActivity",
+      "Recent activity"
+    ],
+    [
+      "dashboard.recentlyUpdated",
+      "Recently updated QR codes"
+    ],
+    [
+      "dashboard.noCodesTitle",
+      "Your first QR experience starts here."
+    ],
+    [
+      "dashboard.noCodesDescription",
+      "Choose a destination, add its details, and preview it before publishing."
+    ],
+    [
+      "qr.libraryTitle",
+      "My QR Codes"
+    ],
+    [
+      "qr.libraryDescription",
+      "Manage your active short links, content, and scan-ready exports."
+    ],
+    [
+      "qr.allDestinations",
+      "All destinations"
+    ],
+    [
+      "qr.searchPlaceholder",
+      "Search title or short code"
+    ],
+    [
+      "qr.noMatching",
+      "No matching QR codes"
+    ],
+    [
+      "qr.noCodes",
+      "No QR codes yet"
+    ],
+    [
+      "qr.status",
+      "Status"
+    ],
+    [
+      "qr.scans",
+      "Scans"
+    ],
+    [
+      "qr.shortcode",
+      "Short code"
+    ],
+    [
+      "qr.format",
+      "Format"
+    ],
+    [
+      "qr.actions",
+      "Actions"
+    ],
+    [
+      "qr.loadMore",
+      "Load more"
+    ],
+    [
+      "qr.deleteTitle",
+      "Remove this QR code?"
+    ],
+    [
+      "qr.deleteDescription",
+      "The code will be deactivated and hidden from this list. Existing scan history is retained."
+    ],
+    [
+      "qr.softDelete",
+      "Soft delete"
+    ],
+    [
+      "analytics.title",
+      "Analytics"
+    ],
+    [
+      "analytics.description",
+      "Scan totals are reported per QR code and remain within this organization."
+    ],
+    [
+      "analytics.recordedScans",
+      "Recorded QR scans"
+    ],
+    [
+      "analytics.acrossDestinations",
+      "Across {count} dynamic destination(s)"
+    ],
+    [
+      "analytics.distribution",
+      "Scan distribution"
+    ],
+    [
+      "analytics.empty",
+      "Create a dynamic QR code to start collecting scan analytics."
+    ],
+    [
+      "campaigns.title",
+      "Campaigns"
+    ],
+    [
+      "campaigns.description",
+      "Review campaigns currently connected to your dynamic QR codes."
+    ],
+    [
+      "campaigns.overview",
+      "Campaign overview"
+    ],
+    [
+      "campaigns.empty",
+      "No campaign assignments yet"
+    ],
+    [
+      "integrations.title",
+      "Integrations"
+    ],
+    [
+      "integrations.description",
+      "Review the services that power sign-in, checkout handoff, and visitor media."
+    ],
+    [
+      "integrations.paymentSafety",
+      "Payment safety"
+    ],
+    [
+      "settings.title",
+      "Settings"
+    ],
+    [
+      "settings.description",
+      "Review the account and organization attached to your verified session."
+    ],
+    [
+      "settings.accountIdentity",
+      "Account identity"
+    ],
+    [
+      "settings.name",
+      "Name"
+    ],
+    [
+      "settings.email",
+      "Email"
+    ],
+    [
+      "settings.organization",
+      "Organization"
+    ],
+    [
+      "settings.role",
+      "Role"
+    ],
+    [
+      "settings.organizationSlug",
+      "Organization slug"
+    ],
+    [
+      "wizard.title",
+      "Create a QR experience"
+    ],
+    [
+      "wizard.stepPurpose",
+      "Purpose"
+    ],
+    [
+      "wizard.stepDetails",
+      "Details"
+    ],
+    [
+      "wizard.stepReview",
+      "Review"
+    ],
+    [
+      "wizard.choosePurpose",
+      "Choose what this QR code should do"
+    ],
+    [
+      "wizard.livePreview",
+      "Live preview"
+    ],
+    [
+      "wizard.updatesAsYouType",
+      "Updates as you type"
+    ],
+    [
+      "wizard.reviewGenerate",
+      "Review and generate"
+    ],
+    [
+      "wizard.saveGenerate",
+      "Save and generate QR code"
+    ],
+    [
+      "wizard.backToPurpose",
+      "Back to purpose"
+    ],
+    [
+      "purpose.landing",
+      "Custom landing page"
+    ],
+    [
+      "purpose.vcard",
+      "Digital vCard"
+    ],
+    [
+      "purpose.menu",
+      "Restaurant menu"
+    ],
+    [
+      "purpose.tourism",
+      "Tourism and heritage guide"
+    ],
+    [
+      "purpose.pdf",
+      "Document / PDF"
+    ],
+    [
+      "purpose.payments",
+      "Local payments"
+    ],
+    [
+      "field.title",
+      "Title"
+    ],
+    [
+      "field.description",
+      "Description"
+    ],
+    [
+      "field.brandName",
+      "Brand name"
+    ],
+    [
+      "field.logo",
+      "Organization logo"
+    ],
+    [
+      "field.brandAccent",
+      "Brand accent color"
+    ],
+    [
+      "field.qrForeground",
+      "QR code color"
+    ],
+    [
+      "field.firstName",
+      "First name"
+    ],
+    [
+      "field.lastName",
+      "Last name"
+    ],
+    [
+      "field.phone",
+      "Phone"
+    ],
+    [
+      "field.email",
+      "Email"
+    ],
+    [
+      "field.organization",
+      "Organization"
+    ],
+    [
+      "field.jobTitle",
+      "Job title"
+    ],
+    [
+      "field.socialLinks",
+      "Social links"
+    ],
+    [
+      "field.itemName",
+      "Item name"
+    ],
+    [
+      "field.category",
+      "Category"
+    ],
+    [
+      "field.priceETB",
+      "Price (ETB)"
+    ],
+    [
+      "field.audioLink",
+      "Audio link"
+    ],
+    [
+      "field.transcript",
+      "Transcript"
+    ],
+    [
+      "field.latitude",
+      "Latitude"
+    ],
+    [
+      "field.longitude",
+      "Longitude"
+    ],
+    [
+      "field.pdfUrl",
+      "PDF URL"
+    ],
+    [
+      "field.checkoutUrl",
+      "Checkout URL"
+    ],
+    [
+      "visitor.destinationUnavailable",
+      "Destination unavailable"
+    ],
+    [
+      "visitor.preparing",
+      "This QR destination is being prepared. Please try again later."
+    ],
+    [
+      "visitor.digitalBusinessCard",
+      "Digital business card"
+    ],
+    [
+      "visitor.call",
+      "Call"
+    ],
+    [
+      "visitor.email",
+      "Email"
+    ],
+    [
+      "visitor.visitWebsite",
+      "Visit website"
+    ],
+    [
+      "visitor.downloadContact",
+      "Download contact card"
+    ],
+    [
+      "visitor.menuCategories",
+      "Menu categories"
+    ],
+    [
+      "visitor.payWithTelebirr",
+      "Pay with Telebirr"
+    ],
+    [
+      "visitor.chooseAudioLanguage",
+      "Choose audio language"
+    ],
+    [
+      "visitor.audioNarration",
+      "Audio narration"
+    ],
+    [
+      "visitor.noAudio",
+      "No audio is available in this language."
+    ],
+    [
+      "visitor.transcript",
+      "Transcript"
+    ],
+    [
+      "visitor.explorePlace",
+      "Explore this place"
+    ],
+    [
+      "visitor.storiesMedia",
+      "Stories and media"
+    ],
+    [
+      "visitor.poweredBy",
+      "A connected experience by FaidATech"
+    ],
+    [
+      "error.general",
+      "The request could not be completed."
+    ],
+    [
+      "error.invalidInput",
+      "The request did not match the expected input."
+    ],
+    [
+      "error.databaseNotConfigured",
+      "Configure the external PostgreSQL connection before using QR services."
+    ],
+    [
+      "error.databaseUnavailable",
+      "The database is temporarily unavailable."
+    ],
+    [
+      "error.unauthorized",
+      "Sign in to continue."
+    ],
+    [
+      "error.notFound",
+      "The requested item could not be found."
+    ],
+    [
+      "error.validation",
+      "Check the highlighted fields and try again."
+    ],
+    [
+      "error.invalidPublicOrigin",
+      "Set APP_BASE_URL to the public application origin."
+    ],
+    [
+      "home.signIn",
+      "Sign in"
+    ],
+    [
+      "home.openDashboard",
+      "Open dashboard"
+    ],
+    [
+      "home.tagline",
+      "One short code. Many experiences."
+    ],
+    [
+      "home.headline",
+      "QR experiences that can"
+    ],
+    [
+      "home.headlineAccent",
+      "move with your business."
+    ],
+    [
+      "home.description",
+      "Build a single QR destination that can evolve from a digital contact card to a menu, a heritage guide, or a hosted document—while each organization keeps its own data boundary."
+    ],
+    [
+      "home.dynamicRoute",
+      "Dynamic route"
+    ],
+    [
+      "home.techStack",
+      "App Router · TypeScript · Prisma"
+    ],
+    [
+      "home.modules",
+      "Destination modules"
+    ],
+    [
+      "home.resolverHeadline",
+      "One resolver, purpose-built payloads"
+    ],
+    [
+      "home.dynamicRecords",
+      "Dynamic records resolve from a short code"
+    ],
+    [
+      "home.contactTitle",
+      "Digital identity"
+    ],
+    [
+      "home.contactDescription",
+      "vCards, contact details, social links, and shareable business profiles."
+    ],
+    [
+      "home.menuTitle",
+      "Menus & commerce"
+    ],
+    [
+      "home.menuDescription",
+      "ETB-priced menus with room for Telebirr checkout metadata."
+    ],
+    [
+      "home.tourismTitle",
+      "Tourism & heritage"
+    ],
+    [
+      "home.tourismDescription",
+      "Multilingual audio, place coordinates, and historical media."
+    ],
+    [
+      "home.documentsTitle",
+      "Documents"
+    ],
+    [
+      "home.documentsDescription",
+      "Hosted PDFs and asset metadata behind a changeable short link."
+    ],
+    [
+      "home.footer",
+      "FaidATech · Built for tenant-aware QR experiences"
+    ],
+    [
+      "home.databaseNote",
+      "PostgreSQL schema target · External PostgreSQL connection required"
+    ],
+    [
+      "login.eyebrow",
+      "Your workspace, secured"
+    ],
+    [
+      "login.title",
+      "Sign in to continue."
+    ],
+    [
+      "login.description",
+      "Use your Manus account to access the QR dashboard. Each account is connected to its own organization workspace."
+    ],
+    [
+      "login.failed",
+      "Sign-in could not be verified. Please try again."
+    ],
+    [
+      "login.continueManus",
+      "Continue with Manus"
+    ],
+    [
+      "login.securityNote",
+      "Authentication is handled through Manus OAuth. FaidATech does not store your Manus password."
+    ],
+    [
+      "shell.openMenu",
+      "Open navigation menu"
+    ],
+    [
+      "shell.closeMenu",
+      "Close navigation menu"
+    ],
+    [
+      "shell.mainNavigation",
+      "Main navigation"
+    ],
+    [
+      "shell.workspaceSection",
+      "Workspace"
+    ],
+    [
+      "shell.create",
+      "Create"
+    ],
+    [
+      "shell.tenantScopedOperations",
+      "Tenant-scoped QR operations"
+    ],
+    [
+      "shell.loadingWorkspace",
+      "Loading workspace…"
+    ],
+    [
+      "shell.workspaceMember",
+      "Workspace member"
+    ],
+    [
+      "shell.sessionUnavailable",
+      "Your workspace session is unavailable."
+    ],
+    [
+      "shell.signingOut",
+      "Signing out…"
+    ],
+    [
+      "shell.backTo",
+      "Back to {destination}"
+    ],
+    [
+      "shell.publicHome",
+      "Public home"
+    ],
+    [
+      "shell.workspaceHeader",
+      "FaidATech workspace"
+    ],
+    [
+      "shell.signInAgain",
+      "Sign in again"
+    ],
+    [
+      "dashboard.scans",
+      "scans"
+    ],
+    [
+      "dashboard.workspaceTotals",
+      "Workspace totals"
+    ],
+    [
+      "qr.totalCodes",
+      "QR codes"
+    ],
+    [
+      "qr.activeNow",
+      "Active now"
+    ],
+    [
+      "qr.showingMatching",
+      "Showing {shown} of {total} matching codes. Exports use the current short link."
+    ],
+    [
+      "qr.loadingTenant",
+      "Loading tenant QR codes…"
+    ],
+    [
+      "qr.copy",
+      "Copy"
+    ],
+    [
+      "qr.copied",
+      "Public short link copied."
+    ],
+    [
+      "qr.remaining",
+      "{count} remaining"
+    ],
+    [
+      "qr.loadingMore",
+      "Loading more…"
+    ],
+    [
+      "qr.removing",
+      "Removing…"
+    ],
+    [
+      "qr.softDeleteSuccess",
+      "“{title}” was moved to soft-deleted records."
+    ],
+    [
+      "campaign.qrCodesAndScans",
+      "QR codes and scan totals are organization-scoped."
+    ],
+    [
+      "campaign.openLibrary",
+      "Open QR library"
+    ],
+    [
+      "campaign.loading",
+      "Loading campaigns…"
+    ],
+    [
+      "campaign.qrCount",
+      "{count} QR code(s)"
+    ],
+    [
+      "campaign.noAssignmentsDescription",
+      "Campaign records are part of your tenant schema. Once a campaign is assigned to a QR code, its linked codes and scans will appear here."
+    ],
+    [
+      "campaign.viewQrCodes",
+      "View QR codes"
+    ],
+    [
+      "analytics.byDestination",
+      "By destination"
+    ],
+    [
+      "analytics.manageCodes",
+      "Manage codes"
+    ],
+    [
+      "analytics.loading",
+      "Loading analytics…"
+    ],
+    [
+      "analytics.createPrompt",
+      "Create a dynamic QR code to start collecting scan analytics."
+    ],
+    [
+      "integrations.authenticationLabel",
+      "Authentication"
+    ],
+    [
+      "integrations.manusName",
+      "Manus account"
+    ],
+    [
+      "integrations.manusDetail",
+      "Dashboard access uses a verified Manus OAuth session and organization membership."
+    ],
+    [
+      "integrations.connected",
+      "Connected"
+    ],
+    [
+      "integrations.paymentLabel",
+      "Payment destination"
+    ],
+    [
+      "integrations.telebirrName",
+      "Telebirr checkout"
+    ],
+    [
+      "integrations.telebirrDetail",
+      "Add merchant details and an HTTPS checkout URL to menu QR codes. Payment is completed by the hosted provider."
+    ],
+    [
+      "integrations.readyForMenu",
+      "Ready for menu QR"
+    ],
+    [
+      "integrations.contentLabel",
+      "Audio, images & PDFs"
+    ],
+    [
+      "integrations.contentName",
+      "Hosted content"
+    ],
+    [
+      "integrations.contentDetail",
+      "Provide stable public HTTPS URLs for visitor-facing audio, historical media, and PDF documents."
+    ],
+    [
+      "integrations.urlBased",
+      "URL-based"
+    ],
+    [
+      "integrations.paymentSafetyNote",
+      "FaidATech stores checkout metadata and redirects visitors; it does not receive or store payment card credentials."
+    ],
+    [
+      "settings.oauthNote",
+      "Verified through Manus OAuth"
+    ],
+    [
+      "settings.loading",
+      "Loading…"
+    ],
+    [
+      "settings.signOut",
+      "Sign out of FaidATech"
+    ],
+    [
+      "wizard.whatCreating",
+      "What are you creating?"
+    ],
+    [
+      "wizard.purposeDescription",
+      "Choose the purpose that best fits the visitor experience."
+    ],
+    [
+      "wizard.choosePurposeError",
+      "Choose a QR purpose to continue."
+    ],
+    [
+      "wizard.destinationDetails",
+      "Destination details"
+    ],
+    [
+      "wizard.contentPrompt",
+      "Add the content visitors will see"
+    ],
+    [
+      "wizard.qrTitle",
+      "QR title"
+    ]
+  ]
+}

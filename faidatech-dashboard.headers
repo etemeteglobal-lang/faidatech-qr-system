@@ -1,0 +1,11 @@
+HTTP/1.1 500 Internal Server Error
+Cache-Control: no-store
+X-Powered-By: Next.js
+ETag: "tw5o2ry0vo4u3"
+Content-Type: text/html; charset=utf-8
+Content-Length: 6267
+Vary: Accept-Encoding
+Date: Sun, 08 Nov 2026 14:51:23 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

@@ -1,0 +1,924 @@
+{
+  "locale": "sid",
+  "start": 229,
+  "end": 458,
+  "total": 458,
+  "entries": [
+    [
+      "wizard.titlePlaceholder",
+      "A clear name for this QR"
+    ],
+    [
+      "wizard.visitorDescription",
+      "Visitor description (optional)"
+    ],
+    [
+      "wizard.descriptionPlaceholder",
+      "A short description shown to visitors"
+    ],
+    [
+      "wizard.readyToPublish",
+      "Ready to publish"
+    ],
+    [
+      "wizard.reviewTitle",
+      "Review your QR destination"
+    ],
+    [
+      "wizard.reviewDescription",
+      "The printed code will keep this short address while you can update the experience later."
+    ],
+    [
+      "wizard.purposeLabel",
+      "Purpose"
+    ],
+    [
+      "wizard.dynamicQr",
+      "Dynamic QR"
+    ],
+    [
+      "wizard.titleLabel",
+      "Title"
+    ],
+    [
+      "wizard.shortLink",
+      "Short link"
+    ],
+    [
+      "wizard.qrImage",
+      "QR image"
+    ],
+    [
+      "wizard.exportsAvailable",
+      "SVG & PNG exports are available after saving."
+    ],
+    [
+      "wizard.externalUrlNote",
+      "Make sure every external URL uses HTTPS and is hosted at a stable address. Your public short link is created from the configured application origin."
+    ],
+    [
+      "wizard.loadingDetails",
+      "Loading QR details…"
+    ],
+    [
+      "wizard.saving",
+      "Saving…"
+    ],
+    [
+      "wizard.changesSaved",
+      "Changes saved"
+    ],
+    [
+      "wizard.created",
+      "QR code created"
+    ],
+    [
+      "wizard.destinationUpdated",
+      "Your destination is updated. The existing printed QR code continues to work."
+    ],
+    [
+      "wizard.shortCodeReady",
+      "Your short code is ready. Download the QR image or open the visitor preview."
+    ],
+    [
+      "wizard.viewCodes",
+      "View my QR codes"
+    ],
+    [
+      "wizard.createAnother",
+      "Create another"
+    ],
+    [
+      "wizard.saveChanges",
+      "Save changes"
+    ],
+    [
+      "wizard.createQrAction",
+      "Create QR code"
+    ],
+    [
+      "wizard.generateQr",
+      "Save and generate QR code"
+    ],
+    [
+      "wizard.createHeader",
+      "Create a QR experience"
+    ],
+    [
+      "wizard.editHeader",
+      "Edit QR experience"
+    ],
+    [
+      "wizard.headingDescription",
+      "Choose what visitors should see, personalize its brand, then review the result before saving."
+    ],
+    [
+      "wizard.purposeLandingSummary",
+      "Create a flexible page with a hero, story, and call to action."
+    ],
+    [
+      "wizard.purposeVcardSummary",
+      "Share a contact card people can save in one tap."
+    ],
+    [
+      "wizard.purposeMenuSummary",
+      "List categories and ETB prices, with optional Telebirr metadata."
+    ],
+    [
+      "wizard.purposeTourismSummary",
+      "Make a place speak in multiple languages with audio and GPS."
+    ],
+    [
+      "wizard.purposePdfSummary",
+      "Keep a short code in print while the hosted document can change."
+    ],
+    [
+      "wizard.purposePaymentsSummary",
+      "Point a printed QR to a hosted checkout URL."
+    ],
+    [
+      "preview.live",
+      "Live preview"
+    ],
+    [
+      "preview.updates",
+      "Updates as you type"
+    ],
+    [
+      "preview.businessCard",
+      "Business card"
+    ],
+    [
+      "preview.contactDetails",
+      "Contact details"
+    ],
+    [
+      "preview.saveContact",
+      "Save contact"
+    ],
+    [
+      "preview.todayMenu",
+      "Today’s menu · {brand}"
+    ],
+    [
+      "preview.categories",
+      "Categories"
+    ],
+    [
+      "preview.menuItem",
+      "Menu item"
+    ],
+    [
+      "preview.category",
+      "Category"
+    ],
+    [
+      "preview.audioGuide",
+      "Heritage audio guide · {brand}"
+    ],
+    [
+      "preview.audioLinked",
+      "Audio is linked"
+    ],
+    [
+      "preview.addAudio",
+      "Add an audio link"
+    ],
+    [
+      "preview.openDocument",
+      "Open document"
+    ],
+    [
+      "preview.checkoutUrl",
+      "Checkout URL"
+    ],
+    [
+      "preview.continuePayment",
+      "Continue to payment"
+    ],
+    [
+      "preview.selectPurpose",
+      "Select a purpose to begin"
+    ],
+    [
+      "preview.visitorAppears",
+      "Your visitor view appears here."
+    ],
+    [
+      "preview.mobileWidth",
+      "Visitor preview · mobile width"
+    ],
+    [
+      "preview.story",
+      "Your visitor-facing story appears here."
+    ],
+    [
+      "field.heroImageUrl",
+      "Hero image URL"
+    ],
+    [
+      "field.shortSummary",
+      "Short summary"
+    ],
+    [
+      "field.pageBody",
+      "Page body"
+    ],
+    [
+      "field.buttonLabel",
+      "Button label"
+    ],
+    [
+      "field.buttonUrl",
+      "Button URL"
+    ],
+    [
+      "field.contactNote",
+      "Build a contact card visitors can save to their phone."
+    ],
+    [
+      "field.website",
+      "Website"
+    ],
+    [
+      "field.address",
+      "Address"
+    ],
+    [
+      "field.addLink",
+      "Add link"
+    ],
+    [
+      "field.socialPlatform",
+      "Social platform"
+    ],
+    [
+      "field.socialLinkLabel",
+      "Social link label"
+    ],
+    [
+      "field.socialProfileUrl",
+      "Social profile URL"
+    ],
+    [
+      "field.menuItems",
+      "Menu items"
+    ],
+    [
+      "field.menuItemsNote",
+      "Items with the same category name appear together in the visitor menu."
+    ],
+    [
+      "field.categoryDescription",
+      "Category description"
+    ],
+    [
+      "field.itemImageUrl",
+      "Item image URL"
+    ],
+    [
+      "field.availableToOrder",
+      "Available to order"
+    ],
+    [
+      "field.addAnotherItem",
+      "Add another item"
+    ],
+    [
+      "field.telebirrMetadata",
+      "Telebirr checkout metadata"
+    ],
+    [
+      "field.telebirrMetadataNote",
+      "Optional. Adds a checkout button to the public menu when a URL is supplied."
+    ],
+    [
+      "field.merchantName",
+      "Merchant name"
+    ],
+    [
+      "field.merchantCode",
+      "Merchant code"
+    ],
+    [
+      "field.additionalMetadata",
+      "Additional Telebirr metadata"
+    ],
+    [
+      "field.additionalMetadataNote",
+      "Optional provider metadata stored alongside the checkout link."
+    ],
+    [
+      "field.guideSummary",
+      "Guide summary"
+    ],
+    [
+      "field.guideSummaryNote",
+      "Add one or more audio links, the location coordinates, transcripts, and heritage media."
+    ],
+    [
+      "field.audioUrl",
+      "{language} audio URL"
+    ],
+    [
+      "field.altitude",
+      "Altitude (meters)"
+    ],
+    [
+      "field.transcriptEditor",
+      "Transcript text editor"
+    ],
+    [
+      "field.transcriptNote",
+      "Optional text shown under the audio player for each selected language."
+    ],
+    [
+      "field.historicalMedia",
+      "Historical media"
+    ],
+    [
+      "field.addMedia",
+      "Add media"
+    ],
+    [
+      "field.mediaType",
+      "Media type"
+    ],
+    [
+      "field.mediaTitle",
+      "Media title"
+    ],
+    [
+      "field.mediaUrl",
+      "Media URL"
+    ],
+    [
+      "field.assetId",
+      "Asset ID"
+    ],
+    [
+      "field.caption",
+      "Caption"
+    ],
+    [
+      "field.hostedDocument",
+      "Hosted document"
+    ],
+    [
+      "field.hostedDocumentNote",
+      "The short code redirects visitors to this PDF while its hosted file metadata remains editable."
+    ],
+    [
+      "field.fileName",
+      "File name"
+    ],
+    [
+      "field.hostedAssetId",
+      "Hosted asset ID"
+    ],
+    [
+      "field.fileSizeBytes",
+      "File size (bytes)"
+    ],
+    [
+      "field.hostedAssetMetadata",
+      "Hosted asset metadata"
+    ],
+    [
+      "field.hostedAssetMetadataNote",
+      "Optional asset properties retained with this document."
+    ],
+    [
+      "field.localCheckout",
+      "Local checkout destination"
+    ],
+    [
+      "field.localCheckoutNote",
+      "Create a direct dynamic short link to a Telebirr or other hosted checkout URL."
+    ],
+    [
+      "field.paymentHandling",
+      "Payment handling:"
+    ],
+    [
+      "field.paymentHandlingNote",
+      "FaidATech stores the checkout destination and redirects visitors. It does not collect or process payment details."
+    ],
+    [
+      "field.chooseDestination",
+      "Choose a destination type to add its details."
+    ],
+    [
+      "branding.personalize",
+      "Personalize"
+    ],
+    [
+      "branding.title",
+      "Brand identity"
+    ],
+    [
+      "branding.description",
+      "Use your own organization name, logo, and colors. These settings stay with this QR destination."
+    ],
+    [
+      "branding.perQr",
+      "Per QR code"
+    ],
+    [
+      "branding.name",
+      "Organization / brand name"
+    ],
+    [
+      "branding.namePlaceholder",
+      "Your organization name"
+    ],
+    [
+      "branding.logoUpload",
+      "Organization logo"
+    ],
+    [
+      "branding.uploading",
+      "Uploading…"
+    ],
+    [
+      "branding.uploadLogo",
+      "Upload logo"
+    ],
+    [
+      "branding.removeLogo",
+      "Remove logo"
+    ],
+    [
+      "branding.imageRequirements",
+      "PNG, JPEG, or WebP, up to 2 MiB. Uploaded images are stored at a stable workspace asset address."
+    ],
+    [
+      "branding.hostedLogo",
+      "Or use a hosted logo URL"
+    ],
+    [
+      "branding.accent",
+      "Brand accent"
+    ],
+    [
+      "branding.qrInk",
+      "QR code ink"
+    ],
+    [
+      "branding.contrastWarning",
+      "Choose a darker QR code color for enough contrast against white. Current contrast: {current}:1; minimum is {minimum}:1."
+    ],
+    [
+      "branding.preview",
+      "Brand preview"
+    ],
+    [
+      "branding.logoPreview",
+      "Organization logo preview"
+    ],
+    [
+      "branding.visitorExperience",
+      "QR visitor experience"
+    ],
+    [
+      "branding.illustrativeOnly",
+      "Illustrative only · the real scannable QR is generated after saving."
+    ],
+    [
+      "branding.uploadSuccess",
+      "Logo uploaded to your workspace assets."
+    ],
+    [
+      "branding.uploadFallback",
+      "Logo upload failed. You can paste a hosted HTTPS logo URL instead."
+    ],
+    [
+      "visitor.audioUnsupported",
+      "Your browser does not support audio playback."
+    ],
+    [
+      "visitor.destinationNeedsUpdate",
+      "This destination needs an update from its owner."
+    ],
+    [
+      "visitor.fromArchive",
+      "From the archive"
+    ],
+    [
+      "visitor.mediaCount",
+      "{count} item(s)"
+    ],
+    [
+      "visitor.todayMenu",
+      "Today’s menu"
+    ],
+    [
+      "visitor.organization",
+      "Organization"
+    ],
+    [
+      "error.uploadTooLarge",
+      "Choose an image no larger than {size} MiB."
+    ],
+    [
+      "error.couldNotLoadQr",
+      "Could not load this QR code."
+    ],
+    [
+      "error.couldNotLoadQrForEdit",
+      "Could not load this QR code for editing."
+    ],
+    [
+      "error.couldNotSaveQr",
+      "Could not save this QR code."
+    ],
+    [
+      "error.couldNotUpdateQr",
+      "Could not update this QR code."
+    ],
+    [
+      "error.couldNotRemoveQr",
+      "Could not remove this QR code."
+    ],
+    [
+      "error.couldNotLoadDashboard",
+      "Could not load dashboard data."
+    ],
+    [
+      "error.couldNotLoadQrCodes",
+      "Could not load your QR codes."
+    ],
+    [
+      "error.couldNotLoadAnalytics",
+      "Could not load scan analytics."
+    ],
+    [
+      "error.couldNotLoadCampaigns",
+      "Could not load campaign data."
+    ],
+    [
+      "error.couldNotLoadSettings",
+      "Could not load account settings."
+    ],
+    [
+      "validation.choosePurpose",
+      "Choose a QR purpose to continue."
+    ],
+    [
+      "validation.titleRequired",
+      "Add a title for this QR destination."
+    ],
+    [
+      "validation.brandNameTooLong",
+      "Brand name must be 120 characters or fewer."
+    ],
+    [
+      "validation.invalidAccent",
+      "Choose a valid six-digit brand accent color."
+    ],
+    [
+      "validation.qrContrast",
+      "Choose a QR code color with at least 4.5:1 contrast against white."
+    ],
+    [
+      "validation.logoUrl",
+      "Logo must be a credential-free HTTPS URL or a stable workspace asset path."
+    ],
+    [
+      "validation.urlProtocol",
+      "{field} URL must use HTTP or HTTPS."
+    ],
+    [
+      "validation.contactNames",
+      "Enter the contact’s first and last name."
+    ],
+    [
+      "validation.email",
+      "Enter a valid email address."
+    ],
+    [
+      "validation.menuItemRequired",
+      "Add at least one menu item."
+    ],
+    [
+      "validation.menuCategoryPrice",
+      "Each menu item needs a category and a valid ETB price."
+    ],
+    [
+      "validation.menuImageUrl",
+      "Menu item image links must use HTTP or HTTPS."
+    ],
+    [
+      "validation.checkoutUrl",
+      "Telebirr checkout must be an HTTP or HTTPS URL."
+    ],
+    [
+      "validation.audioRequired",
+      "Add at least one language audio link."
+    ],
+    [
+      "validation.coordinates",
+      "Enter valid GPS coordinates."
+    ],
+    [
+      "validation.gpsRange",
+      "GPS coordinates are outside the valid range."
+    ],
+    [
+      "validation.audioUrl",
+      "Audio links must use HTTP or HTTPS."
+    ],
+    [
+      "validation.mediaUrl",
+      "Historical media URLs must use HTTP or HTTPS."
+    ],
+    [
+      "validation.pdfUrl",
+      "Enter a valid hosted PDF URL."
+    ],
+    [
+      "validation.pdfFileName",
+      "Enter the PDF file name."
+    ],
+    [
+      "validation.fileSize",
+      "File size must be a positive whole number of bytes."
+    ],
+    [
+      "validation.paymentUrl",
+      "Enter a valid HTTP or HTTPS checkout URL."
+    ],
+    [
+      "validation.imageUrl",
+      "Hero image URL must use HTTP or HTTPS."
+    ],
+    [
+      "validation.buttonUrl",
+      "Button URL must use HTTP or HTTPS."
+    ],
+    [
+      "localizedContent.heading",
+      "Localized visitor text"
+    ],
+    [
+      "localizedContent.note",
+      "Optional text overrides appear when visitors choose that language. If a field is blank, its default QR content is used."
+    ],
+    [
+      "localizedContent.locale",
+      "Text language"
+    ],
+    [
+      "localizedContent.title",
+      "Localized title"
+    ],
+    [
+      "localizedContent.description",
+      "Localized description"
+    ],
+    [
+      "localizedContent.summary",
+      "Localized summary"
+    ],
+    [
+      "localizedContent.body",
+      "Localized body"
+    ],
+    [
+      "localizedContent.buttonLabel",
+      "Localized button label"
+    ],
+    [
+      "localizedContent.displayName",
+      "Localized display name"
+    ],
+    [
+      "localizedContent.fieldPathsNote",
+      "Menu items and other nested content can be managed through locale-keyed field paths in the saved payload."
+    ],
+    [
+      "visitor.connectedExperience",
+      "Connected experience"
+    ],
+    [
+      "visitor.destinationBrand",
+      "FaidATech destination"
+    ],
+    [
+      "shell.qrLibrary",
+      "QR library"
+    ],
+    [
+      "field.addMetadata",
+      "Add field"
+    ],
+    [
+      "field.metadataKey",
+      "Key"
+    ],
+    [
+      "field.metadataValue",
+      "Value"
+    ],
+    [
+      "field.removeMetadata",
+      "Remove field"
+    ],
+    [
+      "field.contactDetails",
+      "Contact details"
+    ],
+    [
+      "field.socialLinksNote",
+      "Add profile URLs visitors can open from your contact card."
+    ],
+    [
+      "field.landingContent",
+      "Landing-page content"
+    ],
+    [
+      "field.landingContentNote",
+      "Create a flexible mobile destination with a title, story, and optional call to action."
+    ],
+    [
+      "field.removeMenuItem",
+      "Remove menu item"
+    ],
+    [
+      "field.removeSocialLink",
+      "Remove social link"
+    ],
+    [
+      "field.removeHistoricalMedia",
+      "Remove historical media"
+    ],
+    [
+      "field.mediaArchiveNote",
+      "Add archive images, audio, video, or documents."
+    ],
+    [
+      "wizard.builderEyebrow",
+      "QR builder"
+    ],
+    [
+      "wizard.progress",
+      "Wizard progress"
+    ],
+    [
+      "preview.defaultTitle",
+      "Your QR experience"
+    ],
+    [
+      "preview.defaultBrand",
+      "Your brand"
+    ],
+    [
+      "preview.documentFileName",
+      "Document.pdf"
+    ],
+    [
+      "visitor.mediaResource",
+      "{kind} resource"
+    ],
+    [
+      "common.optional",
+      "Optional"
+    ],
+    [
+      "localizedContent.removeLocale",
+      "Remove this locale’s overrides"
+    ],
+    [
+      "field.audioPlaceDetails",
+      "Audio and place details"
+    ],
+    [
+      "field.mediaTypeImage",
+      "Image"
+    ],
+    [
+      "field.mediaTypeVideo",
+      "Video"
+    ],
+    [
+      "field.mediaTypeAudio",
+      "Audio"
+    ],
+    [
+      "field.mediaTypeDocument",
+      "Document"
+    ],
+    [
+      "placeholder.conciseIntroduction",
+      "A concise introduction"
+    ],
+    [
+      "placeholder.landingBody",
+      "Write the visitor-facing content…"
+    ],
+    [
+      "placeholder.learnMore",
+      "Learn more"
+    ],
+    [
+      "placeholder.organization",
+      "Company or organization"
+    ],
+    [
+      "placeholder.role",
+      "Role or profession"
+    ],
+    [
+      "placeholder.contactAddress",
+      "Optional contact address"
+    ],
+    [
+      "placeholder.social",
+      "Social"
+    ],
+    [
+      "placeholder.profile",
+      "Profile"
+    ],
+    [
+      "placeholder.menuItem",
+      "Special coffee"
+    ],
+    [
+      "placeholder.menuCategory",
+      "Coffee"
+    ],
+    [
+      "placeholder.categoryNote",
+      "Optional category note"
+    ],
+    [
+      "placeholder.itemDescription",
+      "Roasted locally"
+    ],
+    [
+      "placeholder.merchant",
+      "Merchant or restaurant"
+    ],
+    [
+      "placeholder.optionalCode",
+      "Optional code"
+    ],
+    [
+      "placeholder.archiveItem",
+      "Archive item"
+    ],
+    [
+      "placeholder.mediaCaption",
+      "Optional visitor context"
+    ],
+    [
+      "field.transcriptLanguage",
+      "{language} transcript"
+    ],
+    [
+      "placeholder.transcript",
+      "Write or paste the {language} transcript…"
+    ],
+    [
+      "campaigns.eyebrow",
+      "Organization groups"
+    ],
+    [
+      "campaigns.organizationScope",
+      "QR codes and scan totals are organization-scoped."
+    ],
+    [
+      "campaigns.openLibrary",
+      "Open QR library"
+    ],
+    [
+      "campaigns.loading",
+      "Loading campaigns…"
+    ],
+    [
+      "campaigns.emptyDescription",
+      "Campaign records are part of your tenant schema. Once a campaign is assigned to a QR code, its linked codes and scans will appear here."
+    ],
+    [
+      "campaigns.viewCodes",
+      "View QR codes"
+    ],
+    [
+      "campaigns.qrCount",
+      "QR codes: {count}"
+    ],
+    [
+      "campaigns.scanCount",
+      "Scans: {count}"
+    ],
+    [
+      "qr.destination",
+      "Destination"
+    ],
+    [
+      "qr.recordedScans",
+      "Recorded scans"
+    ]
+  ]
+}

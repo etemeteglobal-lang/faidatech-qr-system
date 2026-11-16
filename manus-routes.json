@@ -1,0 +1,15 @@
+{
+  "routes": [
+    { "path": "/", "title": "FaidATech — Dynamic QR Operations" },
+    { "path": "/demo", "title": "Public demo — FaidATech" },
+    { "path": "/login", "title": "Sign in — FaidATech" },
+    { "path": "/dashboard", "title": "Dashboard — FaidATech" },
+    { "path": "/dashboard/create", "title": "Create QR — FaidATech" },
+    { "path": "/dashboard/qrcodes", "title": "My QR Codes — FaidATech" },
+    { "path": "/dashboard/analytics", "title": "Analytics — FaidATech" },
+    { "path": "/dashboard/campaigns", "title": "Campaigns — FaidATech" },
+    { "path": "/dashboard/integrations", "title": "Integrations — FaidATech" },
+    { "path": "/dashboard/settings", "title": "Settings — FaidATech" },
+    { "path": "/r/:shortCode", "title": "Dynamic QR destination" }
+  ]
+}
