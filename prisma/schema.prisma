@@ -37,6 +37,14 @@ enum ScanDeviceType {
   UNKNOWN
 }
 
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
 model Organization {
   id        String   @id @default(cuid())
   name      String
@@ -48,8 +56,74 @@ model Organization {
   campaigns  Campaign[]
   qrCodes    QRCode[]
   scanEvents ScanAnalytics[]
+  subscriptions Subscription[]
+  planQuotas PlanQuota[]
+  billingCheckouts BillingCheckout[]
 
   @@index([createdAt])
+}
+
+model Plan {
+  id               String         @id @default(cuid())
+  name             String         @db.VarChar(120)
+  providerPlanId   String         @unique @db.VarChar(160)
+  active           Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  subscriptions    Subscription[]
+  planQuotas       PlanQuota[]
+  billingCheckouts BillingCheckout[]
+}
+
+model Subscription {
+  id                     String             @id @default(cuid())
+  organizationId         String
+  planId                 String
+  providerSubscriptionId String             @unique @db.VarChar(200)
+  providerCustomerId     String?            @db.VarChar(200)
+  status                 SubscriptionStatus @default(INCOMPLETE)
+  currentPeriodStart    DateTime?
+  currentPeriodEnd      DateTime?
+  createdAt              DateTime           @default(now())
+  updatedAt              DateTime           @updatedAt
+  organization           Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  plan                   Plan               @relation(fields: [planId], references: [id], onDelete: Restrict)
+  @@index([organizationId, status])
+}
+
+model PlanQuota {
+  id             String       @id @default(cuid())
+  organizationId String
+  planId         String
+  periodStart    DateTime
+  periodEnd      DateTime?
+  used           Int          @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  plan           Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+  @@unique([organizationId, planId])
+}
+
+model BillingCheckout {
+  id                 String       @id @default(cuid())
+  organizationId     String
+  planId             String
+  idempotencyKey     String       @db.VarChar(128)
+  checkoutUrl        String       @db.Text
+  providerCheckoutId String?      @unique @db.VarChar(200)
+  createdAt          DateTime     @default(now())
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  plan               Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+  @@unique([organizationId, idempotencyKey])
+}
+
+model BillingEvent {
+  id              String   @id @default(cuid())
+  providerEventId String   @unique @db.VarChar(200)
+  eventType       String   @db.VarChar(100)
+  payload         Json
+  receivedAt      DateTime @default(now())
 }
 
 model User {

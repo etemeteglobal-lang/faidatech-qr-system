@@ -6,10 +6,10 @@ const config: Config = {
     extend: {
       colors: {
         faida: {
-          green: "#10B981",
+          green: "#047857",
           navy: "#0F172A",
-          teal: "#14B8A6",
-          slate: "#64748B",
+          teal: "#0F766E",
+          slate: "#475569",
         },
       },
       boxShadow: {
