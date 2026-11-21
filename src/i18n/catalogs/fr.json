@@ -474,6 +474,23 @@
     "wizard.updatesAsYouType": "Mise à jour au fil de la saisie",
     "wizard.viewCodes": "Voir mes QR codes",
     "wizard.visitorDescription": "Description destinée aux visiteurs (facultatif)",
-    "wizard.whatCreating": "Que souhaitez-vous créer ?"
+    "wizard.whatCreating": "Que souhaitez-vous créer ?",
+    "nav.billing": "Billing",
+    "billing.title": "Billing and usage",
+    "billing.description": "Review your current plan, payment state, and workspace quota usage.",
+    "billing.currentPlan": "Current plan",
+    "billing.status": "Billing status",
+    "billing.usage": "Usage and quotas",
+    "billing.dynamicQrs": "Dynamic QR codes",
+    "billing.scans": "Scans",
+    "billing.teamSeats": "Team seats",
+    "billing.customDomains": "Custom domains",
+    "billing.availablePlans": "Available plans",
+    "billing.monthly": "Monthly",
+    "billing.yearly": "Yearly",
+    "billing.checkout": "Start checkout",
+    "billing.pending": "Pending confirmation",
+    "billing.configNotice": "Payment provider setup is required before live checkout can be completed.",
+    "billing.loadError": "Could not load billing information."
   }
 }

@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
+import { rateLimit } from "@/lib/api/rate-limit";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
 import { createClient } from "@supabase/supabase-js";
 
@@ -13,6 +14,12 @@ const allowedTypes = {
   "image/webp": { extension: "webp" },
 } as const;
 
+function hasExpectedSignature(buffer: Buffer, type: keyof typeof allowedTypes): boolean {
+  if (type === "image/png") return buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  if (type === "image/jpeg") return buffer.subarray(0, 3).equals(Buffer.from([255, 216, 255]));
+  return buffer.subarray(0, 4).toString("ascii") === "RIFF" && buffer.subarray(8, 12).toString("ascii") === "WEBP";
+}
+
 function tenantStorageSegment(organizationId: string): string {
   if (!/^[A-Za-z0-9_-]+$/.test(organizationId)) {
     throw new ApiError(500, "storage_key_unavailable", "Could not create a safe tenant storage key.");
@@ -23,6 +30,9 @@ function tenantStorageSegment(organizationId: string): string {
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const tenant = await requireTenantContext(request);
+    if (!rateLimit(`logo-upload:${tenant.organizationId}`, 20, 60_000)) {
+      throw new ApiError(429, "rate_limited", "Too many uploads. Please try again shortly.");
+    }
     
     // Supabase client በ Service Role Key በመጠቀም (በሰርቨር በኩል ፋይል ለመጫን)
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -56,6 +66,9 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
+    if (!hasExpectedSignature(fileBuffer, type)) {
+      throw new ApiError(400, "invalid_file_signature", "The uploaded file content does not match its declared image type.");
+    }
     const key = `faidatech/${tenantStorageSegment(tenant.organizationId)}/logos/${randomUUID()}.${spec.extension}`;
 
     // ፋይሉን በቀጥታ ወደ Supabase Storage (assets bucket) መስቀል

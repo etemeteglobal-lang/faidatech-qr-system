@@ -12,6 +12,7 @@
     "validate:i18n": "node scripts/validate-i18n.mjs",
     "test:e2e": "playwright test",
     "db:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:seed:billing": "node scripts/seed-billing.mjs",
     "db:migrate": "node scripts/prisma-with-tls.mjs migrate dev",
     "db:deploy": "node scripts/prisma-with-tls.mjs migrate deploy",
     "db:status": "node scripts/prisma-with-tls.mjs migrate status"

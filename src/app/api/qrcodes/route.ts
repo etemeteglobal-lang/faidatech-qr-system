@@ -1,8 +1,10 @@
 import { Prisma, type DestinationType } from "@prisma/client";
+import { revalidatePath } from "next/cache";
 import type { NextRequest } from "next/server";
 import { z } from "zod";
 import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/api/errors";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
+import { assertDynamicQrQuota, incrementDynamicQrUsage } from "@/lib/billing/entitlements";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { readBrandIdentity } from "@/lib/qr/brand";
 import { parseDestinationPayload, destinationTypeSchema } from "@/lib/qr/payload-schemas";
@@ -126,6 +128,7 @@ export async function POST(request: NextRequest): Promise<Response> {
   try {
     const tenant = await requireTenantContext(request);
     ensurePostgresConfigured();
+    await assertDynamicQrQuota(tenant.organizationId);
     const input = createQrCodeSchema.parse(await readJsonBody(request));
     const payload = parseDestinationPayload(input.destinationType, input.payload);
 
@@ -163,6 +166,11 @@ export async function POST(request: NextRequest): Promise<Response> {
           },
           include: { campaign: { select: { id: true, name: true, status: true } } },
         });
+        await incrementDynamicQrUsage(tenant.organizationId);
+        revalidatePath("/dashboard");
+        revalidatePath("/dashboard/qrcodes");
+        revalidatePath("/dashboard/analytics");
+        revalidatePath(`/r/${shortCode}`);
 
         return Response.json(
           { data: qrCode, redirectUrl, qrImageDataUrl },

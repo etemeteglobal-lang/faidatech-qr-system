@@ -6,6 +6,14 @@
 
 A custom authentication domain is optional. The application continues to use the Supabase project URL and hosted provider domains until the owner has a custom domain.
 
+## PostgreSQL pooler and rollout commands
+
+Use the Supabase pooler session URL on port 6543 with `pgbouncer=true` for application runtime traffic. Keep a separate direct port 5432 URL in `DIRECT_URL` for migration administration; the application accepts `POSTGRES_URL` and the deployment-platform alias `DATABASE_URL` without requiring either value to be printed or copied into the repository. Verify TLS and connection limits in the hosting platform before release.
+
+After review and an approved maintenance window, run the unapplied billing migration with `npm run db:deploy`, then seed plans with `npm run db:seed:billing`. These commands require the operator's protected runtime configuration and are intentionally not run as part of local verification. Confirm the migration status and take a backup before any production rollout.
+
+Configure `TELEBIRR_*`, `CHAPA_*`, and `STRIPE_*` variables independently. A missing provider configuration leaves checkout pending and cannot activate a subscription; only a verified webhook can move a checkout to paid and update quotas.
+
 ## Consent, privacy, and retention
 
 Necessary authentication/security cookies remain available. Optional analytics is disabled until the visitor opts in. The banner stores only the preference and selected retention window in browser local storage. The application must enforce the selected retention window in the scheduled analytics cleanup job or database policy before enabling a production analytics vendor. Do not place provider scripts before consent.

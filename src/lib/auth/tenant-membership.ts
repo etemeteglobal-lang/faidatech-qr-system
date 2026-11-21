@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { ensureDefaultBillingForOrganization } from "@/lib/billing/entitlements";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 
 export type AuthenticatedProfile = { id: string; name: string | null; email: string | null };
@@ -24,15 +25,18 @@ export async function ensureOrganizationMembership(profile: AuthenticatedProfile
   const name = profile.name?.trim().slice(0, 160) || null;
   const existing = await prisma.user.findUnique({ where: { openId: profile.id }, select: membershipSelect });
   if (existing) {
-    if (existing.name === name && existing.email === profile.email) return existing;
-    return prisma.user.update({ where: { id: existing.id }, data: { name, email: profile.email }, select: membershipSelect });
+    const membership = existing.name === name && existing.email === profile.email
+      ? existing
+      : await prisma.user.update({ where: { id: existing.id }, data: { name, email: profile.email }, select: membershipSelect });
+    await ensureDefaultBillingForOrganization(membership.organizationId);
+    return membership;
   }
 
   const displayName = name?.slice(0, 120) || "FaidATech";
   for (let attempt = 0; attempt < 3; attempt += 1) {
     const slug = `faida-${randomBytes(6).toString("hex")}`;
     try {
-      return await prisma.$transaction(async (transaction) => {
+      const membership = await prisma.$transaction(async (transaction) => {
         const organization = await transaction.organization.create({
           data: { name: `${displayName} workspace`, slug },
           select: { id: true },
@@ -48,6 +52,8 @@ export async function ensureOrganizationMembership(profile: AuthenticatedProfile
           select: membershipSelect,
         });
       });
+      await ensureDefaultBillingForOrganization(membership.organizationId);
+      return membership;
     } catch (error) {
       if (isUniqueConstraintError(error)) {
         const winner = await prisma.user.findUnique({ where: { openId: profile.id }, select: membershipSelect });

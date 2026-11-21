@@ -35,7 +35,7 @@ export function apiErrorResponse(error: unknown): Response {
     );
   }
 
-  if (error instanceof Error && error.message === "POSTGRES_URL is not configured") {
+  if (error instanceof Error && /POSTGRES_URL or DATABASE_URL is not configured|POSTGRES_URL is not configured/.test(error.message)) {
     return Response.json(
       {
         error: {

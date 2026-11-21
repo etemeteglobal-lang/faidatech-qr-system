@@ -37,7 +37,19 @@ enum ScanDeviceType {
   UNKNOWN
 }
 
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+enum PaymentProvider {
+  TELEBIRR
+  CHAPA
+  STRIPE
+}
+
 enum SubscriptionStatus {
+  PENDING
   TRIALING
   ACTIVE
   PAST_DUE
@@ -45,85 +57,145 @@ enum SubscriptionStatus {
   INCOMPLETE
 }
 
+enum BillingCheckoutStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+  CANCELED
+}
+
+enum BillingEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  IGNORED
+}
+
 model Organization {
-  id        String   @id @default(cuid())
-  name      String
-  slug      String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  users      User[]
-  campaigns  Campaign[]
-  qrCodes    QRCode[]
-  scanEvents ScanAnalytics[]
-  subscriptions Subscription[]
-  planQuotas PlanQuota[]
-  billingCheckouts BillingCheckout[]
-
+  id                 String             @id @default(cuid())
+  name               String
+  slug               String             @unique
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  users              User[]
+  campaigns          Campaign[]
+  qrCodes            QRCode[]
+  scanEvents         ScanAnalytics[]
+  subscriptions      Subscription[]
+  planQuotas         PlanQuota[]
+  billingCheckouts   BillingCheckout[]
   @@index([createdAt])
 }
 
 model Plan {
-  id               String         @id @default(cuid())
-  name             String         @db.VarChar(120)
-  providerPlanId   String         @unique @db.VarChar(160)
-  active           Boolean        @default(true)
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id               String             @id @default(cuid())
+  code             String             @unique @db.VarChar(80)
+  name             String             @db.VarChar(120)
+  billingInterval  BillingInterval    @default(MONTHLY)
+  currency         String             @default("ETB") @db.VarChar(3)
+  priceMinor       Int                @default(0)
+  featureFlags     Json               @default("{}")
+  active           Boolean            @default(true)
+  providerPlanId   String?            @unique @db.VarChar(160)
+  dynamicQrLimit   Int
+  scanLimit        Int
+  teamSeatLimit    Int
+  customDomainLimit Int
+  storageBytesLimit BigInt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   subscriptions    Subscription[]
   planQuotas       PlanQuota[]
   billingCheckouts BillingCheckout[]
+  @@index([active, code])
 }
 
 model Subscription {
   id                     String             @id @default(cuid())
   organizationId         String
   planId                 String
-  providerSubscriptionId String             @unique @db.VarChar(200)
+  provider               PaymentProvider
+  providerSubscriptionId String?            @unique @db.VarChar(200)
+  providerReferenceId    String?            @db.VarChar(200)
   providerCustomerId     String?            @db.VarChar(200)
-  status                 SubscriptionStatus @default(INCOMPLETE)
+  status                 SubscriptionStatus @default(PENDING)
   currentPeriodStart    DateTime?
   currentPeriodEnd      DateTime?
+  cancelAtPeriodEnd     Boolean            @default(false)
   createdAt              DateTime           @default(now())
   updatedAt              DateTime           @updatedAt
   organization           Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   plan                   Plan               @relation(fields: [planId], references: [id], onDelete: Restrict)
+  quotas                 PlanQuota[]
   @@index([organizationId, status])
+  @@index([provider, providerReferenceId])
 }
 
 model PlanQuota {
-  id             String       @id @default(cuid())
-  organizationId String
-  planId         String
-  periodStart    DateTime
-  periodEnd      DateTime?
-  used           Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  plan           Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+  id                 String        @id @default(cuid())
+  organizationId     String
+  planId             String
+  subscriptionId     String?
+  periodStart        DateTime
+  periodEnd          DateTime?
+  dynamicQrUsed      Int           @default(0)
+  dynamicQrLimit     Int
+  scansUsed          Int           @default(0)
+  scansLimit         Int
+  teamSeatsUsed      Int           @default(0)
+  teamSeatLimit      Int
+  customDomainsUsed  Int           @default(0)
+  customDomainLimit  Int
+  storageBytesUsed   BigInt        @default(0)
+  storageBytesLimit  BigInt
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  organization       Organization  @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  plan               Plan          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  subscription       Subscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
   @@unique([organizationId, planId])
+  @@index([organizationId, periodEnd])
 }
 
 model BillingCheckout {
-  id                 String       @id @default(cuid())
+  id                 String                @id @default(cuid())
   organizationId     String
   planId             String
-  idempotencyKey     String       @db.VarChar(128)
-  checkoutUrl        String       @db.Text
-  providerCheckoutId String?      @unique @db.VarChar(200)
-  createdAt          DateTime     @default(now())
-  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  plan               Plan         @relation(fields: [planId], references: [id], onDelete: Restrict)
+  provider            PaymentProvider
+  paymentMethod      String                @db.VarChar(40)
+  idempotencyKey     String                @db.VarChar(128)
+  providerCheckoutId String?               @unique @db.VarChar(200)
+  transactionReference String?             @db.VarChar(200)
+  checkoutUrl        String?               @db.Text
+  returnUrl          String                @db.Text
+  cancelUrl          String                @db.Text
+  amountMinor        Int
+  currency           String                @db.VarChar(3)
+  status             BillingCheckoutStatus @default(PENDING)
+  metadata           Json?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+  organization       Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  plan               Plan                  @relation(fields: [planId], references: [id], onDelete: Restrict)
   @@unique([organizationId, idempotencyKey])
+  @@index([organizationId, status, createdAt])
+  @@index([provider, transactionReference])
 }
 
 model BillingEvent {
-  id              String   @id @default(cuid())
-  providerEventId String   @unique @db.VarChar(200)
-  eventType       String   @db.VarChar(100)
+  id              String             @id @default(cuid())
+  providerEventId String             @unique @db.VarChar(200)
+  provider        PaymentProvider
+  eventType       String             @db.VarChar(100)
+  status          BillingEventStatus @default(RECEIVED)
   payload         Json
-  receivedAt      DateTime @default(now())
+  metadata        Json?
+  errorMessage    String?            @db.Text
+  receivedAt      DateTime           @default(now())
+  processedAt     DateTime?
+  updatedAt       DateTime           @updatedAt
+  @@index([provider, status, receivedAt])
 }
 
 model User {
@@ -135,9 +207,7 @@ model User {
   organizationId String
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-
-  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   @@index([organizationId, createdAt])
 }
 
@@ -152,12 +222,9 @@ model Campaign {
   deletedAt      DateTime?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
-
   organization Organization   @relation(fields: [organizationId], references: [id], onDelete: Restrict)
-  qrCodes     QRCode[]
-  scanEvents  ScanAnalytics[]
-
-  // Composite uniqueness lets dependent records enforce same-tenant campaign references.
+  qrCodes      QRCode[]
+  scanEvents   ScanAnalytics[]
   @@unique([id, organizationId])
   @@index([organizationId, status, createdAt])
   @@index([organizationId, deletedAt])
@@ -177,11 +244,9 @@ model QRCode {
   deletedAt       DateTime?
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
-
   organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   campaign     Campaign?       @relation(fields: [campaignId, organizationId], references: [id, organizationId], onDelete: Restrict)
   scanEvents   ScanAnalytics[]
-
   @@unique([id, organizationId])
   @@index([organizationId, deletedAt, createdAt])
   @@index([organizationId, campaignId])
@@ -201,11 +266,9 @@ model ScanAnalytics {
   region         String?        @db.VarChar(100)
   city           String?        @db.VarChar(100)
   scannedAt      DateTime       @default(now())
-
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
   qrCode       QRCode       @relation(fields: [qrCodeId, organizationId], references: [id, organizationId], onDelete: Restrict)
   campaign     Campaign?    @relation(fields: [campaignId, organizationId], references: [id, organizationId], onDelete: Restrict)
-
   @@index([organizationId, scannedAt])
   @@index([qrCodeId, scannedAt])
   @@index([campaignId, scannedAt])

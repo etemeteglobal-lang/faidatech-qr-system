@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import DashboardPageHeading from "@/components/dashboard/DashboardPageHeading";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { localizedApiError } from "@/i18n/api-errors";
@@ -47,6 +48,7 @@ export default function SettingsPage() {
       {error ? <div role="alert" className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">{error}</div> : null}
       <section className="max-w-3xl rounded-2xl border border-slate-200 bg-white p-5 sm:p-7"><div className="flex items-center gap-3 border-b border-slate-100 pb-5"><span className="grid h-11 w-11 place-items-center rounded-full bg-emerald-50 text-lg font-black text-emerald-800">{session?.user.name?.slice(0, 1).toUpperCase() || "U"}</span><div><h2 className="font-semibold text-faida-navy">{t("settings.accountIdentity")}</h2><p className="text-xs text-faida-slate">{t("settings.authNote")}</p></div></div>
         <dl className="mt-5 grid gap-5 sm:grid-cols-2">{items.map((item) => <div key={item.label}><dt className="text-xs font-semibold text-faida-slate">{item.label}</dt><dd className="mt-1 break-words text-sm font-semibold text-faida-navy">{item.value}</dd></div>)}</dl>
+        <div className="mt-7 border-t border-slate-100 pt-5"><Link href="/dashboard/billing" className="inline-flex rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-900 transition hover:bg-emerald-100">Billing and plan</Link></div>
         <div className="mt-7 border-t border-slate-100 pt-5"><button type="button" disabled={saving} onClick={() => void signOut()} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-700 disabled:opacity-50">{saving ? t("shell.signingOut") : t("settings.signOut")}</button></div>
       </section>
     </div>

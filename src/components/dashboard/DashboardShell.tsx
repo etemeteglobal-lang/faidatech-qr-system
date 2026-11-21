@@ -22,6 +22,7 @@ const navigation = [
   { labelKey: "nav.analytics", href: "/dashboard/analytics", mark: "A" },
   { labelKey: "nav.campaigns", href: "/dashboard/campaigns", mark: "C" },
   { labelKey: "nav.integrations", href: "/dashboard/integrations", mark: "I" },
+  { labelKey: "nav.billing", href: "/dashboard/billing", mark: "B" },
   { labelKey: "nav.settings", href: "/dashboard/settings", mark: "S" },
 ] as const;
 
@@ -31,6 +32,7 @@ const routeLabels: Record<string, MessageKey> = {
   "/dashboard/analytics": "nav.analytics",
   "/dashboard/campaigns": "nav.campaigns",
   "/dashboard/integrations": "nav.integrations",
+  "/dashboard/billing": "nav.billing",
   "/dashboard/settings": "nav.settings",
   "/dashboard/create": "wizard.createHeader",
 };

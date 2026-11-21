@@ -5,7 +5,7 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function getTlsRequiredPostgresUrl(): string | undefined {
-  const configuredUrl = process.env.POSTGRES_URL;
+  const configuredUrl = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
   if (!configuredUrl) return undefined;
 
   try {
@@ -45,7 +45,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export function ensurePostgresConfigured(): void {
-  if (!process.env.POSTGRES_URL) {
-    throw new Error("POSTGRES_URL is not configured");
+  if (!process.env.POSTGRES_URL && !process.env.DATABASE_URL) {
+    throw new Error("POSTGRES_URL or DATABASE_URL is not configured");
   }
 }

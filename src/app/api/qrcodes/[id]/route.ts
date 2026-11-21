@@ -1,5 +1,6 @@
 import { Prisma, type DestinationType } from "@prisma/client";
 import type { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { ApiError, apiErrorResponse, readJsonBody } from "@/lib/api/errors";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
@@ -122,6 +123,10 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     if (!updated) {
       throw new ApiError(404, "qr_not_found", "QR code not found.");
     }
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/qrcodes");
+    revalidatePath("/dashboard/analytics");
+    revalidatePath(`/r/${updated.shortCode}`);
     const qrImageDataUrl = await generateQrImageDataUrl(
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
@@ -149,6 +154,9 @@ export async function DELETE(request: NextRequest, context: RouteContext): Promi
     if (result.count === 0) {
       throw new ApiError(404, "qr_not_found", "QR code not found.");
     }
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/qrcodes");
+    revalidatePath("/dashboard/analytics");
 
     return new Response(null, { status: 204 });
   } catch (error) {

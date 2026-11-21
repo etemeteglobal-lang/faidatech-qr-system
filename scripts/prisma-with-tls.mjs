@@ -1,8 +1,8 @@
 import { spawnSync } from "node:child_process";
 
-const configuredUrl = process.env.POSTGRES_URL;
+const configuredUrl = process.env.POSTGRES_URL ?? process.env.DATABASE_URL;
 if (!configuredUrl) {
-  console.error("POSTGRES_URL is not configured; migration command was not run.");
+  console.error("POSTGRES_URL or DATABASE_URL is not configured; migration command was not run.");
   process.exit(1);
 }
 
@@ -34,7 +34,7 @@ const schemaArgs = args.some((argument) => argument === "--schema" || argument.s
 const prismaCli = `${process.cwd().replace(/\\/g, "/")}/node_modules/prisma/build/index.js`;
 const result = spawnSync(process.execPath, [prismaCli, ...args, ...schemaArgs], {
   cwd: process.cwd(),
-  env: { ...process.env, POSTGRES_URL: secureUrl },
+  env: { ...process.env, POSTGRES_URL: secureUrl, DATABASE_URL: secureUrl },
   stdio: "inherit",
 });
 
