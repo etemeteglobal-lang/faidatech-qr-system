@@ -22,6 +22,15 @@ import { localeMetadata } from "@/i18n/registry";
 import { localizedField, localizedOverride, localizedText } from "@/i18n/localized-content";
 import { localizedApiError } from "@/i18n/api-errors";
 import SectorProfileWizard from "@/components/dashboard/SectorProfileWizard";
+import SharedServicesWorkspace from "@/app/dashboard/shared-services/SharedServicesWorkspace";
+
+type CreationPillar = "basic" | "profiles" | "shared" | "actions";
+const creationPillars: { id: CreationPillar; titleKey: "wizard.pillarBasic" | "wizard.pillarProfiles" | "wizard.pillarShared" | "wizard.pillarActions"; descriptionKey: "wizard.pillarBasicDescription" | "wizard.pillarProfilesDescription" | "wizard.pillarSharedDescription" | "wizard.pillarActionsDescription"; mark: string }[] = [
+  { id: "basic", titleKey: "wizard.pillarBasic", descriptionKey: "wizard.pillarBasicDescription", mark: "01" },
+  { id: "profiles", titleKey: "wizard.pillarProfiles", descriptionKey: "wizard.pillarProfilesDescription", mark: "28" },
+  { id: "shared", titleKey: "wizard.pillarShared", descriptionKey: "wizard.pillarSharedDescription", mark: "∞" },
+  { id: "actions", titleKey: "wizard.pillarActions", descriptionKey: "wizard.pillarActionsDescription", mark: "↗" },
+];
 
 const purposeCards: { id: WizardPurpose; titleKey: "purpose.landing" | "purpose.vcard" | "purpose.menu" | "purpose.tourism" | "purpose.pdf" | "purpose.payments"; summaryKey: "wizard.purposeLandingSummary" | "wizard.purposeVcardSummary" | "wizard.purposeMenuSummary" | "wizard.purposeTourismSummary" | "wizard.purposePdfSummary" | "wizard.purposePaymentsSummary"; mark: string }[] = [
   { id: "LANDING_PAGE", titleKey: "purpose.landing", summaryKey: "wizard.purposeLandingSummary", mark: "WEB" },
@@ -108,13 +117,14 @@ export default function QRCodeWizard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SaveResponse | null>(null);
-  const [creationMode, setCreationMode] = useState<"qr" | "profile">("qr");
+  const [pillar, setPillar] = useState<CreationPillar>("basic");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const recordId = params.get("edit");
     setEditId(recordId);
-    setCreationMode(!recordId && params.get("mode") === "profiles" ? "profile" : "qr");
+    const requestedPillar = params.get("pillar");
+    setPillar(!recordId && creationPillars.some((item) => item.id === requestedPillar) ? requestedPillar as CreationPillar : "basic");
   }, []);
 
   useEffect(() => {
@@ -199,16 +209,13 @@ export default function QRCodeWizard() {
     <div className="space-y-6">
       <DashboardPageHeading eyebrow={t("wizard.builderEyebrow")} title={t(editId ? "wizard.editHeader" : "wizard.createHeader")} description={t("wizard.headingDescription")} />
 
-      <div role="group" aria-label={t("wizard.creationModes")} className="grid gap-3 sm:grid-cols-2">
-        <button type="button" aria-pressed={creationMode === "qr"} onClick={() => { setCreationMode("qr"); window.history.replaceState({}, "", "/dashboard/create"); }} className={`rounded-2xl border p-4 text-start transition ${creationMode === "qr" ? "border-faida-teal bg-teal-50/60 ring-2 ring-teal-100" : "border-slate-200 bg-white hover:border-emerald-200"}`}>
-          <span className="font-semibold text-faida-navy">{t("wizard.modeQr")}</span><span className="mt-1 block text-sm leading-5 text-faida-slate">{t("wizard.modeQrDescription")}</span>
-        </button>
-        <button type="button" aria-pressed={creationMode === "profile"} onClick={() => { setCreationMode("profile"); window.history.replaceState({}, "", "/dashboard/create?mode=profiles"); }} className={`rounded-2xl border p-4 text-start transition ${creationMode === "profile" ? "border-faida-teal bg-teal-50/60 ring-2 ring-teal-100" : "border-slate-200 bg-white hover:border-emerald-200"}`}>
-          <span className="font-semibold text-faida-navy">{t("wizard.modeProfile")}</span><span className="mt-1 block text-sm leading-5 text-faida-slate">{t("wizard.modeProfileDescription")}</span>
-        </button>
+      <div role="group" aria-label={t("wizard.pillarsLabel")} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {creationPillars.map((item) => <button key={item.id} type="button" aria-pressed={pillar === item.id} onClick={() => { setPillar(item.id); window.history.replaceState({}, "", item.id === "basic" ? "/dashboard/create" : `/dashboard/create?pillar=${item.id}`); }} className={`rounded-2xl border p-4 text-start transition ${pillar === item.id ? "border-faida-teal bg-teal-50/60 ring-2 ring-teal-100" : "border-slate-200 bg-white hover:border-emerald-200"}`}>
+          <span className={`grid h-9 w-9 place-items-center rounded-xl text-xs font-black ${pillar === item.id ? "bg-faida-green text-faida-navy" : "bg-slate-100 text-faida-slate"}`}>{item.mark}</span><span className="mt-3 block font-semibold text-faida-navy">{t(item.titleKey)}</span><span className="mt-1 block text-xs leading-5 text-faida-slate">{t(item.descriptionKey)}</span>
+        </button>)}
       </div>
 
-      {creationMode === "profile" ? <SectorProfileWizard /> : <>
+      {pillar === "profiles" ? <SectorProfileWizard /> : pillar === "shared" ? <SharedServicesWorkspace mode="shared" /> : pillar === "actions" ? <SharedServicesWorkspace mode="actions" /> : <>
       <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-7">
         <section className="min-w-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           {step < 3 ? (

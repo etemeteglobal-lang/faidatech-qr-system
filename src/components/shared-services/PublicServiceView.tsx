@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import LanguageSelector from "@/i18n/LanguageSelector";
 import { useI18n } from "@/i18n/LocaleProvider";
 import ServiceWorkerRegister from "@/components/shared-services/ServiceWorkerRegister";
@@ -19,6 +19,8 @@ export default function PublicServiceView({ organizationSlug, slug }: { organiza
   const { t, locale } = useI18n();
   const [service, setService] = useState<ServiceData | null>(null);
   const [error, setError] = useState("");
+  const [formMessage, setFormMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   useEffect(() => {
     let active = true;
     fetch(`/api/public-services/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(slug)}`)
@@ -35,6 +37,25 @@ export default function PublicServiceView({ organizationSlug, slug }: { organiza
   const displaySummary = typeof selected?.summary === "string" ? selected.summary : service?.summary;
   const contentBlocks = selected?.blocks ?? service?.payload.blocks;
   const blocks = Array.isArray(contentBlocks) ? contentBlocks as ServiceBlock[] : [];
+  const actionForm = asObject(service?.payload.actionForm);
+  async function submitResponse(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setFormMessage("");
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    try {
+      const response = await fetch(`/api/public-services/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(slug)}/responses`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: form.get("name"), email: form.get("email"), phone: form.get("phone"), message: form.get("message"), website: form.get("website") }),
+      });
+      if (!response.ok) throw new Error(response.status === 429 ? t("pillar.action.tooMany") : t("pillar.action.submitError"));
+      formElement.reset();
+      setFormMessage(t("pillar.action.submitSuccess"));
+    } catch (reason) { setFormMessage(reason instanceof Error ? reason.message : t("pillar.action.submitError")); }
+    finally { setSubmitting(false); }
+  }
   return <main className="min-h-screen bg-[#f7faf9] px-4 py-8 text-faida-navy sm:py-12">
     <ServiceWorkerRegister />
     <article className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
@@ -49,6 +70,7 @@ export default function PublicServiceView({ organizationSlug, slug }: { organiza
         if (block.type === "text" && block.text) return <section key={index}><h2 className="font-semibold">{block.title}</h2><p className="mt-1 whitespace-pre-wrap text-sm leading-6 text-slate-700">{block.text}</p></section>;
         return null;
       })}</div>
+      {actionForm?.enabled === true ? <section className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/50 p-4 sm:p-5"><h2 className="text-lg font-bold text-faida-navy">{typeof actionForm.prompt === "string" && actionForm.prompt ? actionForm.prompt : t("pillar.action.publicTitle")}</h2><form onSubmit={submitResponse} className="mt-4 space-y-3"><label className="block text-sm font-semibold">{t("pillar.action.name")}<input name="name" autoComplete="name" maxLength={120} required className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 font-normal" /></label><div className="grid gap-3 sm:grid-cols-2"><label className="block text-sm font-semibold">{t("pillar.action.email")}<input type="email" name="email" autoComplete="email" maxLength={254} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 font-normal" /></label><label className="block text-sm font-semibold">{t("pillar.action.phone")}<input type="tel" name="phone" autoComplete="tel" maxLength={40} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 font-normal" /></label></div><label className="block text-sm font-semibold">{t("pillar.action.message")}<textarea name="message" required maxLength={3000} rows={4} className="mt-1 w-full rounded-xl border border-slate-300 bg-white p-3 font-normal" /></label><label aria-hidden="true" className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden">Website<input tabIndex={-1} autoComplete="off" name="website" /></label><button disabled={submitting} className="min-h-11 rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy disabled:opacity-60">{submitting ? t("pillar.action.sending") : t("pillar.action.send")}</button></form>{formMessage ? <p role="status" className="mt-3 rounded-lg bg-white px-3 py-2 text-sm text-slate-700">{formMessage}</p> : null}<p className="mt-3 text-xs text-slate-500">{t("pillar.action.privacyNote")}</p></section> : null}
       {service ? <a href={`/api/public-services/${encodeURIComponent(organizationSlug)}/${encodeURIComponent(slug)}/qr.svg`} download={`${slug}.svg`} className="mt-8 flex min-h-12 items-center justify-center rounded-xl bg-faida-green px-4 py-3 text-sm font-bold text-faida-navy">{t("common.downloadSvg")}</a> : null}
       <footer className="mt-3 rounded-2xl bg-emerald-50 px-4 py-3 text-center text-sm font-semibold text-emerald-950">{t("shared.scanToOpen")} · {t("shared.offlineHint")}</footer>
     </article>

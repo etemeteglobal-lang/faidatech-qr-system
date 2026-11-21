@@ -23,9 +23,7 @@ const navigation = [
   { labelKey: "nav.campaigns", href: "/dashboard/campaigns", mark: "C" },
   { labelKey: "nav.integrations", href: "/dashboard/integrations", mark: "I" },
   { labelKey: "nav.billing", href: "/dashboard/billing", mark: "B" },
-  { labelKey: "nav.templates", href: "/dashboard/templates", mark: "T" },
   { labelKey: "nav.ecosystem", href: "/dashboard/ecosystem", mark: "E" },
-  { labelKey: "ecosystem.sharing", href: "/dashboard/shared-services", mark: "P" },
   { labelKey: "nav.agents", href: "/dashboard/agent", mark: "F" },
   { labelKey: "nav.settings", href: "/dashboard/settings", mark: "S" },
 ] as const;
@@ -142,7 +140,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }
   }
 
-  const activeHref = pathname === "/dashboard/create" ? "/dashboard/qrcodes" : pathname;
+  const activeHref = pathname;
   const displayName = session?.user.name || session?.user.email || t("shell.workspaceMember");
   const isAgent = session?.user.role === "AGENT";
   const isOrganizationAdmin = session?.user.role === "OWNER" || session?.user.role === "ADMIN";

@@ -12,8 +12,9 @@ export async function GET(request: NextRequest): Promise<Response> {
     const tenant = await requireTenantContext(request);
     requireOrganizationAdmin(tenant);
     ensurePostgresConfigured();
-    const services = await prisma.sharedService.findMany({ where: { organizationId: tenant.organizationId }, orderBy: { updatedAt: "desc" }, take: 100, select: { id: true, serviceType: true, slug: true, title: true, summary: true, supportedLocales: true, published: true, cacheTtlSeconds: true, publishedAt: true, updatedAt: true } });
-    return Response.json({ data: services }, { headers: { "Cache-Control": "private, no-store" } });
+    const services = await prisma.sharedService.findMany({ where: { organizationId: tenant.organizationId }, orderBy: { updatedAt: "desc" }, take: 100, select: { id: true, serviceType: true, slug: true, title: true, summary: true, supportedLocales: true, payload: true, published: true, cacheTtlSeconds: true, publishedAt: true, updatedAt: true } });
+    const data = services.map(({ payload, ...service }) => ({ ...service, actionEnabled: Boolean(payload && typeof payload === "object" && !Array.isArray(payload) && (payload as Record<string, unknown>).actionForm && typeof (payload as Record<string, unknown>).actionForm === "object" && ((payload as Record<string, Record<string, unknown>>).actionForm.enabled === true)) }));
+    return Response.json({ data }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return apiErrorResponse(error); }
 }
 

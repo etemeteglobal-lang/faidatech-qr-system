@@ -1,5 +1,5 @@
-import SharedServicesWorkspace from "./SharedServicesWorkspace";
+import { redirect } from "next/navigation";
 
 export default function SharedServicesDashboardPage() {
-  return <SharedServicesWorkspace />;
+  redirect("/dashboard/create?pillar=shared");
 }

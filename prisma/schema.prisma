@@ -171,6 +171,7 @@ model Organization {
   agentLeads          AgentLead[]
   agentPayouts        AgentPayout[]
   sharedServices      SharedService[]
+  serviceResponses    ServiceResponse[]
   traceabilityProducts TraceabilityProduct[]
   traceabilityScans  TraceabilityScan[]
   productBatches      ProductBatch[]
@@ -479,10 +480,29 @@ model SharedService {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  responses        ServiceResponse[]
   @@unique([organizationId, slug])
   @@unique([id, organizationId])
   @@index([published, serviceType, updatedAt])
   @@index([organizationId, published, updatedAt])
+}
+
+model ServiceResponse {
+  id               String       @id @default(cuid())
+  organizationId   String
+  sharedServiceId  String
+  visitorName      String       @db.VarChar(120)
+  visitorEmail     String?      @db.VarChar(254)
+  visitorPhone     String?      @db.VarChar(40)
+  message          String       @db.VarChar(3000)
+  status           String       @default("NEW") @db.VarChar(20)
+  submittedAt      DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  sharedService    SharedService @relation(fields: [sharedServiceId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, status, submittedAt])
+  @@index([sharedServiceId, organizationId, submittedAt])
 }
 
 model TraceabilityProduct {
