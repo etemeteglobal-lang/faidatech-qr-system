@@ -154,3 +154,10 @@
 - **Final verification (2026-11-21):** Prisma validation (with a disposable placeholder `POSTGRES_URL`), TypeScript, i18n validation (13 locales / 517 keys), production build, and `git diff --check` all passed after the final edits. Lint exited successfully with 28 warnings and 0 errors. `npm ci` reported five high-severity audit findings; dependencies were not changed.
 - **Remaining limits:** no XLSX parser; no live credential/payment-provider adapter; scan/anomaly processing is foundation only; browser-level cold-offline shell/static-asset behavior and payout workflow need fixture testing; audit-log coverage should be confirmed across every ecosystem mutation; no non-English locale is native-reviewed.
 - **Resume instructions:** read `PHASE2_HANDOFF.md`; review migration and diff; test tenant/agent scopes with disposable fixtures; do not apply migration absent explicit authorization.
+
+## Unified `/dashboard/create` continuation — 2026-11-21
+
+- Preserve the existing QR destinations, live mobile preview, save/edit/export flows, and QR payload contracts while adding the 28 sector profiles as a second path in the same creation experience.
+- Use friendly, localized profile fields with individual/organization/government/group kinds, custom details, CSV import, draft/review actions, and tenant-scoped editing. Keep JSONB and database implementation details out of end-user forms.
+- Translate visible Phase 2 UI strings in all 13 catalogs; retain Arabic RTL and identify machine-generated translations as requiring native-speaker review.
+- Validate Prisma schema, TypeScript, lint, i18n, and production build; package changed project files with a resume note. Do not apply migrations or touch unrelated repositories.

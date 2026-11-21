@@ -60,11 +60,17 @@ for (const locale of locales) {
   const messages = catalog.messages ?? {};
   const declaredPhase2Fallbacks = Array.isArray(meta.phase2FallbackKeys) ? [...meta.phase2FallbackKeys].sort() : [];
   if (locale === "en" && declaredPhase2Fallbacks.length) errors.push(`${filename}: English source must not list Phase 2 fallback keys`);
-  if (locale !== "en" && JSON.stringify(declaredPhase2Fallbacks) !== JSON.stringify(phase2Keys)) {
-    errors.push(`${filename}: phase2FallbackKeys must declare all untranslated Phase 2 messages`);
-  }
-  if (locale !== "en") for (const key of phase2Keys) {
-    if (messages[key] !== source.messages[key]) errors.push(`${filename}: ${key} must match English while listed as a Phase 2 fallback`);
+  if (locale !== "en") {
+    const phase2KeySet = new Set(phase2Keys);
+    const invalidFallbacks = declaredPhase2Fallbacks.filter((key) => !phase2KeySet.has(key));
+    if (invalidFallbacks.length) errors.push(`${filename}: phase2FallbackKeys contains non-Phase 2 keys (${invalidFallbacks.slice(0, 5).join(", ")})`);
+    const actualFallbacks = phase2Keys.filter((key) => messages[key] === source.messages[key]);
+    if (JSON.stringify(declaredPhase2Fallbacks) !== JSON.stringify(actualFallbacks)) {
+      errors.push(`${filename}: phase2FallbackKeys must exactly list Phase 2 messages still identical to English`);
+    }
+    for (const key of declaredPhase2Fallbacks) {
+      if (messages[key] !== source.messages[key]) errors.push(`${filename}: ${key} must match English while declared as a fallback`);
+    }
   }
   const messageKeys = Object.keys(messages).sort();
   const missing = sourceKeys.filter((key) => !Object.hasOwn(messages, key));

@@ -1,5 +1,5 @@
-import TemplateWorkspace from "./TemplateWorkspace";
+import { redirect } from "next/navigation";
 
 export default function TemplatesDashboardPage() {
-  return <TemplateWorkspace />;
+  redirect("/dashboard/create?mode=profiles");
 }
