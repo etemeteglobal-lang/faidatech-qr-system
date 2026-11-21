@@ -3,7 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 const directory = new URL("../src/i18n/catalogs/", import.meta.url);
 const source = JSON.parse(await readFile(new URL("en.json", directory), "utf8"));
 const sourceKeys = Object.keys(source.messages).sort();
-const phase2Keys = sourceKeys.filter((key) => /^(nav\.(templates|agents|ecosystem)|templates\.|agents\.|ecosystem\.|shared\.)/.test(key));
+const phase2Keys = sourceKeys.filter((key) => /^(nav\.(templates|agents|ecosystem)|templates\.|agents\.|ecosystem\.|shared\.|pillar\.|wizard\.pillar)/.test(key));
 const tierMemberships = {
   en: ["global"], fr: ["global"], es: ["global"], ar: ["global"], "zh-CN": ["global"],
   sw: ["african"], am: ["african", "ethiopian"], ha: ["african"], yo: ["african"],

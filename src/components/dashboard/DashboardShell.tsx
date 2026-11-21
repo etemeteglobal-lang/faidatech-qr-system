@@ -15,8 +15,9 @@ type Session = {
 
 type ApiEnvelope<T> = { data?: T; error?: { code?: string; message?: string } };
 type Crumb = { labelKey: MessageKey; href?: string };
+type NavItem = { labelKey: MessageKey; href: string; mark: string };
 
-const navigation = [
+const navigation: readonly NavItem[] = [
   { labelKey: "nav.dashboard", href: "/dashboard", mark: "D" },
   { labelKey: "nav.qrcodes", href: "/dashboard/qrcodes", mark: "Q" },
   { labelKey: "nav.analytics", href: "/dashboard/analytics", mark: "A" },
@@ -26,7 +27,7 @@ const navigation = [
   { labelKey: "nav.ecosystem", href: "/dashboard/ecosystem", mark: "E" },
   { labelKey: "nav.agents", href: "/dashboard/agent", mark: "F" },
   { labelKey: "nav.settings", href: "/dashboard/settings", mark: "S" },
-] as const;
+];
 
 const routeLabels: Record<string, MessageKey> = {
   "/dashboard": "nav.dashboard",
@@ -149,7 +150,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const visibleNavigation = navigation.filter((item) => {
     if (item.href === "/dashboard/agent") return isAgent || isOrganizationAdmin;
     if (isAgent) return false;
-    if (item.href === "/dashboard/shared-services") return isOrganizationAdmin;
     return true;
   });
 

@@ -17,3 +17,9 @@ The dashboard creation flow is organized around Basic QR, 28 Sector Profiles, Sh
 3. Inspect and smoke-test upload controls and response flow; confirm migration/schema consistency without applying it.
 4. Obtain native review for am, ti, om, ar, and other drafts.
 5. Only with separate authorization: deployment/live migration steps.
+
+## Follow-up validation — 2026-11-21 18:38 UTC
+- Typed the dashboard `navigation` array as `readonly NavItem[]` with `href: string`, avoiding a narrow literal union that caused route comparisons to fail type checking.
+- Expanded Phase 2 i18n fallback classification to include `pillar.*` and `wizard.pillar*`, then recalculated exact English-identical fallback keys in non-English catalog metadata.
+- Required checks now pass: Prisma schema validation (using temporary localhost dummy URL only), TypeScript (`npm exec tsc -- --noEmit`), lint, i18n validation, production build, and `git diff --check`.
+- No database connection/write, migration application, deployment, or Git push occurred. Machine-draft translations still need native-speaker review; the additive migration remains unapplied.
