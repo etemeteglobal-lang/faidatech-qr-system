@@ -9,11 +9,11 @@ export type TenantContext = {
   name: string | null;
   email: string | null;
   organizationId: string;
-  role: "OWNER" | "ADMIN" | "MEMBER";
+  role: "OWNER" | "ADMIN" | "MEMBER" | "AGENT";
   organization: { id: string; name: string; slug: string };
 };
 
-export async function requireTenantContext(_request?: NextRequest): Promise<TenantContext> {
+export async function requireTenantContext(_request?: NextRequest, options: { allowAgent?: boolean } = {}): Promise<TenantContext> {
   const supabase = await createClient();
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error || !user) {
@@ -23,6 +23,9 @@ export async function requireTenantContext(_request?: NextRequest): Promise<Tena
   const metadata = user.user_metadata ?? {};
   const name = [metadata.full_name, metadata.name].find((value): value is string => typeof value === "string" && value.trim().length > 0)?.trim() ?? null;
   const membership = await ensureOrganizationMembership({ id: user.id, name, email: user.email ?? null });
+  if (membership.role === "AGENT" && !options.allowAgent) {
+    throw new ApiError(403, "agent_scope_restricted", "Field-agent access is limited to the assigned agent portal.");
+  }
 
   return {
     userId: membership.id,
@@ -33,4 +36,10 @@ export async function requireTenantContext(_request?: NextRequest): Promise<Tena
     role: membership.role,
     organization: membership.organization,
   };
+}
+
+export function requireOrganizationAdmin(tenant: TenantContext): void {
+  if (tenant.role !== "OWNER" && tenant.role !== "ADMIN") {
+    throw new ApiError(403, "forbidden", "Organization owner or admin permission is required.");
+  }
 }

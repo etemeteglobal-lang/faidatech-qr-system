@@ -87,3 +87,20 @@ Use `src/i18n/` for the locale registry, provider, selector, typed translation h
 ## Project structure
 
 Add `src/app/demo/page.tsx` and a small client presentation component under `src/components/demo/` for localized static demo UI; add `src/app/api/health/route.ts`; update `next.config.ts` and `public/manus-routes.json`; and add a root `Dockerfile`. The existing dashboard/auth and API modules remain untouched by this demo feature.
+
+
+# Phase 2 — QR Ecosystem Expansion & Field Agent System
+
+## Additive implementation approach
+
+Preserve the Phase 1 `Plan`, `Subscription`, `PlanQuota`, `BillingCheckout`, and `BillingEvent` models, billing/quota handlers, QR payload contracts, and existing visitor routes. Add a new Prisma migration only for new enums, columns, tables, and indexes; do not apply it to the shared database. Keep PostgreSQL typed columns for tenant ownership, sector, status, actor, timestamps, and query dimensions. Put extensible profile/service/domain fields in JSONB (`profileData`, `customFields`, metadata), with documented GIN `jsonb_path_ops`, expression B-tree, and partial-index examples.
+
+Create a registry of 28 sector templates with individual, organization, government, and group variants and field definitions for licensing/credentials, service details, media/catalogs, requests, and sector-specific metadata. Keep custom schema/field extensions additive and validate JSON input. Model profile approval as `draft → pending_approval → approved | rejected`; provide tenant-scoped profile, approval, CSV import/export, and agent endpoints. Enforce review/admin operations by organization role; field agents see only their own leads, referrals, commissions, and payout state.
+
+Add separately namespaced foundations for public high-concurrency shared services and ecosystem pillars 3–6. Shared-service publication must be lightweight, locale-aware, lazily load media, and use public cache rules only for published public content; include offline fallback, a 4-module QR quiet zone, and scan CTA metadata. Traceability, credential verification, payment attachments, and CMMS records use minimal typed metadata and never store raw Fayda IDs, credentials, provider keys, or payment-card data.
+
+Use the existing dashboard shell, `requireTenantContext`, Prisma singleton, Next.js App Router, Zod, `src/i18n`, and `public/manus-routes.json`. Do not replace or rewrite Phase 1 billing, QR CRUD, payload validation, or locale selection. All 13 catalog keys must remain in lockstep; new unreviewed text is explicitly marked for localization/native-speaker review. Project modules: `src/lib/templates/` for the 28-sector registry and validation; `src/lib/agents/` for scoped commission logic; `src/lib/ecosystem/` for pillar types/helpers; `src/app/api/profiles/`, `agents/`, `shared-services/`, and `ecosystem/` for APIs; `src/app/dashboard/agent/` and `templates/` for authenticated surfaces; `prisma/migrations/` for additive SQL; `docs/` for JSONB/offline/permissions guidance.
+
+## Material constraints
+
+The authenticated production billing page cannot be inspected without a user session; source code is the authority. Repository access and project files are available. No production secrets are changed. No live migration or destructive database operation is authorized. Keep the change uncommitted unless the user requests pushing/merging; provide a ZIP with changed files and a resume handoff.

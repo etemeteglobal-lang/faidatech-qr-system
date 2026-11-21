@@ -11,6 +11,7 @@ enum OrganizationRole {
   OWNER
   ADMIN
   MEMBER
+  AGENT
 }
 
 enum DestinationType {
@@ -72,6 +73,86 @@ enum BillingEventStatus {
   IGNORED
 }
 
+enum ProfileKind {
+  INDIVIDUAL
+  ORGANIZATION
+  GOVERNMENT
+  GROUP
+}
+
+enum ProfileApprovalStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum VerticalSector {
+  CONSTRUCTION
+  ARCHITECTURE_INTERIOR
+  CONSTRUCTION_TECHNICIAN
+  HEALTHCARE
+  PHARMACY_MEDICAL_SUPPLIES
+  LEGAL_ADVISORY
+  ACCOUNTING_TAX
+  REAL_ESTATE
+  IT_SOFTWARE
+  CREATIVE_MEDIA
+  EDUCATION_TRAINING
+  AGRICULTURE_COFFEE
+  VETERINARY_LIVESTOCK
+  MANUFACTURING
+  RETAIL_ECOMMERCE
+  TRANSPORT_LOGISTICS
+  AUTOMOTIVE_REPAIR
+  BEAUTY_FASHION
+  FOOD_CATERING
+  TOURISM_TRAVEL
+  SPORTS_WELLNESS
+  CREATORS_MARKETING
+  GOVERNMENT_MUNICIPAL
+  JUSTICE_EMERGENCY
+  RELIGIOUS_CHARITY_NGO
+  ASSOCIATIONS_COOPERATIVES
+  TEAMS_WORKGROUPS
+  JOURNALISM_MEDIA_PR
+}
+
+enum SharedServiceType {
+  HERITAGE_GUIDE
+  HOSPITALITY_MENU
+  WIFI_WAYFINDING
+  GOVERNMENT_GUIDE
+  PUBLIC_TRANSPORT
+  EVENT_GUIDE
+  EDUCATION_LIBRARY
+  PUBLIC_HEALTH
+}
+
+enum AgentLeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  ONBOARDING
+  CONVERTED
+  REJECTED
+}
+
+enum AgentPayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+  HELD
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
 model Organization {
   id                 String             @id @default(cuid())
   name               String
@@ -85,6 +166,19 @@ model Organization {
   subscriptions      Subscription[]
   planQuotas         PlanQuota[]
   billingCheckouts   BillingCheckout[]
+  businessProfiles   BusinessProfile[]
+  fieldAgents        FieldAgent[]
+  agentLeads          AgentLead[]
+  agentPayouts        AgentPayout[]
+  sharedServices      SharedService[]
+  traceabilityProducts TraceabilityProduct[]
+  traceabilityScans  TraceabilityScan[]
+  productBatches      ProductBatch[]
+  credentialVerifications CredentialVerification[]
+  paymentAttachments PaymentAttachment[]
+  maintainedAssets   MaintainedAsset[]
+  maintenanceRecords MaintenanceRecord[]
+  auditLogs          EcosystemAuditLog[]
   @@index([createdAt])
 }
 
@@ -208,6 +302,11 @@ model User {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  createdProfiles BusinessProfile[] @relation("ProfileCreator")
+  approvedProfiles BusinessProfile[] @relation("ProfileApprover")
+  agentProfile FieldAgent? @relation("AgentIdentity")
+  maintenanceActions MaintenanceRecord[] @relation("MaintenanceActor")
+  ecosystemAuditLogs EcosystemAuditLog[]
   @@index([organizationId, createdAt])
 }
 
@@ -272,4 +371,265 @@ model ScanAnalytics {
   @@index([organizationId, scannedAt])
   @@index([qrCodeId, scannedAt])
   @@index([campaignId, scannedAt])
+}
+
+model BusinessProfile {
+  id               String               @id @default(cuid())
+  organizationId   String
+  createdByUserId  String
+  approvedByUserId String?
+  sector           VerticalSector
+  profileKind      ProfileKind           @default(ORGANIZATION)
+  displayName      String                @db.VarChar(180)
+  slug             String                @db.VarChar(100)
+  approvalStatus   ProfileApprovalStatus @default(DRAFT)
+  profileData      Json                  @default("{}")
+  customFields     Json                  @default("{}")
+  approvedAt       DateTime?
+  rejectionReason  String?               @db.VarChar(500)
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  organization     Organization          @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  creator          User                  @relation("ProfileCreator", fields: [createdByUserId], references: [id], onDelete: Restrict)
+  approver         User?                 @relation("ProfileApprover", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  agentLeads       AgentLead[]
+  @@unique([organizationId, slug])
+  @@unique([id, organizationId])
+  @@index([organizationId, sector, approvalStatus, updatedAt])
+  @@index([organizationId, createdByUserId, createdAt])
+  @@index([approvalStatus, updatedAt])
+}
+
+model FieldAgent {
+  id                 String   @id @default(cuid())
+  organizationId     String
+  userId             String   @unique
+  referralCode       String   @unique @db.VarChar(32)
+  commissionRateBps  Int      @default(0)
+  commissionCurrency String   @default("ETB") @db.VarChar(3)
+  active             Boolean  @default(true)
+  payoutNotes        String?  @db.VarChar(500)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  organization       Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  user               User     @relation("AgentIdentity", fields: [userId], references: [id], onDelete: Restrict)
+  leads              AgentLead[]
+  payouts            AgentPayout[]
+  maintenanceRecords MaintenanceRecord[]
+  @@unique([id, organizationId])
+  @@index([organizationId, active, createdAt])
+}
+
+model AgentLead {
+  id                    String            @id @default(cuid())
+  organizationId        String
+  agentId               String
+  profileId             String?
+  customerName          String            @db.VarChar(160)
+  email                 String?           @db.VarChar(254)
+  phone                 String?           @db.VarChar(40)
+  businessName          String?           @db.VarChar(180)
+  status                AgentLeadStatus   @default(NEW)
+  commissionAmountMinor Int               @default(0)
+  commissionCurrency    String            @default("ETB") @db.VarChar(3)
+  payoutStatus          AgentPayoutStatus @default(PENDING)
+  commissionBaseMinor   Int               @default(0)
+  notes                 String?           @db.VarChar(1000)
+  referredAt            DateTime          @default(now())
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  organization          Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  agent                 FieldAgent        @relation(fields: [agentId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  profile               BusinessProfile?  @relation(fields: [profileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@unique([id, organizationId])
+  @@index([organizationId, agentId, status, createdAt])
+  @@index([organizationId, payoutStatus, createdAt])
+}
+
+model AgentPayout {
+  id             String            @id @default(cuid())
+  organizationId String
+  agentId        String
+  amountMinor    Int
+  currency       String            @db.VarChar(3)
+  status         AgentPayoutStatus @default(PENDING)
+  periodStart    DateTime
+  periodEnd      DateTime
+  paidAt         DateTime?
+  reference      String?           @db.VarChar(120)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  organization   Organization      @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  agent          FieldAgent        @relation(fields: [agentId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@index([organizationId, agentId, status, periodStart])
+}
+
+model SharedService {
+  id               String           @id @default(cuid())
+  organizationId   String
+  serviceType      SharedServiceType
+  slug             String           @db.VarChar(120)
+  title            String           @db.VarChar(180)
+  summary          String?          @db.VarChar(500)
+  supportedLocales String[]         @default(["en"])
+  payload          Json             @default("{}")
+  published        Boolean          @default(false)
+  cacheTtlSeconds  Int              @default(60)
+  publishedAt      DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  organization     Organization     @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  @@unique([organizationId, slug])
+  @@unique([id, organizationId])
+  @@index([published, serviceType, updatedAt])
+  @@index([organizationId, published, updatedAt])
+}
+
+model TraceabilityProduct {
+  id             String       @id @default(cuid())
+  organizationId String
+  productCode    String       @db.VarChar(100)
+  gtin           String?      @db.VarChar(14)
+  digitalLink    String?      @db.VarChar(500)
+  name           String       @db.VarChar(180)
+  originMetadata Json         @default("{}")
+  customFields   Json         @default("{}")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  batches        ProductBatch[]
+  scans          TraceabilityScan[]
+  @@unique([organizationId, productCode])
+  @@unique([id, organizationId])
+  @@index([organizationId, gtin])
+  @@index([active, updatedAt])
+}
+
+model ProductBatch {
+  id               String       @id @default(cuid())
+  organizationId   String
+  productId        String
+  batchCode        String       @db.VarChar(100)
+  serialRangeStart String?      @db.VarChar(100)
+  serialRangeEnd   String?      @db.VarChar(100)
+  originMetadata   Json         @default("{}")
+  anomalyFlags     Json         @default("[]")
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  product          TraceabilityProduct @relation(fields: [productId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  scans            TraceabilityScan[]
+  @@unique([organizationId, batchCode])
+  @@unique([id, organizationId])
+  @@index([organizationId, productId, createdAt])
+}
+
+model TraceabilityScan {
+  id             String       @id @default(cuid())
+  organizationId String
+  productId      String
+  batchId        String?
+  serialValue    String?      @db.VarChar(120)
+  source         String       @default("QR") @db.VarChar(40)
+  anomalyFlags   Json         @default("[]")
+  location       Json         @default("{}")
+  scannedAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  product        TraceabilityProduct @relation(fields: [productId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  batch          ProductBatch? @relation(fields: [batchId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@index([organizationId, productId, scannedAt])
+  @@index([organizationId, batchId, scannedAt])
+}
+
+model CredentialVerification {
+  id                    String             @id @default(cuid())
+  organizationId        String
+  subjectType           String             @db.VarChar(60)
+  subjectReference      String             @db.VarChar(120)
+  provider              String             @db.VarChar(40)
+  status                VerificationStatus @default(UNVERIFIED)
+  providerReferenceHash String?            @db.VarChar(64)
+  metadata              Json               @default("{}")
+  verifiedAt            DateTime?
+  expiresAt             DateTime?
+  createdAt             DateTime           @default(now())
+  updatedAt             DateTime           @updatedAt
+  organization          Organization       @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  @@index([organizationId, subjectType, subjectReference])
+  @@index([organizationId, status, expiresAt])
+}
+
+model PaymentAttachment {
+  id             String       @id @default(cuid())
+  organizationId String
+  entityType     String       @db.VarChar(60)
+  entityId       String       @db.VarChar(120)
+  provider       String       @db.VarChar(40)
+  checkoutUrl    String       @db.Text
+  reference      String?      @db.VarChar(160)
+  currency       String       @default("ETB") @db.VarChar(3)
+  amountMinor    Int?
+  metadata       Json         @default("{}")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  @@index([organizationId, entityType, entityId])
+  @@index([organizationId, active, provider])
+}
+
+model MaintainedAsset {
+  id                  String       @id @default(cuid())
+  organizationId      String
+  assetTag            String       @db.VarChar(100)
+  name                String       @db.VarChar(180)
+  assetType           String       @db.VarChar(80)
+  location            String?      @db.VarChar(180)
+  manualUrl           String?      @db.Text
+  parts               Json         @default("[]")
+  metadata            Json         @default("{}")
+  active              Boolean      @default(true)
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  organization        Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  maintenanceRecords  MaintenanceRecord[]
+  @@unique([organizationId, assetTag])
+  @@unique([id, organizationId])
+  @@index([organizationId, assetType, active])
+}
+
+model MaintenanceRecord {
+  id             String       @id @default(cuid())
+  organizationId String
+  assetId        String
+  actorUserId    String?
+  fieldAgentId   String?
+  recordType     String       @db.VarChar(60)
+  title          String       @db.VarChar(180)
+  details        Json         @default("{}")
+  faultReported  Boolean      @default(false)
+  performedAt    DateTime     @default(now())
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  asset          MaintainedAsset @relation(fields: [assetId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  actor          User?        @relation("MaintenanceActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+  fieldAgent     FieldAgent?  @relation(fields: [fieldAgentId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  @@index([organizationId, assetId, performedAt])
+  @@index([organizationId, faultReported, performedAt])
+}
+
+model EcosystemAuditLog {
+  id             String       @id @default(cuid())
+  organizationId String
+  actorUserId    String?
+  action         String       @db.VarChar(80)
+  entityType     String       @db.VarChar(60)
+  entityId       String       @db.VarChar(120)
+  details        Json         @default("{}")
+  createdAt      DateTime     @default(now())
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  actor          User?        @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  @@index([organizationId, createdAt])
+  @@index([organizationId, entityType, entityId, createdAt])
 }

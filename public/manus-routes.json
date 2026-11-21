@@ -9,7 +9,13 @@
     { "path": "/dashboard/analytics", "title": "Analytics — FaidATech" },
     { "path": "/dashboard/campaigns", "title": "Campaigns — FaidATech" },
     { "path": "/dashboard/integrations", "title": "Integrations — FaidATech" },
+    { "path": "/dashboard/billing", "title": "Billing — FaidATech" },
+    { "path": "/dashboard/templates", "title": "Vertical profile templates — FaidATech" },
+    { "path": "/dashboard/ecosystem", "title": "QR ecosystem — FaidATech" },
+    { "path": "/dashboard/shared-services", "title": "Shared services — FaidATech" },
+    { "path": "/dashboard/agent", "title": "Field agent portal — FaidATech" },
     { "path": "/dashboard/settings", "title": "Settings — FaidATech" },
+    { "path": "/s/:organizationSlug/:slug", "title": "Public shared service" },
     { "path": "/r/:shortCode", "title": "Dynamic QR destination" }
   ]
 }

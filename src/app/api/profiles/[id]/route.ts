@@ -1,0 +1,36 @@
+import { randomBytes } from "node:crypto";
+import { Prisma } from "@prisma/client";
+import { NextRequest } from "next/server";
+import { apiErrorResponse, ApiError, readJsonBody } from "@/lib/api/errors";
+import { requireOrganizationAdmin, requireTenantContext } from "@/lib/auth/tenant-context";
+import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
+import { validateProfileSubmission } from "@/lib/templates/registry";
+
+export const runtime = "nodejs";
+
+function makeSlug(value: string) {
+  const base = value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "profile";
+  return `${base}-${randomBytes(3).toString("hex")}`;
+}
+
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }): Promise<Response> {
+  try {
+    const tenant = await requireTenantContext(request);
+    const { id } = await context.params;
+    const validation = validateProfileSubmission(await readJsonBody(request));
+    if (!validation.success) return Response.json({ error: { code: "validation_error", issues: validation.error } }, { status: 400 });
+    ensurePostgresConfigured();
+    const current = await prisma.businessProfile.findFirst({ where: { id, organizationId: tenant.organizationId }, select: { id: true, createdByUserId: true, approvalStatus: true } });
+    if (!current) throw new ApiError(404, "not_found", "Profile not found in this organization.");
+    const isAdmin = tenant.role === "OWNER" || tenant.role === "ADMIN";
+    if (!isAdmin && current.createdByUserId !== tenant.userId) throw new ApiError(403, "forbidden", "Members may edit only profiles they created.");
+    if (current.approvalStatus !== "DRAFT" && current.approvalStatus !== "REJECTED") throw new ApiError(409, "profile_locked", "Only draft or rejected profiles can be edited; submitted and approved profiles are locked.");
+    const data = validation.data;
+    const updated = await prisma.$transaction(async (tx) => {
+      const profile = await tx.businessProfile.update({ where: { id }, data: { sector: data.sector, profileKind: data.profileKind, displayName: data.displayName, slug: makeSlug(data.displayName), profileData: data.profileData as Prisma.InputJsonObject, customFields: data.customFields as Prisma.InputJsonObject }, select: { id: true, sector: true, profileKind: true, displayName: true, slug: true, approvalStatus: true, profileData: true, customFields: true } });
+      await tx.ecosystemAuditLog.create({ data: { organizationId: tenant.organizationId, actorUserId: tenant.userId, action: "PROFILE_UPDATED", entityType: "BusinessProfile", entityId: id, details: { sector: data.sector } } });
+      return profile;
+    });
+    return Response.json({ data: updated }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return apiErrorResponse(error); }
+}

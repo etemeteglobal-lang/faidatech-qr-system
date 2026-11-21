@@ -3,6 +3,7 @@ import { readdir, readFile } from "node:fs/promises";
 const directory = new URL("../src/i18n/catalogs/", import.meta.url);
 const source = JSON.parse(await readFile(new URL("en.json", directory), "utf8"));
 const sourceKeys = Object.keys(source.messages).sort();
+const phase2Keys = sourceKeys.filter((key) => /^(nav\.(templates|agents|ecosystem)|templates\.|agents\.|ecosystem\.|shared\.)/.test(key));
 const tierMemberships = {
   en: ["global"], fr: ["global"], es: ["global"], ar: ["global"], "zh-CN": ["global"],
   sw: ["african"], am: ["african", "ethiopian"], ha: ["african"], yo: ["african"],
@@ -57,6 +58,14 @@ for (const locale of locales) {
   }
 
   const messages = catalog.messages ?? {};
+  const declaredPhase2Fallbacks = Array.isArray(meta.phase2FallbackKeys) ? [...meta.phase2FallbackKeys].sort() : [];
+  if (locale === "en" && declaredPhase2Fallbacks.length) errors.push(`${filename}: English source must not list Phase 2 fallback keys`);
+  if (locale !== "en" && JSON.stringify(declaredPhase2Fallbacks) !== JSON.stringify(phase2Keys)) {
+    errors.push(`${filename}: phase2FallbackKeys must declare all untranslated Phase 2 messages`);
+  }
+  if (locale !== "en") for (const key of phase2Keys) {
+    if (messages[key] !== source.messages[key]) errors.push(`${filename}: ${key} must match English while listed as a Phase 2 fallback`);
+  }
   const messageKeys = Object.keys(messages).sort();
   const missing = sourceKeys.filter((key) => !Object.hasOwn(messages, key));
   const extra = messageKeys.filter((key) => !Object.hasOwn(source.messages, key));
