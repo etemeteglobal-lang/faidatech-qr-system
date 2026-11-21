@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import LanguageSelector from "@/i18n/LanguageSelector";
 import { useI18n } from "@/i18n/LocaleProvider";
@@ -21,6 +22,9 @@ const navigation = [
   { labelKey: "nav.analytics", href: "/dashboard/analytics", mark: "A" },
   { labelKey: "nav.campaigns", href: "/dashboard/campaigns", mark: "C" },
   { labelKey: "nav.integrations", href: "/dashboard/integrations", mark: "I" },
+  { labelKey: "nav.billing", href: "/dashboard/billing", mark: "B" },
+  { labelKey: "nav.ecosystem", href: "/dashboard/ecosystem", mark: "E" },
+  { labelKey: "nav.agents", href: "/dashboard/agent", mark: "F" },
   { labelKey: "nav.settings", href: "/dashboard/settings", mark: "S" },
 ] as const;
 
@@ -30,6 +34,11 @@ const routeLabels: Record<string, MessageKey> = {
   "/dashboard/analytics": "nav.analytics",
   "/dashboard/campaigns": "nav.campaigns",
   "/dashboard/integrations": "nav.integrations",
+  "/dashboard/billing": "nav.billing",
+  "/dashboard/templates": "nav.templates",
+  "/dashboard/ecosystem": "nav.ecosystem",
+  "/dashboard/shared-services": "ecosystem.sharing",
+  "/dashboard/agent": "nav.agents",
   "/dashboard/settings": "nav.settings",
   "/dashboard/create": "wizard.createHeader",
 };
@@ -50,9 +59,11 @@ function getBreadcrumbs(pathname: string): Crumb[] {
 
 export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { t, direction } = useI18n();
   const [session, setSession] = useState<Session | null>(null);
   const [sessionMessage, setSessionMessage] = useState("");
+  const [sessionNeedsSignIn, setSessionNeedsSignIn] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
@@ -64,14 +75,26 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     fetch("/api/auth/session", { cache: "no-store" })
       .then(async (response) => {
         const body = (await response.json().catch(() => ({}))) as ApiEnvelope<Session>;
-        if (!response.ok) throw new Error(t("error.unauthorized"));
-        if (active && body.data) setSession(body.data);
+        if (response.status === 401) {
+          if (active) setSessionNeedsSignIn(true);
+          throw new Error(t("error.unauthorized"));
+        }
+        if (!response.ok) throw new Error(t("shell.sessionUnavailable"));
+        if (active && body.data) {
+          setSession(body.data);
+          setSessionNeedsSignIn(false);
+        }
       })
       .catch((error: unknown) => {
         if (active) setSessionMessage(error instanceof Error ? error.message : t("shell.sessionUnavailable"));
       });
     return () => { active = false; };
   }, [t]);
+
+  useEffect(() => {
+    if (session?.user.role === "AGENT" && pathname !== "/dashboard/agent") router.replace("/dashboard/agent");
+    if (pathname === "/dashboard/agent" && session && session.user.role !== "AGENT" && session.user.role !== "OWNER" && session.user.role !== "ADMIN") router.replace("/dashboard");
+  }, [pathname, router, session?.user.role]);
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -117,24 +140,27 @@ export default function DashboardShell({ children }: { children: React.ReactNode
     }
   }
 
-  const activeHref = pathname === "/dashboard/create" ? "/dashboard/qrcodes" : pathname;
+  const activeHref = pathname;
   const displayName = session?.user.name || session?.user.email || t("shell.workspaceMember");
-  const crumbs = getBreadcrumbs(pathname);
+  const isAgent = session?.user.role === "AGENT";
+  const isOrganizationAdmin = session?.user.role === "OWNER" || session?.user.role === "ADMIN";
+  const crumbs: Crumb[] = isAgent && pathname === "/dashboard/agent" ? [{ labelKey: "common.home", href: "/" }, { labelKey: "nav.agents" }] : getBreadcrumbs(pathname);
   const backTarget = getBackTarget(pathname);
+  const visibleNavigation = navigation.filter((item) => {
+    if (item.href === "/dashboard/agent") return isAgent || isOrganizationAdmin;
+    if (isAgent) return false;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-[#f7faf9] text-faida-navy md:flex">
       <aside className="relative z-40 border-b border-slate-200 bg-white md:sticky md:top-0 md:flex md:h-screen md:w-[248px] md:shrink-0 md:flex-col md:border-b-0 md:border-r">
         <div className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:px-5 md:py-6">
-          <Link href="/dashboard" className="flex items-center gap-3" aria-label={`FaidATech ${t("nav.dashboard")}`}>
-            <span className="grid h-10 w-10 grid-cols-2 gap-1 rounded-xl bg-faida-navy p-2 shadow-soft" aria-hidden="true">
-              <span className="rounded-sm bg-faida-green" /><span className="rounded-sm border-2 border-white" />
-              <span className="rounded-sm border-2 border-white" /><span className="rounded-sm bg-faida-teal" />
-            </span>
-            <span><strong className="block text-sm font-extrabold tracking-tight">FaidATech</strong><span className="text-[10px] font-bold uppercase tracking-[0.16em] text-faida-slate">{t("app.qrOperations")}</span></span>
+          <Link href="/dashboard" className="flex min-w-0 items-center" aria-label={`FaidATech ${t("nav.dashboard")}`}>
+            <Image src="/logo.png" alt="FaidATech" width={661} height={354} priority className="h-auto w-[144px] object-contain" />
           </Link>
           <div className="flex items-center gap-2">
-            <Link href="/dashboard/create" className="rounded-xl bg-faida-green px-3 py-2 text-xs font-bold text-faida-navy transition hover:bg-emerald-300 md:hidden">＋ {t("shell.create")}</Link>
+            {!isAgent ? <Link href="/dashboard/create" className="rounded-xl bg-faida-green px-3 py-2 text-xs font-bold text-faida-navy transition hover:bg-emerald-300 md:hidden">＋ {t("shell.create")}</Link> : null}
             <button
               type="button"
               ref={mobileMenuButtonRef}
@@ -157,7 +183,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         >
           <div className="mb-3 px-2 pt-1 md:hidden"><LanguageSelector compact /></div>
           <p className="mb-2 px-3 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 md:px-2">{t("shell.workspaceSection")}</p>
-          {navigation.map((item) => {
+          {visibleNavigation.map((item) => {
             const active = activeHref === item.href || (item.href !== "/dashboard" && activeHref.startsWith(`${item.href}/`));
             return (
               <Link
@@ -197,11 +223,11 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <div className="min-w-0 flex-1">
         <header className="sticky top-0 z-20 hidden items-center justify-between border-b border-slate-200/80 bg-white/90 px-8 py-4 backdrop-blur md:flex">
           <div><p className="text-xs font-semibold text-faida-slate">{session?.organization.name || t("shell.workspaceHeader")}</p><p className="mt-0.5 text-[11px] text-slate-400">{t("shell.tenantScopedOperations")}</p></div>
-          <div className="flex items-center gap-3"><LanguageSelector compact /><Link href="/dashboard/create" className="rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy shadow-sm transition hover:bg-emerald-300">＋ {t("common.createQr")}</Link></div>
+          <div className="flex items-center gap-3"><LanguageSelector compact />{!isAgent ? <Link href="/dashboard/create" className="rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy shadow-sm transition hover:bg-emerald-300">＋ {t("common.createQr")}</Link> : null}</div>
         </header>
         {sessionMessage ? (
           <div role="status" className="mx-4 mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 md:mx-8">
-            <span>{sessionMessage}</span><Link href="/login" className="font-bold underline underline-offset-2">{t("shell.signInAgain")}</Link>
+            <span>{sessionMessage}</span>{sessionNeedsSignIn ? <Link href="/login" className="font-bold underline underline-offset-2">{t("shell.signInAgain")}</Link> : null}
           </div>
         ) : null}
         <main className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 md:px-8 md:py-7">
@@ -216,9 +242,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 ))}
               </ol>
             </nav>
-            <Link href={backTarget.href} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
+            {!isAgent ? <Link href={backTarget.href} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
               <span aria-hidden="true">{direction === "rtl" ? "→" : "←"}</span> {t("shell.backTo", { destination: t(backTarget.labelKey) })}
-            </Link>
+            </Link> : null}
           </div>
           {children}
         </main>
