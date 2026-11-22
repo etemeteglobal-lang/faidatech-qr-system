@@ -950,6 +950,12 @@
     "templates.logoCenter": "Mereero",
     "templates.logoTop": "Koodete aleenni",
     "templates.logoBottom": "Koodete woroonni",
-    "templates.qrSafetyNote": "Hakkiima skaanate, gitawe kuulinna salphu aante giddo korka garaa, QR koodete gobbara qixxaawa agari."
+    "templates.qrSafetyNote": "Hakkiima skaanate, gitawe kuulinna salphu aante giddo korka garaa, QR koodete gobbara qixxaawa agari.",
+    "templates.profileQrDownload": "Profil QR (SVG) buufate",
+    "templates.profileQrPrint": "QR kode maxaafise",
+    "templates.storageUsage": "Kuusamishshi horoonsi'ramino: {used} MB, {limit} MB giddora",
+    "templates.storageLimitReached": "Kuusamishshi murte geeshshino. Wolqa addi fayile leellishate, plaani guddisi.",
+    "templates.storageUpgrade": "Guddisamino doorsha la'ate",
+    "templates.qrLogoUpload": "QR logo leellishite"
   }
 }

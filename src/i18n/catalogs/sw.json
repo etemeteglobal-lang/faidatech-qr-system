@@ -945,6 +945,12 @@
     "templates.logoCenter": "Katikati",
     "templates.logoTop": "Juu ya msimbo",
     "templates.logoBottom": "Chini ya msimbo",
-    "templates.qrSafetyNote": "Tumia utofauti mkubwa kati ya rangi nyeusi na nyepesi, na uache eneo tupu linalozunguka msimbo bila chochote ili uweze kuchanganuliwa kwa urahisi."
+    "templates.qrSafetyNote": "Tumia utofauti mkubwa kati ya rangi nyeusi na nyepesi, na uache eneo tupu linalozunguka msimbo bila chochote ili uweze kuchanganuliwa kwa urahisi.",
+    "templates.profileQrDownload": "Pakua QR ya wasifu (SVG)",
+    "templates.profileQrPrint": "Chapisha msimbo wa QR",
+    "templates.storageUsage": "Hifadhi iliyotumika: {used} MB kati ya {limit} MB",
+    "templates.storageLimitReached": "Kikomo cha hifadhi kimefikiwa. Boresha mpango wako ili kuongeza faili zaidi.",
+    "templates.storageUpgrade": "Angalia chaguo za kuboresha",
+    "templates.qrLogoUpload": "Pakia nembo ya QR"
   }
 }

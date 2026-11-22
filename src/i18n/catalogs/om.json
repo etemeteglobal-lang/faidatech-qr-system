@@ -946,6 +946,12 @@
     "templates.logoCenter": "Giddugala",
     "templates.logoTop": "Koodii irra",
     "templates.logoBottom": "Koodii jala",
-    "templates.qrSafetyNote": "Iskaanii amanamaa ta’uuf garaagarummaa halluu gurraacha fi ifaa cimaa eegi; akkasumas naannoo duwwaa QR hin tuqin."
+    "templates.qrSafetyNote": "Iskaanii amanamaa ta’uuf garaagarummaa halluu gurraacha fi ifaa cimaa eegi; akkasumas naannoo duwwaa QR hin tuqin.",
+    "templates.profileQrDownload": "QR piroofaayilii buusi (SVG)",
+    "templates.profileQrPrint": "Koodii QR maxxansi",
+    "templates.storageUsage": "Kuusaan fayyadame: {used} MB keessaa {limit} MB",
+    "templates.storageLimitReached": "Daangaan kuusaa ga’eera. Faayilota dabalataa galchuuf karoora kee fooyyessi.",
+    "templates.storageUpgrade": "Filannoowwan fooyya’iinsaa ilaali",
+    "templates.qrLogoUpload": "Asxaa QR olkaa’i"
   }
 }

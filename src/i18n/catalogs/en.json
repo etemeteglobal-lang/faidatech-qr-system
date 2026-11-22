@@ -938,6 +938,12 @@
     "templates.logoCenter": "Center",
     "templates.logoTop": "Above the code",
     "templates.logoBottom": "Below the code",
-    "templates.qrSafetyNote": "Keep strong dark-on-light contrast and leave the quiet zone clear for reliable scanning."
+    "templates.qrSafetyNote": "Keep strong dark-on-light contrast and leave the quiet zone clear for reliable scanning.",
+    "templates.profileQrDownload": "Download profile QR (SVG)",
+    "templates.profileQrPrint": "Print QR code",
+    "templates.storageUsage": "Storage used: {used} MB of {limit} MB",
+    "templates.storageLimitReached": "Storage limit reached. Upgrade your plan to add more files.",
+    "templates.storageUpgrade": "View upgrade options",
+    "templates.qrLogoUpload": "Upload QR logo"
   }
 }

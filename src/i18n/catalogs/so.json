@@ -945,6 +945,12 @@
     "templates.logoCenter": "Dhexda",
     "templates.logoTop": "Koodhka korkiisa",
     "templates.logoBottom": "Koodhka hoostiisa",
-    "templates.qrSafetyNote": "Hubi inuu jiro kala-duwanaansho xooggan oo u dhexeeya madowga iyo iftiinka, kana tag aagga bannaan si si lagu kalsoonaan karo loo akhriyo."
+    "templates.qrSafetyNote": "Hubi inuu jiro kala-duwanaansho xooggan oo u dhexeeya madowga iyo iftiinka, kana tag aagga bannaan si si lagu kalsoonaan karo loo akhriyo.",
+    "templates.profileQrDownload": "Soo dejiso QR-ka astaanta (SVG)",
+    "templates.profileQrPrint": "Daabac koodhka QR",
+    "templates.storageUsage": "Kaydinta la isticmaalay: {used} MB oo ka mid ah {limit} MB",
+    "templates.storageLimitReached": "Xadka kaydinta waa la gaaray. Qorshahaaga cusboonaysii si aad faylal dheeraad ah ugu darto.",
+    "templates.storageUpgrade": "Eeg ikhtiyaarrada cusboonaysiinta",
+    "templates.qrLogoUpload": "Soo geli summadda QR"
   }
 }

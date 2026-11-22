@@ -947,6 +947,12 @@
     "templates.logoCenter": "Centro",
     "templates.logoTop": "Encima del código",
     "templates.logoBottom": "Debajo del código",
-    "templates.qrSafetyNote": "Mantén un contraste marcado entre oscuro y claro, y deja libre la zona de seguridad para que el escaneo sea fiable."
+    "templates.qrSafetyNote": "Mantén un contraste marcado entre oscuro y claro, y deja libre la zona de seguridad para que el escaneo sea fiable.",
+    "templates.profileQrDownload": "Descargar código QR del perfil (SVG)",
+    "templates.profileQrPrint": "Imprimir código QR",
+    "templates.storageUsage": "Almacenamiento usado: {used} MB de {limit} MB",
+    "templates.storageLimitReached": "Se alcanzó el límite de almacenamiento. Mejora tu plan para añadir más archivos.",
+    "templates.storageUpgrade": "Ver opciones de mejora",
+    "templates.qrLogoUpload": "Subir logotipo para el código QR"
   }
 }

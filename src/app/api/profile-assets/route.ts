@@ -40,6 +40,15 @@ function safeOrganizationSegment(organizationId: string): string {
   return organizationId;
 }
 
+export async function GET(request: NextRequest): Promise<Response> {
+  try {
+    const tenant = await requireTenantContext(request);
+    const snapshot = await getBillingSnapshot(tenant.organizationId);
+    if (!snapshot?.quota) throw new ApiError(503, "storage_quota_unavailable", "Storage quota information is temporarily unavailable.");
+    return Response.json({ data: { planName: snapshot.plan.name, storageBytesUsed: snapshot.quota.storageBytesUsed.toString(), storageBytesLimit: snapshot.quota.storageBytesLimit.toString() } }, { headers: { "Cache-Control": "private, no-store" } });
+  } catch (error) { return apiErrorResponse(error); }
+}
+
 export async function POST(request: NextRequest): Promise<Response> {
   try {
     const tenant = await requireTenantContext(request);
@@ -59,15 +68,19 @@ export async function POST(request: NextRequest): Promise<Response> {
       throw new ApiError(400, "invalid_multipart", "Provide a multipart form with one PDF, PNG, JPEG, or WebP file.");
     }
 
+    const purpose = form.get("purpose");
     const file = form.get("file");
     if (!(file instanceof File)) {
       throw new ApiError(400, "file_required", "Choose a PDF, PNG, JPEG, or WebP file.");
     }
-    if (file.size <= 0 || file.size > MAX_FILE_SIZE) {
+    if (file.size <= 0 || file.size > (purpose === "logo" ? 2 * 1024 * 1024 : MAX_FILE_SIZE)) {
       throw new ApiError(400, "invalid_file_size", "Files must be larger than zero and no larger than 10 MiB.");
     }
 
     const contentType = file.type.toLowerCase() as AllowedType;
+    if (purpose === "logo" && !["image/png", "image/jpeg", "image/webp"].includes(contentType)) {
+      throw new ApiError(400, "unsupported_file_type", "Logos must be PNG, JPEG, or WebP images.");
+    }
     const spec = ALLOWED_TYPES[contentType];
     if (!spec) {
       throw new ApiError(400, "unsupported_file_type", "Only PDF, PNG, JPEG, and WebP files are allowed.");

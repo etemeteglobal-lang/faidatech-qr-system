@@ -945,6 +945,12 @@
     "templates.logoCenter": "Tsakiya",
     "templates.logoTop": "Sama da lambar",
     "templates.logoBottom": "Ƙasa da lambar",
-    "templates.qrSafetyNote": "Tabbatar da bambanci mai ƙarfi tsakanin launi mai duhu da mai haske, kuma ka bar yankin da ke kewaye da lambar a sarari domin a iya tantance ta cikin sauƙi."
+    "templates.qrSafetyNote": "Tabbatar da bambanci mai ƙarfi tsakanin launi mai duhu da mai haske, kuma ka bar yankin da ke kewaye da lambar a sarari domin a iya tantance ta cikin sauƙi.",
+    "templates.profileQrDownload": "Sauke QR na bayanin martaba (SVG)",
+    "templates.profileQrPrint": "Buga lambar QR",
+    "templates.storageUsage": "An yi amfani da: {used} MB daga cikin {limit} MB na ma’ajiyar bayanai",
+    "templates.storageLimitReached": "An kai iyakar ma’ajiyar bayanai. Haɓaka tsarin biyan kuɗinka don ƙara wasu fayiloli.",
+    "templates.storageUpgrade": "Duba zaɓuɓɓukan haɓakawa",
+    "templates.qrLogoUpload": "Loda tambarin QR"
   }
 }

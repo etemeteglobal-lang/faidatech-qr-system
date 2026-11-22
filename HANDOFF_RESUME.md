@@ -1,27 +1,19 @@
-# Handoff / Resume State — FaidATech QR Four-Pillar Flow
-
-## Safety and status
-Continued in `/home/ubuntu/faidatech-qr-system`. No live database connection/write, migration application, reset, bulk RLS change, secret rotation, commit, push, or deployment was performed. Prisma validation used only a dummy localhost `POSTGRES_URL`. Existing billing checkout logic was not changed.
+# Handoff / Resume State — Sector Profiles continuation
 
 ## Implemented in this continuation
-- Profile editor now offers the custom/other sector, starter fields with expansion, custom field presets and text/link/file/social choices, direct uploads through the tenant-authenticated `/api/profile-assets`, page background and QR style selectors saved in JSONB, and preview cards for actions, spotlight and review controls.
-- Added `/p/[slug]` public page for approved profiles and the `/p/:slug` route declaration. It renders safe text and validates external links. Ambiguous cross-tenant slug collisions intentionally return not-found.
-- Added `OTHER` to the Prisma `VerticalSector` enum and an additive SQL migration at `prisma/migrations/20261122042600_add_other_vertical_sector/`. It is NOT applied; production requires the authorized normal migration procedure before using OTHER against the live enum.
-- Merged studio labels into all 13 locale catalogs. i18n validation passes; the 12 non-English catalogs are machine-drafted and need native review.
+The Sector Profiles preview now renders a generated QR matrix for an existing saved profile path, with high error correction, a four-module quiet zone, square/rounded modules, safe dark-on-light ink fallback, square/rounded/brand frame styling, optional uploaded logo positioned center/top/bottom, SVG download and print. Controls update the rendered code. A code points to the approved-profile route; public destination resolves only after approval.
 
-## Verification (2026-11-22)
-- `POSTGRES_URL='postgresql://postgres:postgres@127.0.0.1:5432/postgres?schema=public' npx prisma validate --schema prisma/schema.prisma`: passed.
-- `npm exec tsc -- --noEmit`: passed after Prisma client generation (generation only; no DB connection).
-- `npm run lint`: passed with 28 warnings and zero errors.
-- `npm run validate:i18n`: passed (13 locales, 928 keys, 0 English fallbacks, 0 native-reviewed).
-- `npm run build`: passed.
-- `git diff --check`: passed.
+Profile custom social values now persist with their item type and platform metadata. The approved-profile page renders wide platform showcase cards after validating URL protocols and platform hostnames. It also renders available spotlight, quick action, review prompt, and entered rating values. Direct PDF/image uploads and QR logo uploads use the shared quota-reservation endpoint. The legacy logo API now forwards to that quota-aware endpoint, and the editor can show PlanQuota counter usage and link to the existing billing page when the quota is hit. Billing checkout logic remains unchanged.
 
-## Important remaining gaps / caveats
-- The style selectors persist and affect page preview background, but QR frame/dot/logo design is not yet wired to a real QR renderer; a print/download-ready QR action was not implemented.
-- Storage upload reserves bytes against existing `PlanQuota` counters atomically and enforces per-file limits, but historical usage has not been reconciled from all pre-existing Storage objects/records. The legacy `/api/assets/logo` endpoint remains a separate path and should be quota-integrated before claiming every upload route is covered. Do not represent current counter usage as verified total storage usage.
-- Validate public profile slug uniqueness across organizations before relying on QR destinations. Native speakers should review all machine-draft translations.
-- Existing/public submitted profiles remain controlled by the current approval workflow. Deploy and apply only the additive migrations through the normal authorized process.
+Profile save/update handlers now return a distinct localized storage-unavailable status for Prisma missing-table/column errors rather than a generic server response. The editor preserves inputs and shows localized save/load feedback. This is error handling, not a database repair.
+
+## Verification
+On 2026-11-22, `POSTGRES_URL='postgresql://postgres:postgres@127.0.0.1:5432/postgres?schema=public' npx prisma validate --schema prisma/schema.prisma`, `npm exec tsc -- --noEmit`, `npm run lint`, `npm run validate:i18n`, `npm run build`, and `git diff --check` passed. Lint reports warnings only (32 warnings, 0 errors). i18n validation reports 13 locales and 934 keys; translations remain machine drafts and none have native-speaker approval.
+
+## Runtime and safety caveats
+No live database was queried, no migration/reset/RLS change/secret rotation was performed, and no push or deployment was performed. Therefore the reported live save/load issue is not runtime-verified here. If the profile tables or required columns are absent, the existing additive Phase 2 migration must be applied through the normal authorized process before persistence can work; this request prohibited live migrations. The `OTHER` sector enum addition remains in its own additive migration and is also unapplied. Existing storage counters are the basis for quota enforcement; historical objects/usage have not been reconciled, so do not claim the counter represents complete historical storage usage.
+
+Some profile-editor and public-page copy still needs a full localization pass/native review. The social platform cards and profile URL were build-checked, not browser/scanner-tested against a live approved profile. Public slug collisions across organizations intentionally return not-found.
 
 ## Local handoff
-Extract the accompanying ZIP over a clean checkout of the same repository/revision, inspect `git status` and the included migration, then run the checks. Push to `origin/main` only from the user's local environment after review and after resolving the remaining QR rendering/export and storage-accounting work. No push was performed here.
+Extract the ZIP over the matching repository revision, inspect the full diff and the unapplied migrations, then test with an authorized staging database after migration approval. Only then push the reviewed changes to `origin/main`. Do not deploy or run migrations from this sandbox.

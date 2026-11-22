@@ -32,5 +32,10 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       return profile;
     });
     return Response.json({ data: updated }, { headers: { "Cache-Control": "private, no-store" } });
-  } catch (error) { return apiErrorResponse(error); }
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && (error.code === "P2021" || error.code === "P2022")) {
+      return Response.json({ error: { code: "profiles_storage_unavailable" } }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+    }
+    return apiErrorResponse(error);
+  }
 }

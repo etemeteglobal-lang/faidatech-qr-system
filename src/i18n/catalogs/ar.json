@@ -945,6 +945,12 @@
     "templates.logoCenter": "في الوسط",
     "templates.logoTop": "فوق الرمز",
     "templates.logoBottom": "أسفل الرمز",
-    "templates.qrSafetyNote": "حافظ على تباين قوي بين لون داكن وخلفية فاتحة، واترك المنطقة الهادئة خالية لضمان موثوقية المسح."
+    "templates.qrSafetyNote": "حافظ على تباين قوي بين لون داكن وخلفية فاتحة، واترك المنطقة الهادئة خالية لضمان موثوقية المسح.",
+    "templates.profileQrDownload": "تنزيل رمز QR للملف الشخصي (SVG)",
+    "templates.profileQrPrint": "طباعة رمز QR",
+    "templates.storageUsage": "المساحة المستخدمة: {used} من أصل {limit} ميغابايت",
+    "templates.storageLimitReached": "تم بلوغ حد التخزين. قم بترقية خطتك لإضافة المزيد من الملفات.",
+    "templates.storageUpgrade": "عرض خيارات الترقية",
+    "templates.qrLogoUpload": "تحميل شعار رمز QR"
   }
 }

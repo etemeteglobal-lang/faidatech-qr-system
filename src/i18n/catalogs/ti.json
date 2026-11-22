@@ -945,6 +945,12 @@
     "templates.logoCenter": "ማእከል",
     "templates.logoTop": "ልዕሊ ኮዱ",
     "templates.logoBottom": "ትሕቲ ኮዱ",
-    "templates.qrSafetyNote": "ንእሙን ስካን ጽኑዕ ጸሊም-ኣብ-ልዕሊ-ብሩህ ተነጻጻሪ ሕብሪ ሓሉ፣ እቲ ኮድ ዝኾነ ምልክት ዘይብሉ ከባቢ እውን ጹሩይ ኣትርፍ።"
+    "templates.qrSafetyNote": "ንእሙን ስካን ጽኑዕ ጸሊም-ኣብ-ልዕሊ-ብሩህ ተነጻጻሪ ሕብሪ ሓሉ፣ እቲ ኮድ ዝኾነ ምልክት ዘይብሉ ከባቢ እውን ጹሩይ ኣትርፍ።",
+    "templates.profileQrDownload": "ናይ መገለጺ ኪዩኣር ኣውርድ (SVG)",
+    "templates.profileQrPrint": "ኪዩኣር ኮድ ኣትም",
+    "templates.storageUsage": "ዝተጠቐምካዮ ማእከላዊ መኽዘን፦ {used} MB ካብ {limit} MB",
+    "templates.storageLimitReached": "ደረት መኽዘን በጺሑ። ተወሳኺ ፋይላት ንምውሳኽ መደብካ ኣሐድስ።",
+    "templates.storageUpgrade": "ኣማራጺታት ምሕዳስ ርአ",
+    "templates.qrLogoUpload": "ናይ ኪዩኣር ሎጎ ስቀል"
   }
 }

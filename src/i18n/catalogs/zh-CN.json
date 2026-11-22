@@ -945,6 +945,12 @@
     "templates.logoCenter": "居中",
     "templates.logoTop": "置于二维码上方",
     "templates.logoBottom": "置于二维码下方",
-    "templates.qrSafetyNote": "请确保深色图案与浅色背景对比鲜明，并保持静区无遮挡，以确保可靠扫描。"
+    "templates.qrSafetyNote": "请确保深色图案与浅色背景对比鲜明，并保持静区无遮挡，以确保可靠扫描。",
+    "templates.profileQrDownload": "下载个人资料二维码（SVG）",
+    "templates.profileQrPrint": "打印二维码",
+    "templates.storageUsage": "已使用存储空间：{used} MB，共 {limit} MB",
+    "templates.storageLimitReached": "已达到存储空间上限。升级套餐以添加更多文件。",
+    "templates.storageUpgrade": "查看升级选项",
+    "templates.qrLogoUpload": "上传二维码徽标"
   }
 }

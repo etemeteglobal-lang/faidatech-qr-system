@@ -946,6 +946,12 @@
     "templates.logoCenter": "መሃል",
     "templates.logoTop": "ከኮዱ በላይ",
     "templates.logoBottom": "ከኮዱ በታች",
-    "templates.qrSafetyNote": "አስተማማኝ ስካን እንዲደረግ ጠንካራ ጥቁር-በብርሃን ላይ ንፅፅር ይጠብቁ፣ እና በኮዱ ዙሪያ ያለውን ነጭ ክፍተት አይሙሉ።"
+    "templates.qrSafetyNote": "አስተማማኝ ስካን እንዲደረግ ጠንካራ ጥቁር-በብርሃን ላይ ንፅፅር ይጠብቁ፣ እና በኮዱ ዙሪያ ያለውን ነጭ ክፍተት አይሙሉ።",
+    "templates.profileQrDownload": "የመገለጫ QR ኮድ (SVG) አውርድ",
+    "templates.profileQrPrint": "የQR ኮዱን አትም",
+    "templates.storageUsage": "ያገለገለው ማከማቻ፦ {used} MB ከ {limit} MB",
+    "templates.storageLimitReached": "የማከማቻ ገደቡ ደርሷል። ተጨማሪ ፋይሎችን ለመጨመር የእቅድዎን ደረጃ ያሳድጉ።",
+    "templates.storageUpgrade": "የማሻሻያ አማራጮችን ይመልከቱ",
+    "templates.qrLogoUpload": "የQR አርማ ይስቀሉ"
   }
 }

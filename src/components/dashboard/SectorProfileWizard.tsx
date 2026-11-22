@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 import { useI18n } from "@/i18n/LocaleProvider";
 import type { MessageKey } from "@/i18n/messages";
+import ProfileQrPreview from "@/components/dashboard/ProfileQrPreview";
 import { verticalTemplates, type ProfileKindCode } from "@/lib/templates/registry";
 
 type Profile = {
@@ -18,8 +19,8 @@ type Profile = {
 };
 type Envelope<T> = { data?: T; error?: { message?: string; code?: string } };
 type CustomField = { id: number; name: string; value: string; kind: "text" | "link" | "file" | "social" };
-const RESERVED_PROFILE_KEYS = new Set(["_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement"]);
-const CUSTOM_PRESETS = ["Phone", "Email", "Website", "Address", "WhatsApp", "Facebook", "Instagram", "LinkedIn", "YouTube", "Telegram", "Testimonial", "Rating", "Map", "Spotlight"];
+const RESERVED_PROFILE_KEYS = new Set(["_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement", "_qrLogo"]);
+const CUSTOM_PRESETS = ["Phone", "Email", "Website", "Address", "WhatsApp", "Facebook", "Instagram", "LinkedIn", "YouTube", "Telegram", "TikTok", "X", "Testimonial", "Rating", "Map", "Spotlight"];
 function safeExternalUrl(value: string): string | null { try { const url = new URL(value.trim()); return ["https:", "http:"].includes(url.protocol) ? url.href : null; } catch { return null; } }
 const sectorMessage = (code: string) => `template.sector.${code}` as MessageKey;
 const fieldMessage = (name: string) => `template.field.${name}` as MessageKey;
@@ -47,14 +48,18 @@ export default function SectorProfileWizard() {
   const [notice, setNotice] = useState("");
   const [nextCustomId, setNextCustomId] = useState(1);
   const [uploadingId, setUploadingId] = useState<number | null>(null);
+  const [storageQuota, setStorageQuota] = useState<{ used: string; limit: string } | null>(null);
+  const [quotaExceeded, setQuotaExceeded] = useState(false);
   const template = useMemo(() => verticalTemplates.find((item) => item.code === sector), [sector]);
   const templateFields: readonly string[] = template?.fields ?? [];
   const sectorLabel = sector === "OTHER" ? customSectorName || t("templates.customSector") : t(sectorMessage(sector));
+  const qrProfile = profiles.find((profile) => profile.id === editingId) ?? profiles.find((profile) => Boolean(profile.slug));
   const pageBackground = profileData._pageBackground || "#F7FAF9";
   const qrForeground = profileData._qrForeground || "#0F172A";
   const qrShape = profileData._qrShape || "square";
   const qrDots = profileData._qrDots || "square";
   const logoPlacement = profileData._logoPlacement || "center";
+  const qrLogo = profileData._qrLogo || "";
 
   const loadProfiles = useCallback(async () => {
     setProfilesLoading(true);
@@ -72,6 +77,7 @@ export default function SectorProfileWizard() {
   }, [t]);
 
   useEffect(() => { void loadProfiles().catch(() => {}); }, [loadProfiles]);
+  useEffect(() => { fetch("/api/profile-assets", { cache: "no-store" }).then((response) => response.json()).then((body: { data?: { storageBytesUsed?: string; storageBytesLimit?: string } }) => { if (body.data?.storageBytesUsed && body.data.storageBytesLimit) setStorageQuota({ used: body.data.storageBytesUsed, limit: body.data.storageBytesLimit }); }).catch(() => {}); }, []);
 
   function resetForm() {
     setDisplayName("");
@@ -88,7 +94,7 @@ export default function SectorProfileWizard() {
     event.preventDefault();
     setBusy(true);
     setNotice("");
-    const extensions: Record<string, string> = {};
+    const extensions: Record<string, unknown> = {};
     for (const field of customFields) {
       const key = field.name.trim();
       if (!key || !field.value.trim()) continue;
@@ -97,7 +103,9 @@ export default function SectorProfileWizard() {
         setBusy(false);
         return;
       }
-      extensions[key] = field.value.trim();
+      extensions[key] = field.kind === "social"
+        ? { type: "social", platform: key.toLowerCase().replace(/[^a-z]/g, ""), value: field.value.trim(), label: key }
+        : { type: field.kind === "file" ? "file" : field.kind === "link" ? "link" : "text", value: field.value.trim(), label: key };
     }
     if (sector === "OTHER") extensions.customSectorName = customSectorName.trim();
     if (customFields.some((field) => RESERVED_PROFILE_KEYS.has(field.name.trim()))) { setNotice(t("templates.duplicateCustomField")); setBusy(false); return; }
@@ -115,7 +123,10 @@ export default function SectorProfileWizard() {
         }),
       });
       const body = await response.json() as Envelope<Profile>;
-      if (!response.ok || !body.data) throw new Error(t("templates.saveError"));
+      if (!response.ok || !body.data) {
+        setNotice(response.status === 503 ? t("templates.loadError") : t("templates.saveError"));
+        return;
+      }
       setNotice(editingId ? t("templates.updatedNotice") : t("templates.savedNotice"));
       resetForm();
       await loadProfiles();
@@ -133,8 +144,12 @@ export default function SectorProfileWizard() {
     setProfileKind(profile.profileKind as ProfileKindCode);
     setDisplayName(profile.displayName);
     setProfileData(objectStrings(profile.profileData));
-    const custom = objectStrings(profile.customFields);
-    const fields = Object.entries(custom).filter(([name]) => name !== "customSectorName").map(([name, value], index) => ({ id: index + 1, name, value, kind: /^(https?:\/\/|www\.)/i.test(value) ? "link" as const : "text" as const }));
+    const custom = profile.customFields && typeof profile.customFields === "object" && !Array.isArray(profile.customFields) ? profile.customFields as Record<string, unknown> : {};
+    const fields = Object.entries(custom).filter(([name]) => name !== "customSectorName").map(([name, raw], index) => {
+      const value = raw && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, unknown> : null;
+      const kind: CustomField["kind"] = value?.type === "social" ? "social" : value?.type === "file" ? "file" : value?.type === "link" ? "link" : "text";
+      return { id: index + 1, name, value: value ? String(value.value ?? value.url ?? "") : String(raw ?? ""), kind };
+    });
     setCustomFields(fields);
     setNextCustomId(fields.length + 1);
     setNotice("");
@@ -236,6 +251,7 @@ export default function SectorProfileWizard() {
             <label className="text-xs font-semibold text-slate-700">{t("templates.qrFrame")}<select value={qrShape} onChange={(event) => setProfileData((current) => ({ ...current, _qrShape: event.target.value }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2"><option value="square">{t("templates.qrSquare")}</option><option value="rounded">{t("templates.qrRounded")}</option><option value="brand">{t("templates.qrBrand")}</option></select></label>
             <label className="text-xs font-semibold text-slate-700">{t("templates.qrDots")}<select value={qrDots} onChange={(event) => setProfileData((current) => ({ ...current, _qrDots: event.target.value }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2"><option value="square">{t("templates.qrSquareDots")}</option><option value="round">{t("templates.qrRoundDots")}</option><option value="large">{t("templates.qrLargeDots")}</option></select></label>
             <label className="text-xs font-semibold text-slate-700">{t("templates.logoPlacement")}<select value={logoPlacement} onChange={(event) => setProfileData((current) => ({ ...current, _logoPlacement: event.target.value }))} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2"><option value="center">{t("templates.logoCenter")}</option><option value="top">{t("templates.logoTop")}</option><option value="bottom">{t("templates.logoBottom")}</option></select></label>
+            <label className="text-xs font-semibold text-slate-700">{t("templates.qrLogoUpload")}<input type="file" accept="image/png,image/jpeg,image/webp" className="mt-1 block w-full text-xs" onChange={async (event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return; try { const form = new FormData(); form.append("file", file); form.append("purpose", "logo"); const res = await fetch("/api/profile-assets", { method: "POST", body: form }); const result = await res.json() as Envelope<{url:string;storageUsedBytes?:string;storageLimitBytes?:string}>; if (!res.ok || !result.data?.url) { if (res.status === 402) setQuotaExceeded(true); throw new Error(); } setProfileData((current) => ({ ...current, _qrLogo: result.data!.url })); if (result.data.storageUsedBytes && result.data.storageLimitBytes) setStorageQuota({ used: result.data.storageUsedBytes, limit: result.data.storageLimitBytes }); setQuotaExceeded(false); } catch { setNotice(t("templates.saveError")); } }} /></label>
           </div>
           <p className="mt-2 text-[11px] text-slate-500">{t("templates.qrSafetyNote")}</p>
         </section>
@@ -253,9 +269,10 @@ export default function SectorProfileWizard() {
           <div className="mt-3 flex flex-wrap gap-2">{CUSTOM_PRESETS.map((preset) => <button key={preset} type="button" onClick={() => { if (customFields.some((f) => f.name.toLowerCase() === preset.toLowerCase())) return; setCustomFields((current) => [...current, { id: nextCustomId, name: preset, value: "", kind: /^(Website|WhatsApp|Facebook|Instagram|LinkedIn|YouTube|Telegram|Map)$/.test(preset) ? "social" : preset === "Email" ? "link" : "text" }]); setNextCustomId((n) => n + 1); }} className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold text-faida-navy">+ {preset}</button>)}</div>
           {customFields.filter((field) => !field.name.startsWith("_")).map((field) => <div key={field.id} className="mt-3 rounded-xl border border-slate-200 bg-white p-3">
             <div className="grid gap-2 sm:grid-cols-[minmax(0,0.8fr)_130px_auto]"><label className="text-xs font-semibold text-slate-600">{t("templates.customFieldName")}<input maxLength={80} value={field.name} onChange={(event) => setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, name: event.target.value } : item))} className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 text-sm font-normal" /></label><label className="text-xs font-semibold text-slate-600">{t("templates.customFieldValue")}<select value={field.kind} onChange={(event) => setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, kind: event.target.value as CustomField["kind"] } : item))} className="mt-1 w-full rounded-lg border border-slate-300 p-2.5 text-sm"><option value="text">Text</option><option value="link">Link</option><option value="file">File</option><option value="social">Social</option></select></label><button type="button" aria-label={t("templates.removeCustomField")} onClick={() => setCustomFields((current) => current.filter((item) => item.id !== field.id))} className="self-end rounded-lg border border-slate-300 px-3 py-2.5 text-sm">×</button></div>
-            {field.kind === "file" ? <div className="mt-2 flex flex-wrap items-center gap-2"><label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold">Upload PDF/image<input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="sr-only" disabled={uploadingId !== null || busy} onChange={async (event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return; setUploadingId(field.id); try { const form = new FormData(); form.append("file", file); const res = await fetch("/api/profile-assets", { method: "POST", body: form }); const result = await res.json() as Envelope<{url:string}>; if (!res.ok || !result.data?.url) throw new Error(); setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, value: result.data!.url } : item)); } catch { setNotice(t("templates.saveError")); } finally { setUploadingId(null); } }} /></label><span className="text-xs text-slate-500">{uploadingId === field.id ? t("common.loading") : field.value ? "File uploaded" : "PDF, PNG, JPEG or WebP · 10 MiB max"}</span>{field.value ? <a href={safeExternalUrl(field.value) ?? "#"} target="_blank" rel="noopener noreferrer" className="text-xs text-teal-800 underline">Open uploaded file</a> : null}</div> : <textarea rows={1} maxLength={20000} value={field.value} onChange={(event) => setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, value: event.target.value } : item))} placeholder={field.kind === "link" || field.kind === "social" ? "https://…" : ""} className="mt-2 w-full rounded-lg border border-slate-300 p-2.5 text-sm font-normal" />}
+            {field.kind === "file" ? <div className="mt-2 flex flex-wrap items-center gap-2"><label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold">Upload PDF/image<input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" className="sr-only" disabled={uploadingId !== null || busy} onChange={async (event) => { const file = event.currentTarget.files?.[0]; event.currentTarget.value = ""; if (!file) return; setUploadingId(field.id); try { const form = new FormData(); form.append("file", file); const res = await fetch("/api/profile-assets", { method: "POST", body: form }); const result = await res.json() as Envelope<{url:string}>; if (!res.ok || !result.data?.url) { if (res.status === 402) setQuotaExceeded(true); throw new Error(); } if ("storageUsedBytes" in result.data && "storageLimitBytes" in result.data) setStorageQuota({ used: String(result.data.storageUsedBytes), limit: String(result.data.storageLimitBytes) }); setQuotaExceeded(false); setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, value: result.data!.url } : item)); } catch { setNotice(t("templates.saveError")); } finally { setUploadingId(null); } }} /></label><span className="text-xs text-slate-500">{uploadingId === field.id ? t("common.loading") : field.value ? "File uploaded" : "PDF, PNG, JPEG or WebP · 10 MiB max"}</span>{field.value ? <a href={safeExternalUrl(field.value) ?? "#"} target="_blank" rel="noopener noreferrer" className="text-xs text-teal-800 underline">Open uploaded file</a> : null}</div> : <textarea rows={1} maxLength={20000} value={field.value} onChange={(event) => setCustomFields((current) => current.map((item) => item.id === field.id ? { ...item, value: event.target.value } : item))} placeholder={field.kind === "link" || field.kind === "social" ? "https://…" : ""} className="mt-2 w-full rounded-lg border border-slate-300 p-2.5 text-sm font-normal" />}
           </div>)}
         </div>
+        {storageQuota ? <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700"><span>{t("templates.storageUsage", { used: (Number(storageQuota.used) / 1048576).toFixed(1), limit: (Number(storageQuota.limit) / 1048576).toFixed(1) })}</span>{quotaExceeded ? <span className="font-semibold text-rose-700">{t("templates.storageLimitReached")} <a className="underline" href="/dashboard/billing">{t("templates.storageUpgrade")}</a></span> : null}</div> : null}
         <div className="flex flex-wrap gap-2"><button disabled={busy} className="rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy disabled:opacity-50">{busy ? t("common.loading") : editingId ? t("templates.saveChanges") : t("templates.saveDraft")}</button>{editingId ? <button type="button" onClick={resetForm} className="rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.cancel")}</button> : null}</div>
       </form>
 
@@ -283,6 +300,7 @@ export default function SectorProfileWizard() {
           {customFields.some((field) => field.name === "_spotlight" && field.value === "true") ? <div className="mt-2 rounded-lg bg-amber-100 px-3 py-2 text-[10px] font-bold text-amber-900">Spotlight</div> : null}
         </div><div className="flex h-6 items-center justify-center bg-white"><span className="h-1 w-16 rounded-full bg-slate-300" /></div>
       </div></div>
+      {qrProfile?.slug ? <ProfileQrPreview path={`/p/${encodeURIComponent(qrProfile.slug)}`} foreground={qrForeground} dots={qrDots} frame={qrShape} logoUrl={qrLogo} logoPlacement={logoPlacement} downloadLabel={t("templates.profileQrDownload")} printLabel={t("templates.profileQrPrint")} /> : null}
     </aside>
   </div>;
 }

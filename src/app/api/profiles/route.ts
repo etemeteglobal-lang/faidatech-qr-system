@@ -63,5 +63,10 @@ export async function POST(request: NextRequest): Promise<Response> {
     });
     await prisma.ecosystemAuditLog.create({ data: { organizationId: tenant.organizationId, actorUserId: tenant.userId, action: "PROFILE_CREATED", entityType: "BusinessProfile", entityId: profile.id, details: { sector: data.sector } } });
     return Response.json({ data: profile }, { status: 201, headers: { "Cache-Control": "no-store" } });
-  } catch (error) { return apiErrorResponse(error); }
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && (error.code === "P2021" || error.code === "P2022")) {
+      return Response.json({ error: { code: "profiles_storage_unavailable" } }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+    }
+    return apiErrorResponse(error);
+  }
 }

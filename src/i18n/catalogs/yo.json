@@ -945,6 +945,12 @@
     "templates.logoCenter": "Àárín",
     "templates.logoTop": "Lókè kóòdù náà",
     "templates.logoBottom": "Lábẹ́ kóòdù náà",
-    "templates.qrSafetyNote": "Lo ìyàtọ̀ tó lágbára láàárín dúdú àti àwọ̀ fẹ́ẹ́rẹ́, kí o sì má ṣe bo àyè tó ṣófo yíká kóòdù náà, kí ó lè ṣeé ṣàyẹ̀wò dáadáa."
+    "templates.qrSafetyNote": "Lo ìyàtọ̀ tó lágbára láàárín dúdú àti àwọ̀ fẹ́ẹ́rẹ́, kí o sì má ṣe bo àyè tó ṣófo yíká kóòdù náà, kí ó lè ṣeé ṣàyẹ̀wò dáadáa.",
+    "templates.profileQrDownload": "Ṣe igbasilẹ koodu QR profaili (SVG)",
+    "templates.profileQrPrint": "Tẹ koodu QR jáde",
+    "templates.storageUsage": "Ibi ìpamọ́ tí a lò: {used} MB nínú {limit} MB",
+    "templates.storageLimitReached": "A ti dé ààlà ibi ìpamọ́. Ṣe àtúnṣe ètò rẹ láti fi àwọn fáìlì sí i.",
+    "templates.storageUpgrade": "Wo àwọn àṣàyàn àtúnṣe ètò",
+    "templates.qrLogoUpload": "Gbé àmì àwòrán QR sókè"
   }
 }
