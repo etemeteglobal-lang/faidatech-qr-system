@@ -7,6 +7,7 @@ const destinationMessageKeys: Record<string, MessageKey> = {
   MENU: "purpose.menu",
   TOURISM_AUDIO: "purpose.tourism",
   PDF: "purpose.pdf",
+  SECTOR_PROFILE: "purpose.profile",
   LOCAL_PAYMENTS: "purpose.payments",
 };
 

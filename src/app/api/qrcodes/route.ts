@@ -150,7 +150,8 @@ export async function POST(request: NextRequest): Promise<Response> {
     for (let attempt = 0; attempt < 3; attempt += 1) {
       const shortCode = createShortCode();
       const redirectUrl = getPublicQrUrl(shortCode);
-      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground);
+      const rawPayload = payload as Record<string, unknown>;
+      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground, typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined);
 
       try {
         const qrCode = await prisma.qRCode.create({

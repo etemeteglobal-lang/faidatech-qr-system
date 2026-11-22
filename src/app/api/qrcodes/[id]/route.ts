@@ -127,9 +127,11 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     revalidatePath("/dashboard/qrcodes");
     revalidatePath("/dashboard/analytics");
     revalidatePath(`/r/${updated.shortCode}`);
+    const rawPayload = updated.payload && typeof updated.payload === "object" && !Array.isArray(updated.payload) ? updated.payload as Record<string, unknown> : {};
     const qrImageDataUrl = await generateQrImageDataUrl(
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
+      typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined,
     );
 
     return Response.json(

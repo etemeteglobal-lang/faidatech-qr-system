@@ -6,11 +6,13 @@ import {
   landingPagePayloadSchema,
   menuPayloadSchema,
   tourismAudioPayloadSchema,
+  sectorProfilePayloadSchema,
   vCardPayloadSchema,
   type destinationTypeSchema,
 } from "@/lib/qr/payload-schemas";
 import InteractiveMenu from "@/components/qr/InteractiveMenu";
 import TourismGuideExperience from "@/components/qr/TourismGuideExperience";
+import SectorProfileExperience from "@/components/qr/SectorProfileExperience";
 import { getReadableTextColor } from "@/lib/qr/brand-presentation";
 import { localizedField, localizedOverride, localizedText } from "@/i18n/localized-content";
 import { useI18n } from "@/i18n/LocaleProvider";
@@ -20,6 +22,7 @@ type VCardPayload = z.infer<typeof vCardPayloadSchema>;
 type LandingPayload = z.infer<typeof landingPagePayloadSchema>;
 type MenuPayload = z.infer<typeof menuPayloadSchema>;
 type TourismPayload = z.infer<typeof tourismAudioPayloadSchema>;
+type SectorProfilePayload = z.infer<typeof sectorProfilePayloadSchema>;
 
 type Props = {
   shortCode: string;
@@ -74,6 +77,7 @@ export default function PublicQrExperience({ shortCode, title, destinationType, 
 
   if (destinationType === "MENU") return <InteractiveMenu payload={payload as MenuPayload} />;
   if (destinationType === "TOURISM_AUDIO") return <TourismGuideExperience payload={payload as TourismPayload} />;
+  if (destinationType === "SECTOR_PROFILE") return <SectorProfileExperience payload={payload as SectorProfilePayload} shortCode={shortCode} />;
 
   const landing = payload as LandingPayload;
   const { accent, accentText } = brandPalette(landing.branding);

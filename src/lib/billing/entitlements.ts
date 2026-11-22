@@ -97,6 +97,27 @@ export async function incrementDynamicQrUsage(organizationId: string): Promise<v
   }
 }
 
+export async function assertStorageQuota(organizationId: string, bytes: number): Promise<void> {
+  const snapshot = await getBillingSnapshot(organizationId);
+  if (!snapshot?.quota || snapshot.quota.storageBytesLimit < BigInt(0)) return;
+  if (snapshot.quota.storageBytesUsed + BigInt(bytes) > snapshot.quota.storageBytesLimit) {
+    throw new ApiError(402, "storage_quota_exceeded", "Your workspace storage allowance has been reached. Upgrade your plan to add more profile files.");
+  }
+}
+
+export async function incrementStorageUsage(organizationId: string, bytes: number): Promise<void> {
+  try {
+    const snapshot = await getBillingSnapshot(organizationId);
+    if (!snapshot?.quota) return;
+    await prisma.planQuota.update({
+      where: { organizationId_planId: { organizationId, planId: snapshot.plan.id } },
+      data: { storageBytesUsed: { increment: BigInt(bytes) } },
+    });
+  } catch (error) {
+    if (!isMissingBillingTables(error)) throw error;
+  }
+}
+
 export function quotaJsonValue(value: unknown): Prisma.InputJsonValue {
   return (value && typeof value === "object" ? value : {}) as Prisma.InputJsonValue;
 }

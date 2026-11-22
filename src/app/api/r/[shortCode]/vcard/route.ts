@@ -29,23 +29,24 @@ export async function GET(_request: Request, context: RouteContext): Promise<Res
       select: { destinationType: true, payload: true },
     });
 
-    if (!qrCode || qrCode.destinationType !== "VCARD") {
+    if (!qrCode || (qrCode.destinationType !== "VCARD" && qrCode.destinationType !== "SECTOR_PROFILE")) {
       throw new ApiError(404, "vcard_not_found", "This contact card is unavailable.");
     }
 
-    const payload = parseDestinationPayload("VCARD", qrCode.payload);
+    const payload = parseDestinationPayload(qrCode.destinationType, qrCode.payload);
     if (!("firstName" in payload)) {
       throw new ApiError(500, "invalid_vcard_payload", "The contact card is misconfigured.");
     }
 
     const fullName = `${payload.firstName} ${payload.lastName}`.trim();
+    const isSectorProfile = qrCode.destinationType === "SECTOR_PROFILE";
     const lines = [
       "BEGIN:VCARD",
       "VERSION:3.0",
       `N:${escapeVCard(payload.lastName)};${escapeVCard(payload.firstName)};;;`,
       `FN:${escapeVCard(fullName)}`,
       ...(payload.organization ? [`ORG:${escapeVCard(payload.organization)}`] : []),
-      ...(payload.jobTitle ? [`TITLE:${escapeVCard(payload.jobTitle)}`] : []),
+      ...(isSectorProfile && "role" in payload ? [`TITLE:${escapeVCard(payload.role)}`] : "jobTitle" in payload && payload.jobTitle ? [`TITLE:${escapeVCard(payload.jobTitle)}`] : []),
       ...(payload.phone ? [`TEL;TYPE=CELL:${escapeVCard(payload.phone)}`] : []),
       ...(payload.email ? [`EMAIL;TYPE=INTERNET:${escapeVCard(payload.email)}`] : []),
       ...(payload.website ? [`URL:${escapeVCard(payload.website)}`] : []),

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { brandIdentitySchema } from "@/lib/qr/brand";
 import { isLocaleCode, uniqueLocaleCodes, type LocaleCode } from "@/i18n/registry";
+import { profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 
 const webUrl = z
   .string()
@@ -49,7 +50,88 @@ export const destinationTypeSchema = z.enum([
   "MENU",
   "TOURISM_AUDIO",
   "PDF",
+  "SECTOR_PROFILE",
 ]);
+
+const sectorIdSchema = z.enum(sectorOptions.map((sector) => sector.id) as [string, ...string[]]);
+const profileFieldTypeSchema = z.enum(profileFieldTypes.map((field) => field.id) as [string, ...string[]]);
+const profileUrl = webUrl.optional();
+
+const profileSocialLinkSchema = z.object({
+  platform: z.string().trim().min(1).max(40),
+  label: z.string().trim().min(1).max(100),
+  url: webUrl,
+}).strict();
+
+const profileProjectSchema = z.object({
+  title: z.string().trim().min(1).max(180),
+  description: optionalText(2000),
+  url: profileUrl,
+  imageUrl: profileUrl,
+}).strict();
+
+const profileCredentialSchema = z.object({
+  title: z.string().trim().min(1).max(180),
+  issuer: optionalText(160),
+  year: z.string().trim().max(20).optional(),
+  fileUrl: webUrl,
+  fileName: z.string().trim().min(1).max(255),
+  mimeType: z.enum(["application/pdf", "image/png", "image/jpeg", "image/webp"]).default("application/pdf"),
+}).strict();
+
+const profileReviewSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  role: optionalText(160),
+  rating: z.number().int().min(1).max(5),
+  quote: z.string().trim().min(1).max(1200),
+}).strict();
+
+const profileCustomFieldSchema = z.object({
+  id: z.string().trim().min(1).max(60).regex(/^[A-Za-z0-9_-]+$/),
+  label: z.string().trim().min(1).max(120),
+  type: profileFieldTypeSchema,
+  value: z.string().trim().max(2000),
+}).strict();
+
+export const sectorProfilePayloadSchema = z.object({
+  profileVersion: z.literal(1).default(1),
+  sector: sectorIdSchema,
+  customSectorName: z.string().trim().max(120).optional(),
+  firstName: z.string().trim().min(1).max(100),
+  lastName: z.string().trim().min(1).max(100),
+  role: z.string().trim().min(1).max(160),
+  organization: optionalText(160),
+  tagline: optionalText(240),
+  bio: optionalText(5000),
+  spotlight: optionalText(500),
+  phone: optionalText(60),
+  email: z.string().trim().email().optional(),
+  website: profileUrl,
+  address: optionalText(400),
+  mapUrl: profileUrl,
+  socialLinks: z.array(profileSocialLinkSchema).max(20).default([]),
+  projects: z.array(profileProjectSchema).max(30).default([]),
+  credentials: z.array(profileCredentialSchema).max(30).default([]),
+  reviews: z.array(profileReviewSchema).max(30).default([]),
+  customFields: z.array(profileCustomFieldSchema).max(30).default([]),
+  sectionVisibility: z.object({
+    projects: z.boolean().default(true),
+    credentials: z.boolean().default(true),
+    social: z.boolean().default(true),
+    reviews: z.boolean().default(true),
+    contact: z.boolean().default(true),
+  }).default({ projects: true, credentials: true, social: true, reviews: true, contact: true }),
+  qrPageBackground: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  qrFrame: z.enum(["square", "rounded", "badge"]).default("rounded"),
+  qrDots: z.enum(["square", "round"]).default("square"),
+  qrLogoPlacement: z.enum(["center", "above"]).default("center"),
+  localizedContent: localizedContentSchema,
+  branding: brandIdentitySchema.optional(),
+}).strict().superRefine((profile, context) => {
+  if (profile.sector === "OTHER" && !profile.customSectorName?.trim()) {
+    context.addIssue({ code: "custom", path: ["customSectorName"], message: "A custom sector name is required." });
+  }
+});
 
 export const landingPagePayloadSchema = z
   .object({
@@ -259,7 +341,8 @@ export type DestinationPayload =
   | z.infer<typeof vCardPayloadSchema>
   | z.infer<typeof menuPayloadSchema>
   | z.infer<typeof tourismAudioPayloadSchema>
-  | z.infer<typeof pdfPayloadSchema>;
+  | z.infer<typeof pdfPayloadSchema>
+  | z.infer<typeof sectorProfilePayloadSchema>;
 
 export function parseDestinationPayload(
   destinationType: z.infer<typeof destinationTypeSchema>,
@@ -278,5 +361,7 @@ export function parseDestinationPayload(
       return tourismAudioPayloadSchema.parse(payload);
     case "PDF":
       return pdfPayloadSchema.parse(payload);
+    case "SECTOR_PROFILE":
+      return sectorProfilePayloadSchema.parse(payload);
   }
 }

@@ -1,0 +1,93 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import QRCode from "qrcode";
+import type { WizardForm } from "@/components/dashboard/wizard/model";
+import { profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
+import { useI18n } from "@/i18n/LocaleProvider";
+
+type Props = { form: WizardForm; setFormAction: (next: WizardForm) => void };
+
+function TextInput({ label, value, onChange, type = "text", placeholder }: { label: string; value: string; onChange: (value: string) => void; type?: string; placeholder?: string }) {
+  return <label className="block text-sm font-semibold text-slate-700"><span>{label}</span><input type={type} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>;
+}
+
+function TextArea({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }) {
+  return <label className="block text-sm font-semibold text-slate-700"><span>{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={4} className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-6 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>;
+}
+
+async function uploadProfileFile(file: File): Promise<{ url: string; fileName: string; mimeType: string }> {
+  const body = new FormData();
+  body.append("file", file);
+  const response = await fetch("/api/assets/profile", { method: "POST", body });
+  const result = await response.json().catch(() => ({})) as { data?: { url: string; fileName: string; mimeType: string }; error?: { message?: string } };
+  if (!response.ok || !result.data) throw new Error(result.error?.message || "The profile file could not be uploaded.");
+  return result.data;
+}
+
+function LiveProfileQr({ form }: Props) {
+  const { t } = useI18n();
+  const [dataUrl, setDataUrl] = useState("");
+  useEffect(() => {
+    let active = true;
+    QRCode.toDataURL(`${window.location.origin}/dashboard/create?pillar=profiles`, {
+      width: 230,
+      margin: 4,
+      errorCorrectionLevel: "H",
+      color: { dark: form.branding.qrForeground, light: form.profile.qrPageBackground },
+    }).then((url) => { if (active) setDataUrl(url); }).catch(() => { if (active) setDataUrl(""); });
+    return () => { active = false; };
+  }, [form.branding.qrForeground, form.profile.firstName, form.profile.qrPageBackground]);
+  return <aside className={`rounded-2xl border border-slate-200 p-4 ${form.profile.qrFrame === "badge" ? "rounded-[30px]" : form.profile.qrFrame === "rounded" ? "rounded-2xl" : "rounded-none"}`} style={{ backgroundColor: form.profile.qrPageBackground }}><p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("profile.qrPreview")}</p><p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p>{dataUrl ? <img src={dataUrl} alt={t("profile.qrPreview")} className={`mx-auto mt-4 h-48 w-48 border-8 border-white object-contain shadow-sm ${form.profile.qrDots === "round" ? "rounded-[28%]" : "rounded-none"}`} /> : <div className="mt-4 h-48 w-48 animate-pulse bg-slate-100" />}{form.profile.qrLogoPlacement === "above" && form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="mx-auto mt-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}</aside>;
+}
+
+export default function SectorProfileEditor({ form, setFormAction }: Props) {
+  const { t } = useI18n();
+  const profile = form.profile;
+  const update = (next: Partial<WizardForm["profile"]>) => setFormAction({ ...form, profile: { ...profile, ...next } });
+  const [uploading, setUploading] = useState("");
+  const [uploadError, setUploadError] = useState("");
+
+  async function uploadLogo(file: File) {
+    setUploading("logo"); setUploadError("");
+    try { const result = await uploadProfileFile(file); setFormAction({ ...form, branding: { ...form.branding, logoUrl: result.url } }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
+  }
+
+  async function uploadCredential(index: number, file: File) {
+    setUploading(`credential-${index}`); setUploadError("");
+    try { const result = await uploadProfileFile(file); update({ credentials: profile.credentials.map((item, row) => row === index ? { ...item, fileUrl: result.url, fileName: result.fileName, mimeType: result.mimeType } : item) }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
+  }
+
+  return <div className="space-y-6">
+    <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4"><p className="text-sm font-bold text-emerald-950">{t("profile.guidedTitle")}</p><p className="mt-1 text-xs leading-5 text-emerald-900">{t("profile.guidedNote")}</p></div>
+    <div className="grid gap-4 sm:grid-cols-2">
+      <label className="block text-sm font-semibold text-slate-700 sm:col-span-2"><span>{t("profile.sector")}</span><select value={profile.sector} onChange={(event) => update({ sector: event.target.value as typeof profile.sector })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-faida-navy outline-none focus:border-faida-teal">{sectorOptions.map((sector) => <option key={sector.id} value={sector.id}>{sector.label}</option>)}</select></label>
+      {profile.sector === "OTHER" ? <TextInput label={t("profile.customSectorName")} value={profile.customSectorName} onChange={(value) => update({ customSectorName: value })} placeholder={t("profile.customSectorPlaceholder")} /> : null}
+      <TextInput label={t("profile.firstName")} value={profile.firstName} onChange={(value) => update({ firstName: value })} />
+      <TextInput label={t("profile.lastName")} value={profile.lastName} onChange={(value) => update({ lastName: value })} />
+      <TextInput label={t("profile.role")} value={profile.role} onChange={(value) => update({ role: value })} placeholder={t("profile.rolePlaceholder")} />
+      <TextInput label={t("profile.organization")} value={profile.organization} onChange={(value) => update({ organization: value })} />
+      <TextInput label={t("profile.tagline")} value={profile.tagline} onChange={(value) => update({ tagline: value })} placeholder={t("profile.taglinePlaceholder")} />
+      <TextArea label={t("profile.bio")} value={profile.bio} onChange={(value) => update({ bio: value })} placeholder={t("profile.bioPlaceholder")} />
+      <TextArea label={t("profile.spotlight")} value={profile.spotlight} onChange={(value) => update({ spotlight: value })} placeholder={t("profile.spotlightPlaceholder")} />
+    </div>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.contactTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><TextInput label={t("profile.phone")} value={profile.phone} onChange={(value) => update({ phone: value })} type="tel" /><TextInput label={t("profile.email")} value={profile.email} onChange={(value) => update({ email: value })} type="email" /><TextInput label={t("profile.website")} value={profile.website} onChange={(value) => update({ website: value })} type="url" /><TextInput label={t("profile.address")} value={profile.address} onChange={(value) => update({ address: value })} /><TextInput label={t("profile.mapUrl")} value={profile.mapUrl} onChange={(value) => update({ mapUrl: value })} type="url" /></div></section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-faida-navy">{t("profile.logoTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.uploadNote")}</p></div><label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-faida-navy">{uploading === "logo" ? t("profile.uploading") : t("profile.uploadLogo")}<input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadLogo(file); }} /></label></div>{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-16 w-16 rounded-xl border border-slate-200 bg-white object-contain p-1" /> : null}</section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-faida-navy">{t("profile.socialTitle")}</h3><button type="button" onClick={() => update({ socialLinks: [...profile.socialLinks, { platform: "LinkedIn", label: "", url: "" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.socialLinks.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[.7fr_1fr_1.5fr_auto]"><TextInput label={t("profile.platform")} value={item.platform} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, platform: value } : row) })} /><TextInput label={t("profile.label")} value={item.label} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, label: value } : row) })} /><TextInput label={t("profile.url")} value={item.url} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, url: value } : row) })} type="url" /><button type="button" aria-label={t("profile.removeItem")} onClick={() => update({ socialLinks: profile.socialLinks.filter((_, i) => i !== index) })} className="self-end rounded-lg px-2 py-2 text-slate-500">×</button></div>)}</section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><div><h3 className="font-semibold text-faida-navy">{t("profile.projectsTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.projectsNote")}</p></div><button type="button" onClick={() => update({ projects: [...profile.projects, { title: "", description: "", url: "", imageUrl: "" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.projects.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-2"><TextInput label={t("profile.projectTitle")} value={item.title} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, title: value } : row) })} /><TextInput label={t("profile.url")} value={item.url} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, url: value } : row) })} type="url" /><TextInput label={t("profile.imageUrl")} value={item.imageUrl} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, imageUrl: value } : row) })} type="url" /><TextArea label={t("profile.description")} value={item.description} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, description: value } : row) })} /></div>)}</section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><div><h3 className="font-semibold text-faida-navy">{t("profile.credentialsTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.credentialsNote")}</p></div><button type="button" onClick={() => update({ credentials: [...profile.credentials, { title: "", issuer: "", year: "", fileUrl: "", fileName: "", mimeType: "application/pdf" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.credentials.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-2"><TextInput label={t("profile.credentialTitle")} value={item.title} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, title: value } : row) })} /><TextInput label={t("profile.issuer")} value={item.issuer} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, issuer: value } : row) })} /><TextInput label={t("profile.year")} value={item.year} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, year: value } : row) })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.file")}</span><input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadCredential(index, file); }} className="mt-1.5 block w-full text-xs" />{uploading === `credential-${index}` ? <span className="mt-1 block text-xs text-teal-800">{t("profile.uploading")}</span> : item.fileName ? <span className="mt-1 block truncate text-xs text-slate-600">{item.fileName}</span> : null}</label></div>)}</section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-faida-navy">{t("profile.customFieldsTitle")}</h3><button type="button" onClick={() => update({ customFields: [...profile.customFields, { id: `field-${Date.now()}`, label: "", type: "text", value: "" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.customFields.map((item, index) => <div key={item.id} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-3"><TextInput label={t("profile.fieldLabel")} value={item.label} onChange={(value) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, label: value } : row) })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.fieldType")}</span><select value={item.type} onChange={(event) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, type: event.target.value as typeof row.type } : row) })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">{profileFieldTypes.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}</select></label><TextInput label={t("profile.fieldValue")} value={item.value} onChange={(value) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, value } : row) })} /></div>)}</section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.visibilityTitle")}</h3><div className="grid gap-2 sm:grid-cols-2">{(Object.keys(profile.sectionVisibility) as (keyof typeof profile.sectionVisibility)[]).map((key) => <label key={key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={profile.sectionVisibility[key]} onChange={(event) => update({ sectionVisibility: { ...profile.sectionVisibility, [key]: event.target.checked } })} className="h-4 w-4 accent-emerald-700" />{t(`profile.visibility.${key}` as never)}</label>)}</div></section>
+
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.qrStyleTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><TextInput label={t("profile.qrBackground")} value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value })} type="color" /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrFrame")}</span><select value={profile.qrFrame} onChange={(event) => update({ qrFrame: event.target.value as typeof profile.qrFrame })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrFrameSquare")}</option><option value="rounded">{t("profile.qrFrameRounded")}</option><option value="badge">{t("profile.qrFrameBadge")}</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrDots")}</span><select value={profile.qrDots} onChange={(event) => update({ qrDots: event.target.value as typeof profile.qrDots })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrDotsSquare")}</option><option value="round">{t("profile.qrDotsRound")}</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrLogoPlacement")}</span><select value={profile.qrLogoPlacement} onChange={(event) => update({ qrLogoPlacement: event.target.value as typeof profile.qrLogoPlacement })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="center">{t("profile.qrLogoCenter")}</option><option value="above">{t("profile.qrLogoAbove")}</option></select></label></div></section>
+    {uploadError ? <p role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-900">{uploadError}</p> : null}
+    <LiveProfileQr form={form} setFormAction={setFormAction} />
+  </div>;
+}

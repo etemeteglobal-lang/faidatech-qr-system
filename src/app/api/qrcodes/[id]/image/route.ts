@@ -31,9 +31,11 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     }
 
     const qrForeground = readBrandIdentity(qrCode.payload)?.qrForeground;
+    const rawPayload = qrCode.payload && typeof qrCode.payload === "object" && !Array.isArray(qrCode.payload) ? qrCode.payload as Record<string, unknown> : {};
+    const qrBackground = typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined;
     const body = format === "svg"
-      ? await generateQrSvg(qrCode.shortCode, qrForeground)
-      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground));
+      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground)
+      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground));
     const contentType = format === "svg" ? "image/svg+xml; charset=utf-8" : "image/png";
     return new Response(body, {
       headers: {

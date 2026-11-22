@@ -4,6 +4,7 @@ import type { WizardForm, WizardPurpose } from "@/components/dashboard/wizard/mo
 import { useI18n } from "@/i18n/LocaleProvider";
 import type { MessageKey } from "@/i18n/messages";
 import { supportedLanguages } from "@/components/dashboard/wizard/model";
+import SectorProfileEditor from "@/components/dashboard/wizard/SectorProfileEditor";
 
 const copyKeys: Record<string, MessageKey> = {
   "Landing-page content": "field.landingContent",
@@ -160,6 +161,8 @@ function KeyValueEditor({ title, note, rows, onChange }: { title: string; note?:
 export default function PayloadEditor({ form, setFormAction }: { form: WizardForm; setFormAction: (next: WizardForm) => void }) {
   const { t } = useI18n();
   const purpose = form.purpose as WizardPurpose | null;
+
+  if (purpose === "SECTOR_PROFILE") return <SectorProfileEditor form={form} setFormAction={setFormAction} />;
 
   if (purpose === "LANDING_PAGE") {
     return (

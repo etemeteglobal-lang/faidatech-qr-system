@@ -2,8 +2,9 @@ import { isScanSafeQrForeground } from "@/lib/qr/brand-presentation";
 import { localeMetadata, uniqueLocaleCodes, type LocaleCode } from "@/i18n/registry";
 import type { MessageKey } from "@/i18n/messages";
 import type { LocalizedContent, LocalizedTextOverride } from "@/i18n/localized-content";
+import { type ProfileFieldType, sectorOptions } from "@/lib/profile/sectors";
 
-export type WizardPurpose = "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "LOCAL_PAYMENTS";
+export type WizardPurpose = "SECTOR_PROFILE" | "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "LOCAL_PAYMENTS";
 type MediaKind = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT";
 type KeyValue = { key: string; value: string };
 const DEFAULT_ACCENT = "#10B981";
@@ -27,6 +28,32 @@ export type WizardForm = {
   gps: { latitude: string; longitude: string; altitudeMeters: string };
   pdf: { fileUrl: string; fileName: string; assetId: string; fileSizeBytes: string; hostedAssetMetadata: KeyValue[] };
   paymentUrl: string;
+  profile: {
+    sector: (typeof sectorOptions)[number]["id"];
+    customSectorName: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    organization: string;
+    tagline: string;
+    bio: string;
+    spotlight: string;
+    phone: string;
+    email: string;
+    website: string;
+    address: string;
+    mapUrl: string;
+    socialLinks: { platform: string; label: string; url: string }[];
+    projects: { title: string; description: string; url: string; imageUrl: string }[];
+    credentials: { title: string; issuer: string; year: string; fileUrl: string; fileName: string; mimeType: string }[];
+    reviews: { name: string; role: string; rating: number; quote: string }[];
+    customFields: { id: string; label: string; type: ProfileFieldType; value: string }[];
+    sectionVisibility: { projects: boolean; credentials: boolean; social: boolean; reviews: boolean; contact: boolean };
+    qrPageBackground: string;
+    qrFrame: "square" | "rounded" | "badge";
+    qrDots: "square" | "round";
+    qrLogoPlacement: "center" | "above";
+  };
 };
 
 export const supportedLanguages = uniqueLocaleCodes.map((id) => ({
@@ -58,10 +85,37 @@ export function emptyWizardForm(): WizardForm {
     gps: { latitude: "", longitude: "", altitudeMeters: "" },
     pdf: { fileUrl: "", fileName: "", assetId: "", fileSizeBytes: "", hostedAssetMetadata: [] },
     paymentUrl: "",
+    profile: {
+      sector: "OTHER",
+      customSectorName: "",
+      firstName: "",
+      lastName: "",
+      role: "",
+      organization: "",
+      tagline: "",
+      bio: "",
+      spotlight: "",
+      phone: "",
+      email: "",
+      website: "",
+      address: "",
+      mapUrl: "",
+      socialLinks: [],
+      projects: [],
+      credentials: [],
+      reviews: [],
+      customFields: [],
+      sectionVisibility: { projects: true, credentials: true, social: true, reviews: true, contact: true },
+      qrPageBackground: "#FFFFFF",
+      qrFrame: "rounded",
+      qrDots: "square",
+      qrLogoPlacement: "center",
+    },
   };
 }
 
-export function destinationForPurpose(purpose: WizardPurpose): "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "URL" {
+export function destinationForPurpose(purpose: WizardPurpose): "SECTOR_PROFILE" | "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "URL" {
+  if (purpose === "SECTOR_PROFILE") return "SECTOR_PROFILE";
   return purpose === "LOCAL_PAYMENTS" ? "URL" : purpose;
 }
 
@@ -134,6 +188,42 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
     qrForeground: stringAt(branding, "qrForeground") || DEFAULT_QR_FOREGROUND,
   };
   form.localizedContent = localizedContentFrom(valueAt(payload, "localizedContent"));
+
+  if (destinationType === "SECTOR_PROFILE") {
+    const profile = asRecord(payload);
+    const visibility = asRecord(profile.sectionVisibility);
+    const rows = (key: string) => Array.isArray(profile[key]) ? profile[key] as unknown[] : [];
+    form.purpose = "SECTOR_PROFILE";
+    form.title = `${stringAt(profile, "firstName")} ${stringAt(profile, "lastName")}`.trim() || title;
+    form.profile = {
+      ...form.profile,
+      sector: stringAt(profile, "sector") as WizardForm["profile"]["sector"],
+      customSectorName: stringAt(profile, "customSectorName"),
+      firstName: stringAt(profile, "firstName"),
+      lastName: stringAt(profile, "lastName"),
+      role: stringAt(profile, "role"),
+      organization: stringAt(profile, "organization"),
+      tagline: stringAt(profile, "tagline"),
+      bio: stringAt(profile, "bio"),
+      spotlight: stringAt(profile, "spotlight"),
+      phone: stringAt(profile, "phone"),
+      email: stringAt(profile, "email"),
+      website: stringAt(profile, "website"),
+      address: stringAt(profile, "address"),
+      mapUrl: stringAt(profile, "mapUrl"),
+      socialLinks: rows("socialLinks").map((item) => { const row = asRecord(item); return { platform: stringAt(row, "platform"), label: stringAt(row, "label"), url: stringAt(row, "url") }; }),
+      projects: rows("projects").map((item) => { const row = asRecord(item); return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl") }; }),
+      credentials: rows("credentials").map((item) => { const row = asRecord(item); return { title: stringAt(row, "title"), issuer: stringAt(row, "issuer"), year: stringAt(row, "year"), fileUrl: stringAt(row, "fileUrl"), fileName: stringAt(row, "fileName"), mimeType: stringAt(row, "mimeType") || "application/pdf" }; }),
+      reviews: rows("reviews").map((item) => { const row = asRecord(item); return { name: stringAt(row, "name"), role: stringAt(row, "role"), rating: typeof row.rating === "number" ? row.rating : 5, quote: stringAt(row, "quote") }; }),
+      customFields: rows("customFields").map((item) => { const row = asRecord(item); return { id: stringAt(row, "id"), label: stringAt(row, "label"), type: stringAt(row, "type") as WizardForm["profile"]["customFields"][number]["type"], value: stringAt(row, "value") }; }),
+      sectionVisibility: { projects: visibility.projects !== false, credentials: visibility.credentials !== false, social: visibility.social !== false, reviews: visibility.reviews !== false, contact: visibility.contact !== false },
+      qrPageBackground: stringAt(profile, "qrPageBackground") || "#FFFFFF",
+      qrFrame: (stringAt(profile, "qrFrame") || "rounded") as WizardForm["profile"]["qrFrame"],
+      qrDots: (stringAt(profile, "qrDots") || "square") as WizardForm["profile"]["qrDots"],
+      qrLogoPlacement: (stringAt(profile, "qrLogoPlacement") || "center") as WizardForm["profile"]["qrLogoPlacement"],
+    };
+    return form;
+  }
 
   if (destinationType === "LANDING_PAGE") {
     form.purpose = "LANDING_PAGE";
@@ -272,6 +362,18 @@ export function validateWizardForm(form: WizardForm): WizardValidationError | nu
   if (!isScanSafeQrForeground(form.branding.qrForeground)) return { key: "validation.qrContrast" };
   if (!isSafeLogoUrl(form.branding.logoUrl.trim())) return { key: "validation.logoUrl" };
 
+  if (form.purpose === "SECTOR_PROFILE") {
+    if (!form.profile.firstName.trim() || !form.profile.lastName.trim()) return { key: "validation.profileNameRequired" };
+    if (!form.profile.role.trim()) return { key: "validation.profileRoleRequired" };
+    if (form.profile.sector === "OTHER" && !form.profile.customSectorName.trim()) return { key: "validation.customSectorRequired" };
+    if (form.profile.email.trim() && !/^\S+@\S+\.\S+$/.test(form.profile.email.trim())) return { key: "validation.email" };
+    if (form.profile.website.trim() && !/^https?:\/\//i.test(form.profile.website.trim())) return { key: "validation.profileWebsite" };
+    if (form.profile.mapUrl.trim() && !/^https?:\/\//i.test(form.profile.mapUrl.trim())) return { key: "validation.profileMapUrl" };
+    if (form.profile.socialLinks.some((link) => link.url.trim() && !/^https?:\/\//i.test(link.url.trim()))) return { key: "validation.profileSocialUrl" };
+    if (form.profile.projects.some((project) => [project.url, project.imageUrl].some((url) => url.trim() && !/^https?:\/\//i.test(url.trim())))) return { key: "validation.profileProjectUrl" };
+    if (form.profile.credentials.some((credential) => !/^https?:\/\//i.test(credential.fileUrl.trim()))) return { key: "validation.profileFileUrl" };
+  }
+
   if (form.purpose === "LANDING_PAGE") {
     if (form.landing.imageUrl.trim() && !/^https?:\/\//i.test(form.landing.imageUrl.trim())) return { key: "validation.imageUrl" };
     if (form.landing.buttonUrl.trim() && !/^https?:\/\//i.test(form.landing.buttonUrl.trim())) return { key: "validation.buttonUrl" };
@@ -333,6 +435,36 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
     ...(Object.keys(localizedContent).length ? { localizedContent } : {}),
     ...(Object.keys(branding).length ? { branding } : {}),
   });
+
+  if (form.purpose === "SECTOR_PROFILE") {
+    return withBranding({
+      profileVersion: 1,
+      sector: form.profile.sector,
+      customSectorName: optional(form.profile.customSectorName),
+      firstName: form.profile.firstName.trim(),
+      lastName: form.profile.lastName.trim(),
+      role: form.profile.role.trim(),
+      organization: optional(form.profile.organization),
+      tagline: optional(form.profile.tagline),
+      bio: optional(form.profile.bio),
+      spotlight: optional(form.profile.spotlight),
+      phone: optional(form.profile.phone),
+      email: optional(form.profile.email),
+      website: optionalWebUrl(form.profile.website),
+      address: optional(form.profile.address),
+      mapUrl: optionalWebUrl(form.profile.mapUrl),
+      socialLinks: form.profile.socialLinks.filter((item) => item.url.trim()).map((item) => ({ platform: item.platform.trim() || "Social", label: item.label.trim() || item.platform.trim() || "Profile", url: item.url.trim() })),
+      projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl) })),
+      credentials: form.profile.credentials.filter((item) => item.fileUrl.trim()).map((item) => ({ title: item.title.trim(), issuer: optional(item.issuer), year: optional(item.year), fileUrl: item.fileUrl.trim(), fileName: item.fileName.trim(), mimeType: item.mimeType })),
+      reviews: form.profile.reviews.filter((item) => item.quote.trim()).map((item) => ({ name: item.name.trim(), role: optional(item.role), rating: item.rating, quote: item.quote.trim() })),
+      customFields: form.profile.customFields.filter((item) => item.label.trim() && item.value.trim()).map((item) => ({ id: item.id.trim() || `field-${Math.random().toString(36).slice(2, 8)}`, label: item.label.trim(), type: item.type, value: item.value.trim() })),
+      sectionVisibility: form.profile.sectionVisibility,
+      qrPageBackground: form.profile.qrPageBackground,
+      qrFrame: form.profile.qrFrame,
+      qrDots: form.profile.qrDots,
+      qrLogoPlacement: form.profile.qrLogoPlacement,
+    });
+  }
 
   if (form.purpose === "LANDING_PAGE") {
     return withBranding({

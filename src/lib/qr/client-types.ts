@@ -3,7 +3,7 @@ export type ManagedQRCode = {
   title: string;
   description: string | null;
   shortCode: string;
-  destinationType: "LANDING_PAGE" | "URL" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF";
+  destinationType: "LANDING_PAGE" | "URL" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "SECTOR_PROFILE";
   isActive: boolean;
   expiresAt: string | null;
   createdAt: string;
