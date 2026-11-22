@@ -926,6 +926,26 @@
     "wizard.viewCodes": "Koodota QR koo ilaali",
     "wizard.visitorDescription": "Ibsa daawwattootaaf (dirqama miti)",
     "wizard.whatCreating": "Maal uumaa jirta?",
-    "templates.retryLoad": "Irra deebi’ii yaali"
+    "templates.retryLoad": "Irra deebi’ii yaali",
+    "templates.customSector": "Kan biraa / damee ofii",
+    "templates.customSectorName": "Damee kee moggaasi",
+    "templates.showCoreFields": "Dirreewwan bu’uuraa agarsiisi",
+    "templates.showMoreFields": "Dirreewwan damee hunda agarsiisi",
+    "templates.designTitle": "Bifa fuulaa fi QR",
+    "templates.pageBackground": "Duubbee fuulaa",
+    "templates.qrInk": "Halluu koodii QR",
+    "templates.qrFrame": "Fureemii QR",
+    "templates.qrSquare": "Fureemii iskuweerii",
+    "templates.qrRounded": "Fureemii golee maramaa",
+    "templates.qrBrand": "Fureemii maqaa daldalaa",
+    "templates.qrDots": "Tuqaalee QR",
+    "templates.qrSquareDots": "Tuqaalee iskuweerii",
+    "templates.qrRoundDots": "Tuqaalee geengoo",
+    "templates.qrLargeDots": "Tuqaalee gurguddoo",
+    "templates.logoPlacement": "Bakka asxaa kaa’amu",
+    "templates.logoCenter": "Giddugala",
+    "templates.logoTop": "Koodii irra",
+    "templates.logoBottom": "Koodii jala",
+    "templates.qrSafetyNote": "Iskaanii amanamaa ta’uuf garaagarummaa halluu gurraacha fi ifaa cimaa eegi; akkasumas naannoo duwwaa QR hin tuqin."
   }
 }

@@ -930,6 +930,26 @@
     "wizard.viewCodes": "Kayi QR koodubba la'i",
     "wizard.visitorDescription": "La'annoha xawishsha (doorantino)",
     "wizard.whatCreating": "Ma kalaqate?",
-    "templates.retryLoad": "Qolteeti yaali"
+    "templates.retryLoad": "Qolteeti yaali",
+    "templates.customSector": "Haaro/kaa’lo sektore",
+    "templates.customSectorName": "Sektorete su’ma buuxi",
+    "templates.showCoreFields": "Ginaama xaphooshsha leellishi",
+    "templates.showMoreFields": "Sektorete baala xaphooshsha leellishi",
+    "templates.designTitle": "Sayita aante nna QR miilla",
+    "templates.pageBackground": "Sayita aante",
+    "templates.qrInk": "QR koodete kuula",
+    "templates.qrFrame": "QR raamete",
+    "templates.qrSquare": "Kare raamete",
+    "templates.qrRounded": "Goofante raamete",
+    "templates.qrBrand": "Marka raamete",
+    "templates.qrDots": "QR xallishsha",
+    "templates.qrSquareDots": "Kare xallishsha",
+    "templates.qrRoundDots": "Goofante xallishsha",
+    "templates.qrLargeDots": "Korka xallishsha",
+    "templates.logoPlacement": "Logote sa’ate",
+    "templates.logoCenter": "Mereero",
+    "templates.logoTop": "Koodete aleenni",
+    "templates.logoBottom": "Koodete woroonni",
+    "templates.qrSafetyNote": "Hakkiima skaanate, gitawe kuulinna salphu aante giddo korka garaa, QR koodete gobbara qixxaawa agari."
   }
 }

@@ -926,6 +926,26 @@
     "wizard.viewCodes": "የእኔን QR ኮዶች ይመልከቱ",
     "wizard.visitorDescription": "ለጎብኚ መግለጫ (አማራጭ)",
     "wizard.whatCreating": "ምን እየፈጠሩ ነው?",
-    "templates.retryLoad": "እንደገና ይሞክሩ"
+    "templates.retryLoad": "እንደገና ይሞክሩ",
+    "templates.customSector": "ሌላ / ብጁ ዘርፍ",
+    "templates.customSectorName": "የዘርፍዎን ስም ያስገቡ",
+    "templates.showCoreFields": "ዋና መስኮችን አሳይ",
+    "templates.showMoreFields": "ሁሉንም የዘርፍ መስኮች አሳይ",
+    "templates.designTitle": "የገጽ እና QR መልክ",
+    "templates.pageBackground": "የገጽ ዳራ",
+    "templates.qrInk": "የQR ኮድ ቀለም",
+    "templates.qrFrame": "የQR ኮድ ፍሬም",
+    "templates.qrSquare": "ካሬ ፍሬም",
+    "templates.qrRounded": "ክብ ጠርዝ ያለው ፍሬም",
+    "templates.qrBrand": "የብራንድ ፍሬም",
+    "templates.qrDots": "የQR ነጥቦች",
+    "templates.qrSquareDots": "ካሬ ነጥቦች",
+    "templates.qrRoundDots": "ክብ ነጥቦች",
+    "templates.qrLargeDots": "ትልቅ ነጥቦች",
+    "templates.logoPlacement": "የሎጎ ቦታ",
+    "templates.logoCenter": "መሃል",
+    "templates.logoTop": "ከኮዱ በላይ",
+    "templates.logoBottom": "ከኮዱ በታች",
+    "templates.qrSafetyNote": "አስተማማኝ ስካን እንዲደረግ ጠንካራ ጥቁር-በብርሃን ላይ ንፅፅር ይጠብቁ፣ እና በኮዱ ዙሪያ ያለውን ነጭ ክፍተት አይሙሉ።"
   }
 }

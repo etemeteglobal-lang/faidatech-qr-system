@@ -925,6 +925,26 @@
     "wizard.viewCodes": "查看我的 QR 码",
     "wizard.visitorDescription": "访客描述（可选）",
     "wizard.whatCreating": "你要创建什么？",
-    "templates.retryLoad": "重试"
+    "templates.retryLoad": "重试",
+    "templates.customSector": "其他 / 自定义行业",
+    "templates.customSectorName": "为行业命名",
+    "templates.showCoreFields": "显示核心字段",
+    "templates.showMoreFields": "显示该行业的所有字段",
+    "templates.designTitle": "页面与二维码外观",
+    "templates.pageBackground": "页面背景",
+    "templates.qrInk": "二维码颜色",
+    "templates.qrFrame": "二维码边框",
+    "templates.qrSquare": "方形边框",
+    "templates.qrRounded": "圆角边框",
+    "templates.qrBrand": "品牌边框",
+    "templates.qrDots": "二维码点阵",
+    "templates.qrSquareDots": "方形点",
+    "templates.qrRoundDots": "圆形点",
+    "templates.qrLargeDots": "较大点",
+    "templates.logoPlacement": "Logo 位置",
+    "templates.logoCenter": "居中",
+    "templates.logoTop": "置于二维码上方",
+    "templates.logoBottom": "置于二维码下方",
+    "templates.qrSafetyNote": "请确保深色图案与浅色背景对比鲜明，并保持静区无遮挡，以确保可靠扫描。"
   }
 }

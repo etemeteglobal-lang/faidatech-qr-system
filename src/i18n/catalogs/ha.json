@@ -925,6 +925,26 @@
     "wizard.viewCodes": "Duba lambobin QR nawa",
     "wizard.visitorDescription": "Bayanin baƙi (na zaɓi)",
     "wizard.whatCreating": "Me kake ƙirƙirawa?",
-    "templates.retryLoad": "Sake gwadawa"
+    "templates.retryLoad": "Sake gwadawa",
+    "templates.customSector": "Sauran / ɓangare na musamman",
+    "templates.customSectorName": "Sanya wa ɓangarenka suna",
+    "templates.showCoreFields": "Nuna muhimman filaye",
+    "templates.showMoreFields": "Nuna dukkan filayen ɓangaren",
+    "templates.designTitle": "Kamannin shafi da lambar QR",
+    "templates.pageBackground": "Bayanan bangon shafi",
+    "templates.qrInk": "Launin lambar QR",
+    "templates.qrFrame": "Firam ɗin QR",
+    "templates.qrSquare": "Firam mai kusurwa huɗu",
+    "templates.qrRounded": "Firam mai lanƙwasassun kusurwoyi",
+    "templates.qrBrand": "Firam mai alamar kasuwanci",
+    "templates.qrDots": "Ɗigon QR",
+    "templates.qrSquareDots": "Ɗigo masu kusurwa huɗu",
+    "templates.qrRoundDots": "Ɗigo masu zagaye",
+    "templates.qrLargeDots": "Manyan ɗigo",
+    "templates.logoPlacement": "Matsayin tambari",
+    "templates.logoCenter": "Tsakiya",
+    "templates.logoTop": "Sama da lambar",
+    "templates.logoBottom": "Ƙasa da lambar",
+    "templates.qrSafetyNote": "Tabbatar da bambanci mai ƙarfi tsakanin launi mai duhu da mai haske, kuma ka bar yankin da ke kewaye da lambar a sarari domin a iya tantance ta cikin sauƙi."
   }
 }

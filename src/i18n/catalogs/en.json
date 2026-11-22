@@ -918,6 +918,26 @@
     "wizard.viewCodes": "View my QR codes",
     "wizard.visitorDescription": "Visitor description (optional)",
     "wizard.whatCreating": "What are you creating?",
-    "templates.retryLoad": "Try again"
+    "templates.retryLoad": "Try again",
+    "templates.customSector": "Other / custom sector",
+    "templates.customSectorName": "Name your sector",
+    "templates.showCoreFields": "Show core fields",
+    "templates.showMoreFields": "Show all sector fields",
+    "templates.designTitle": "Page and QR appearance",
+    "templates.pageBackground": "Page background",
+    "templates.qrInk": "QR code color",
+    "templates.qrFrame": "QR frame",
+    "templates.qrSquare": "Square frame",
+    "templates.qrRounded": "Rounded frame",
+    "templates.qrBrand": "Brand frame",
+    "templates.qrDots": "QR dots",
+    "templates.qrSquareDots": "Square dots",
+    "templates.qrRoundDots": "Round dots",
+    "templates.qrLargeDots": "Larger dots",
+    "templates.logoPlacement": "Logo placement",
+    "templates.logoCenter": "Center",
+    "templates.logoTop": "Above the code",
+    "templates.logoBottom": "Below the code",
+    "templates.qrSafetyNote": "Keep strong dark-on-light contrast and leave the quiet zone clear for reliable scanning."
   }
 }

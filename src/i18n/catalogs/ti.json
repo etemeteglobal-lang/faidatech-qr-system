@@ -925,6 +925,26 @@
     "wizard.viewCodes": "QR ኮዳተይ ርአ",
     "wizard.visitorDescription": "መግለጺ በጻሒ (ኣማራጺ)",
     "wizard.whatCreating": "እንታይ ትፈጥሩ ኣለኹም?",
-    "templates.retryLoad": "እንደገና ፈትን"
+    "templates.retryLoad": "እንደገና ፈትን",
+    "templates.customSector": "ካልእ / ብፍሉይ ዝተዳለወ ዓውዲ",
+    "templates.customSectorName": "ዓውድኻ ሰይም",
+    "templates.showCoreFields": "ቀንዲ መስኮታት ኣርኢ",
+    "templates.showMoreFields": "ኩሎም መስኮታት ዓውዲ ኣርኢ",
+    "templates.designTitle": "መልክዕ ገጽን QRን",
+    "templates.pageBackground": "ድሕረ ባይታ ገጽ",
+    "templates.qrInk": "ሕብሪ ኮድ QR",
+    "templates.qrFrame": "ፍሬም QR",
+    "templates.qrSquare": "ርቡዕ ፍሬም",
+    "templates.qrRounded": "ኣእዋም ዘለዎ ፍሬም",
+    "templates.qrBrand": "ፍሬም ምልክት ንግዲ",
+    "templates.qrDots": "ነጥብታት QR",
+    "templates.qrSquareDots": "ርቡዕ ነጥብታት",
+    "templates.qrRoundDots": "ክቢ ነጥብታት",
+    "templates.qrLargeDots": "ዓበይቲ ነጥብታት",
+    "templates.logoPlacement": "ኣቀማምጣ ሎጎ",
+    "templates.logoCenter": "ማእከል",
+    "templates.logoTop": "ልዕሊ ኮዱ",
+    "templates.logoBottom": "ትሕቲ ኮዱ",
+    "templates.qrSafetyNote": "ንእሙን ስካን ጽኑዕ ጸሊም-ኣብ-ልዕሊ-ብሩህ ተነጻጻሪ ሕብሪ ሓሉ፣ እቲ ኮድ ዝኾነ ምልክት ዘይብሉ ከባቢ እውን ጹሩይ ኣትርፍ።"
   }
 }

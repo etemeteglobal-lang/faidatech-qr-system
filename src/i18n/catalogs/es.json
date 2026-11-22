@@ -927,6 +927,26 @@
     "wizard.viewCodes": "Ver mis códigos QR",
     "wizard.visitorDescription": "Descripción para visitantes (opcional)",
     "wizard.whatCreating": "¿Qué vas a crear?",
-    "templates.retryLoad": "Reintentar"
+    "templates.retryLoad": "Reintentar",
+    "templates.customSector": "Otro / sector personalizado",
+    "templates.customSectorName": "Nombra tu sector",
+    "templates.showCoreFields": "Mostrar campos principales",
+    "templates.showMoreFields": "Mostrar todos los campos del sector",
+    "templates.designTitle": "Aspecto de la página y del código QR",
+    "templates.pageBackground": "Fondo de la página",
+    "templates.qrInk": "Color del código QR",
+    "templates.qrFrame": "Marco del código QR",
+    "templates.qrSquare": "Marco cuadrado",
+    "templates.qrRounded": "Marco redondeado",
+    "templates.qrBrand": "Marco de marca",
+    "templates.qrDots": "Puntos del código QR",
+    "templates.qrSquareDots": "Puntos cuadrados",
+    "templates.qrRoundDots": "Puntos redondos",
+    "templates.qrLargeDots": "Puntos más grandes",
+    "templates.logoPlacement": "Ubicación del logotipo",
+    "templates.logoCenter": "Centro",
+    "templates.logoTop": "Encima del código",
+    "templates.logoBottom": "Debajo del código",
+    "templates.qrSafetyNote": "Mantén un contraste marcado entre oscuro y claro, y deja libre la zona de seguridad para que el escaneo sea fiable."
   }
 }

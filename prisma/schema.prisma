@@ -116,6 +116,7 @@ enum VerticalSector {
   ASSOCIATIONS_COOPERATIVES
   TEAMS_WORKGROUPS
   JOURNALISM_MEDIA_PR
+  OTHER
 }
 
 enum SharedServiceType {

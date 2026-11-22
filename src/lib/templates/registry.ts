@@ -39,7 +39,8 @@ const profileKinds = ["INDIVIDUAL", "ORGANIZATION", "GOVERNMENT", "GROUP"] as co
 const sectorCodes = verticalTemplates.map(({ code }) => code) as [VerticalSectorCode, ...VerticalSectorCode[]];
 
 export const profileSubmissionSchema = z.object({
-  sector: z.enum(sectorCodes),
+  sector: z.union([z.enum(sectorCodes), z.literal("OTHER")]),
+  customSectorName: z.string().trim().max(120).optional(),
   profileKind: z.enum(profileKinds).default("ORGANIZATION"),
   displayName: z.string().trim().min(1).max(180),
   profileData: z.record(z.string(), z.unknown()).default({}),
@@ -73,8 +74,9 @@ export function validateProfileSubmission(input: unknown) {
   const parsed = profileSubmissionSchema.safeParse(input);
   if (!parsed.success) return { success: false as const, error: parsed.error.flatten() };
   const template = getTemplate(parsed.data.sector);
-  if (!template) return { success: false as const, error: { formErrors: ["Unknown sector template."], fieldErrors: {} } };
-  const registeredFields: readonly string[] = template.fields;
+  if (!template && parsed.data.sector !== "OTHER") return { success: false as const, error: { formErrors: ["Unknown sector template."], fieldErrors: {} } };
+  if (parsed.data.sector === "OTHER" && !parsed.data.customSectorName?.trim()) return { success: false as const, error: { formErrors: ["Enter a name for the custom sector."], fieldErrors: {} } };
+  const registeredFields: readonly string[] = [...(template?.fields ?? []), "_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement"];
   const unsupportedFields = Object.keys(parsed.data.profileData).filter((key) => !registeredFields.includes(key));
   if (unsupportedFields.length) return { success: false as const, error: { formErrors: [`Fields are not registered for ${parsed.data.sector}: ${unsupportedFields.slice(0, 8).join(", ")}. Put organization-specific extensions in customFields.`], fieldErrors: {} } };
   if (!isSafeJsonValue(parsed.data.profileData) || !isSafeJsonValue(parsed.data.customFields)) {

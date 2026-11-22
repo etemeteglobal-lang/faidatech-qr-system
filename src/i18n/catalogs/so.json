@@ -925,6 +925,26 @@
     "wizard.viewCodes": "Eeg koodhadhkayga QR",
     "wizard.visitorDescription": "Sharaxaadda booqdayaasha (ikhtiyaari)",
     "wizard.whatCreating": "Maxaad samaynaysaa?",
-    "templates.retryLoad": "Mar kale isku day"
+    "templates.retryLoad": "Mar kale isku day",
+    "templates.customSector": "Qayb kale / gaar ah",
+    "templates.customSectorName": "Magacaab qaybtaada",
+    "templates.showCoreFields": "Muuji goobaha aasaasiga ah",
+    "templates.showMoreFields": "Muuji dhammaan goobaha qaybta",
+    "templates.designTitle": "Muuqaalka bogga iyo QR-ka",
+    "templates.pageBackground": "Asalka bogga",
+    "templates.qrInk": "Midabka koodhka QR",
+    "templates.qrFrame": "Qaabka hareeraha QR-ka",
+    "templates.qrSquare": "Hareeraha afar-geeska ah",
+    "templates.qrRounded": "Hareeraha geesaha wareegsan",
+    "templates.qrBrand": "Hareeraha astaanta summadda",
+    "templates.qrDots": "Dhibcaha QR-ka",
+    "templates.qrSquareDots": "Dhibco afar-gees ah",
+    "templates.qrRoundDots": "Dhibco wareegsan",
+    "templates.qrLargeDots": "Dhibco waaweyn",
+    "templates.logoPlacement": "Meelaynta astaanta",
+    "templates.logoCenter": "Dhexda",
+    "templates.logoTop": "Koodhka korkiisa",
+    "templates.logoBottom": "Koodhka hoostiisa",
+    "templates.qrSafetyNote": "Hubi inuu jiro kala-duwanaansho xooggan oo u dhexeeya madowga iyo iftiinka, kana tag aagga bannaan si si lagu kalsoonaan karo loo akhriyo."
   }
 }

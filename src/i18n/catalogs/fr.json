@@ -928,6 +928,26 @@
     "wizard.viewCodes": "Voir mes QR codes",
     "wizard.visitorDescription": "Description destinée aux visiteurs (facultatif)",
     "wizard.whatCreating": "Que souhaitez-vous créer ?",
-    "templates.retryLoad": "Réessayer"
+    "templates.retryLoad": "Réessayer",
+    "templates.customSector": "Autre secteur / secteur personnalisé",
+    "templates.customSectorName": "Nommez votre secteur",
+    "templates.showCoreFields": "Afficher les champs essentiels",
+    "templates.showMoreFields": "Afficher tous les champs du secteur",
+    "templates.designTitle": "Apparence de la page et du QR code",
+    "templates.pageBackground": "Arrière-plan de la page",
+    "templates.qrInk": "Couleur du QR code",
+    "templates.qrFrame": "Cadre du QR code",
+    "templates.qrSquare": "Cadre carré",
+    "templates.qrRounded": "Cadre arrondi",
+    "templates.qrBrand": "Cadre de marque",
+    "templates.qrDots": "Points du QR code",
+    "templates.qrSquareDots": "Points carrés",
+    "templates.qrRoundDots": "Points arrondis",
+    "templates.qrLargeDots": "Points plus grands",
+    "templates.logoPlacement": "Position du logo",
+    "templates.logoCenter": "Au centre",
+    "templates.logoTop": "Au-dessus du code",
+    "templates.logoBottom": "Sous le code",
+    "templates.qrSafetyNote": "Conservez un contraste marqué entre les tons foncés et clairs, et laissez la zone de silence dégagée pour garantir une lecture fiable."
   }
 }

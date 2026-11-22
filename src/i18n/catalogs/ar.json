@@ -925,6 +925,26 @@
     "wizard.viewCodes": "عرض رموز QR الخاصة بي",
     "wizard.visitorDescription": "وصف للزوار (اختياري)",
     "wizard.whatCreating": "ما الذي تريد إنشاءه؟",
-    "templates.retryLoad": "حاول مرة أخرى"
+    "templates.retryLoad": "حاول مرة أخرى",
+    "templates.customSector": "قطاع آخر / مخصص",
+    "templates.customSectorName": "سمِّ قطاعك",
+    "templates.showCoreFields": "إظهار الحقول الأساسية",
+    "templates.showMoreFields": "إظهار جميع حقول القطاع",
+    "templates.designTitle": "مظهر الصفحة ورمز QR",
+    "templates.pageBackground": "خلفية الصفحة",
+    "templates.qrInk": "لون رمز QR",
+    "templates.qrFrame": "إطار رمز QR",
+    "templates.qrSquare": "إطار مربع",
+    "templates.qrRounded": "إطار مستدير",
+    "templates.qrBrand": "إطار العلامة التجارية",
+    "templates.qrDots": "نقاط رمز QR",
+    "templates.qrSquareDots": "نقاط مربعة",
+    "templates.qrRoundDots": "نقاط مستديرة",
+    "templates.qrLargeDots": "نقاط أكبر",
+    "templates.logoPlacement": "موضع الشعار",
+    "templates.logoCenter": "في الوسط",
+    "templates.logoTop": "فوق الرمز",
+    "templates.logoBottom": "أسفل الرمز",
+    "templates.qrSafetyNote": "حافظ على تباين قوي بين لون داكن وخلفية فاتحة، واترك المنطقة الهادئة خالية لضمان موثوقية المسح."
   }
 }

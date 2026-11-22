@@ -10,6 +10,7 @@
     { "path": "/dashboard/campaigns", "title": "Campaigns — FaidATech" },
     { "path": "/dashboard/integrations", "title": "Integrations — FaidATech" },
     { "path": "/dashboard/settings", "title": "Settings — FaidATech" },
-    { "path": "/r/:shortCode", "title": "Dynamic QR destination" }
+    { "path": "/r/:shortCode", "title": "Dynamic QR destination" },
+    { "path": "/p/:slug", "title": "Public business profile" }
   ]
 }

@@ -925,6 +925,26 @@
     "wizard.viewCodes": "Tazama misimbo yangu ya QR",
     "wizard.visitorDescription": "Maelezo kwa wageni (si lazima)",
     "wizard.whatCreating": "Unaunda nini?",
-    "templates.retryLoad": "Jaribu tena"
+    "templates.retryLoad": "Jaribu tena",
+    "templates.customSector": "Sekta nyingine / maalum",
+    "templates.customSectorName": "Taja sekta yako",
+    "templates.showCoreFields": "Onyesha sehemu muhimu",
+    "templates.showMoreFields": "Onyesha sehemu zote za sekta",
+    "templates.designTitle": "Muonekano wa ukurasa na msimbo wa QR",
+    "templates.pageBackground": "Mandharinyuma ya ukurasa",
+    "templates.qrInk": "Rangi ya msimbo wa QR",
+    "templates.qrFrame": "Fremu ya msimbo wa QR",
+    "templates.qrSquare": "Fremu ya mraba",
+    "templates.qrRounded": "Fremu yenye pembe za mviringo",
+    "templates.qrBrand": "Fremu ya chapa",
+    "templates.qrDots": "Vitone vya msimbo wa QR",
+    "templates.qrSquareDots": "Vitone vya mraba",
+    "templates.qrRoundDots": "Vitone vya duara",
+    "templates.qrLargeDots": "Vitone vikubwa zaidi",
+    "templates.logoPlacement": "Mahali pa nembo",
+    "templates.logoCenter": "Katikati",
+    "templates.logoTop": "Juu ya msimbo",
+    "templates.logoBottom": "Chini ya msimbo",
+    "templates.qrSafetyNote": "Tumia utofauti mkubwa kati ya rangi nyeusi na nyepesi, na uache eneo tupu linalozunguka msimbo bila chochote ili uweze kuchanganuliwa kwa urahisi."
   }
 }
