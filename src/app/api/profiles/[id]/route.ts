@@ -1,4 +1,3 @@
-import { randomBytes } from "node:crypto";
 import { Prisma } from "@prisma/client";
 import { NextRequest } from "next/server";
 import { apiErrorResponse, ApiError, readJsonBody } from "@/lib/api/errors";
@@ -7,11 +6,6 @@ import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { validateProfileSubmission } from "@/lib/templates/registry";
 
 export const runtime = "nodejs";
-
-function makeSlug(value: string) {
-  const base = value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80) || "profile";
-  return `${base}-${randomBytes(3).toString("hex")}`;
-}
 
 export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }): Promise<Response> {
   try {
@@ -27,7 +21,9 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     if (current.approvalStatus !== "DRAFT" && current.approvalStatus !== "REJECTED") throw new ApiError(409, "profile_locked", "Only draft or rejected profiles can be edited; submitted and approved profiles are locked.");
     const data = validation.data;
     const updated = await prisma.$transaction(async (tx) => {
-      const profile = await tx.businessProfile.update({ where: { id }, data: { sector: data.sector, profileKind: data.profileKind, displayName: data.displayName, slug: makeSlug(data.displayName), profileData: data.profileData as Prisma.InputJsonObject, customFields: data.customFields as Prisma.InputJsonObject }, select: { id: true, sector: true, profileKind: true, displayName: true, slug: true, approvalStatus: true, profileData: true, customFields: true } });
+      // Keep the public path stable so printed QR codes, shared links, and vCards
+      // continue to resolve after an approved profile is edited.
+      const profile = await tx.businessProfile.update({ where: { id }, data: { sector: data.sector, profileKind: data.profileKind, displayName: data.displayName, profileData: data.profileData as Prisma.InputJsonObject, customFields: data.customFields as Prisma.InputJsonObject }, select: { id: true, sector: true, profileKind: true, displayName: true, slug: true, approvalStatus: true, profileData: true, customFields: true } });
       await tx.ecosystemAuditLog.create({ data: { organizationId: tenant.organizationId, actorUserId: tenant.userId, action: "PROFILE_UPDATED", entityType: "BusinessProfile", entityId: id, details: { sector: data.sector } } });
       return profile;
     });

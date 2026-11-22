@@ -64,10 +64,11 @@ export async function POST(request: NextRequest): Promise<Response> {
         for (const [column, value] of Object.entries(row)) {
           const text = String(value ?? "").trim();
           if (!text || standardHeaders.has(column.trim().toLowerCase())) continue;
-          if (column.slice(0, "custom:".length).toLowerCase() === "custom:") {
-            const name = column.slice("custom:".length).trim();
-            if (!name || name.length > 80) throw new Error("A custom detail column needs a name of 1 to 80 characters.");
-            customFields[name] = text;
+          const customPrefix = column.slice(0, "custom:".length).toLowerCase() === "custom:" ? "custom:" : "";
+          const customName = column.slice(customPrefix.length).trim();
+          if (customPrefix) {
+            if (!customName || customName.length > 80) throw new Error("Give each extra detail column a name of 1 to 80 characters.");
+            customFields[customName] = text;
             continue;
           }
           const field = template.fields.find((key) => sameHeader(column, [
@@ -75,7 +76,11 @@ export async function POST(request: NextRequest): Promise<Response> {
             catalogs[locale][`template.field.${key}` as MessageKey],
             catalogs.en[`template.field.${key}` as MessageKey],
           ]));
-          if (!field) throw new Error(`“${column}” is not a detail for ${template.label}. Use one of the visible sector details or a custom:Name column.`);
+          if (!field) {
+            if (!customName || customName.length > 80) throw new Error("Give each extra detail column a name of 1 to 80 characters.");
+            customFields[customName] = text;
+            continue;
+          }
           profileData[field] = text;
         }
 
