@@ -35,6 +35,8 @@ export default function SectorProfileWizard() {
   const [profileData, setProfileData] = useState<Record<string, string>>({});
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profilesLoading, setProfilesLoading] = useState(true);
+  const [profilesLoadFailed, setProfilesLoadFailed] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState("");
@@ -42,13 +44,21 @@ export default function SectorProfileWizard() {
   const template = useMemo(() => verticalTemplates.find((item) => item.code === sector)!, [sector]);
 
   const loadProfiles = useCallback(async () => {
+    setProfilesLoading(true);
+    setProfilesLoadFailed(false);
+    try {
     const response = await fetch("/api/profiles?limit=50", { cache: "no-store" });
     const body = await response.json() as Envelope<Profile[]>;
     if (!response.ok || !body.data) throw new Error(t("templates.loadError"));
     setProfiles(body.data);
+    } catch (error) {
+      setProfilesLoadFailed(true);
+      setProfiles([]);
+      throw error;
+    } finally { setProfilesLoading(false); }
   }, [t]);
 
-  useEffect(() => { void loadProfiles().catch((error: unknown) => setNotice(error instanceof Error ? error.message : t("templates.loadError"))); }, [loadProfiles, t]);
+  useEffect(() => { void loadProfiles().catch(() => {}); }, [loadProfiles]);
 
   function resetForm() {
     setDisplayName("");
@@ -213,7 +223,7 @@ export default function SectorProfileWizard() {
           <div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold text-faida-navy">{profile.displayName}</h3><p className="mt-1 text-xs text-slate-500">{t(sectorMessage(profile.sector))} · {t(({ INDIVIDUAL: "templates.individual", ORGANIZATION: "templates.organization", GOVERNMENT: "templates.government", GROUP: "templates.group" } as Record<string, MessageKey>)[profile.profileKind] ?? "templates.organization")}</p></div><span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">{t(statusKey(profile.approvalStatus))}</span></div>
           {profile.rejectionReason ? <p className="mt-2 text-xs text-rose-700">{profile.rejectionReason}</p> : null}
           <div className="mt-3 flex flex-wrap gap-2">{["DRAFT", "REJECTED"].includes(profile.approvalStatus) ? <><button type="button" disabled={busy} onClick={() => editProfile(profile)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold">{t("templates.editDraft")}</button><button type="button" disabled={busy} onClick={() => void transition(profile, "SUBMIT")} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold">{t("templates.submitForApproval")}</button></> : null}{profile.approvalStatus === "PENDING_APPROVAL" ? <><button type="button" disabled={busy} onClick={() => void transition(profile, "APPROVE")} className="rounded-lg bg-emerald-700 px-3 py-1.5 text-xs font-semibold text-white">{t("templates.approve")}</button><button type="button" disabled={busy} onClick={() => void transition(profile, "REJECT")} className="rounded-lg bg-rose-700 px-3 py-1.5 text-xs font-semibold text-white">{t("templates.reject")}</button></> : null}</div>
-        </article>)}{!profiles.length ? <p className="text-sm text-slate-500">{t("templates.noProfiles")}</p> : null}</div>
+        </article>)}{profilesLoading ? <p role="status" className="text-sm text-slate-500">{t("common.loading")}</p> : profilesLoadFailed ? <div role="alert" className="flex flex-wrap items-center justify-between gap-3 text-sm text-rose-700"><span>{t("templates.loadError")}</span><button type="button" onClick={() => void loadProfiles().catch(() => {})} className="rounded-lg border border-rose-300 px-3 py-1.5 font-semibold">{t("templates.retryLoad")}</button></div> : !profiles.length ? <p className="text-sm text-slate-500">{t("templates.noProfiles")}</p> : null}</div>
         <p className="mt-4 text-xs leading-5 text-slate-500">{t("templates.csvFormat")}</p>
       </section>
       {notice ? <p role="status" className="rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">{notice}</p> : null}

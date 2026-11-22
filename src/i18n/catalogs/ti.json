@@ -765,7 +765,7 @@
     "templates.approve": "ኣጽድቕ",
     "templates.chooseSector": "ዘርፊ ምረጽ",
     "templates.createDraft": "ፕሮፋይል ፍጠር",
-    "templates.csvFormat": "ንዝተመርጸ ዘርፊ ዝምጥን ቴምፕሌት ኣውርዱ፣ ድሕሪኡ ኣብ ነፍሲ ወከፍ መስመር ሓደ ፕሮፋይል ወስኹ። ቅርጺ custom:Name ብምጥቃም ተወሳኺ ዓምድታት ክትውስኹ ትኽእሉ። እቶም ዝኣተዉ ፕሮፋይላት ንግምገማ ከም ረቂቕ ይቕመጡ።",
+    "templates.csvFormat": "ናይቲ ዝተመርጸ ዓውዲ ኣብነት ኣውርድ፣ ኣብ ነፍሲ ወከፍ ረድፊ ሓደ ፕሮፋይል ኣእቱ፣ ኣድላዪ እንተኾይኑ ተወሳኺ ዓምዲ ወስኽ። ዝኣተዉ ፕሮፋይላት ንግምገማ ከም ረቂቕ ይቕመጡ።",
     "templates.csvHint": "ብጅምላ ካብ CSV ምእታው፡ ረቂቕ መግለጺታት ጥራይ ይፈጥር፤ ንምጽዳቕ ቅድሚ ምቕራብካ ኣረጋግጾም።",
     "templates.csvSector": "ዘርፊ",
     "templates.customFieldName": "ስም ዝርዝር ሓበሬታ",
@@ -786,8 +786,8 @@
     "templates.importError": "CSV ምእታው ክዛዘም ኣይከኣለን።",
     "templates.importSummary": "{created} ረቂቕ(ታት) ኣእቲና፤ {rejected} ረድፍ(ታት) ትኹረት የድልዮም።",
     "templates.individual": "ግለሰብ",
-    "templates.loadError": "ዝተቐመጡ ፕሮፋይላት ክጽዓኑ ኣይከኣሉን።",
-    "templates.noProfiles": "ገና ዝተቐመጠ ፕሮፋይል የለን። ኣብ ላዕሊ ሓደ ፍጠር።",
+    "templates.loadError": "ዝተቐመጡ ፕሮፋይላት ንግዚኡ ኣይርከቡን። ምትእስሳርካ ኣረጋግጽ እሞ እንደገና ፈትን።",
+    "templates.noProfiles": "ክሳብ ሕጂ ዝተቐመጡ ፕሮፋይላት የለዉን። ኣብ ላዕሊ ሓድሽ ፍጠር ወይ ዝተመልአ ናይ ዓውዲ ኣብነት ኣእቱ።",
     "templates.organization": "ትካል",
     "templates.previewEmpty": "ኣብ ቅድመ ርኢቶኻ ንምርኣይ ዝርዝር ሓበሬታ ወስኽ።",
     "templates.previewHint": "ነቲ ቅጥዒ እናመላእካ እዚ ቅድመ ርኢቶ ይሕደስ።",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "እናጸሓፍኩም ይሕደስ",
     "wizard.viewCodes": "QR ኮዳተይ ርአ",
     "wizard.visitorDescription": "መግለጺ በጻሒ (ኣማራጺ)",
-    "wizard.whatCreating": "እንታይ ትፈጥሩ ኣለኹም?"
+    "wizard.whatCreating": "እንታይ ትፈጥሩ ኣለኹም?",
+    "templates.retryLoad": "እንደገና ፈትን"
   }
 }

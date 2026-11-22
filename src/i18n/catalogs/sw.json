@@ -765,7 +765,7 @@
     "templates.approve": "Idhinisha",
     "templates.chooseSector": "Chagua sekta",
     "templates.createDraft": "Tengeneza wasifu",
-    "templates.csvFormat": "Pakua kiolezo cha sekta iliyochaguliwa, kisha ongeza wasifu mmoja kwa kila safu. Unaweza kuongeza safu wima za ziada kwa kutumia muundo wa custom:Name. Wasifu ulioingizwa huhifadhiwa kama rasimu ili ukaguliwe.",
+    "templates.csvFormat": "Pakua kiolezo cha sekta uliyochagua, ongeza wasifu mmoja kwa kila safu na safu wima zaidi inapohitajika. Wasifu ulioletwa huhifadhiwa kama rasimu kwa ukaguzi.",
     "templates.csvHint": "Uingizaji wa jumla wa CSV huunda wasifu wa rasimu pekee; hakiki na uwasilishe ili uidhinishwe.",
     "templates.csvSector": "Sekta",
     "templates.customFieldName": "Jina la maelezo",
@@ -786,8 +786,8 @@
     "templates.importError": "Imeshindikana kukamilisha uingizaji wa CSV.",
     "templates.importSummary": "Rasimu {created} zimeingizwa; mistari {rejected} inahitaji kushughulikiwa.",
     "templates.individual": "Mtu binafsi",
-    "templates.loadError": "Imeshindikana kupakia wasifu uliohifadhiwa.",
-    "templates.noProfiles": "Bado hakuna wasifu uliohifadhiwa. Tengeneza mmoja hapo juu.",
+    "templates.loadError": "Wasifu uliohifadhiwa haupatikani kwa muda. Angalia muunganisho wako kisha ujaribu tena.",
+    "templates.noProfiles": "Bado hakuna wasifu uliohifadhiwa. Unda mmoja hapo juu au leta kiolezo cha sekta kilichojazwa.",
     "templates.organization": "Shirika",
     "templates.previewEmpty": "Ongeza maelezo ili uyaone hapa.",
     "templates.previewHint": "Muonekano huu husasishwa unavyojaza fomu.",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "Husasishwa unapoandika",
     "wizard.viewCodes": "Tazama misimbo yangu ya QR",
     "wizard.visitorDescription": "Maelezo kwa wageni (si lazima)",
-    "wizard.whatCreating": "Unaunda nini?"
+    "wizard.whatCreating": "Unaunda nini?",
+    "templates.retryLoad": "Jaribu tena"
   }
 }

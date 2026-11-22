@@ -765,7 +765,7 @@
     "templates.approve": "Amince",
     "templates.chooseSector": "Zaɓi fanni",
     "templates.createDraft": "Ƙirƙiri bayanai",
-    "templates.csvFormat": "Sauke samfuri na ɓangaren da aka zaɓa, sannan ka saka bayanin martaba ɗaya a kowane layi. Za ka iya ƙara ƙarin ginshiƙai ta amfani da tsarin custom:Name. Ana ajiye bayanan martabar da aka shigo da su a matsayin daftari don dubawa.",
+    "templates.csvFormat": "Sauke samfurin fannin da aka zaɓa, saka bayanin martaba ɗaya a kowane layi, sannan ƙara ginshiƙai idan ana buƙata. Ana adana bayanan da aka shigo da su a matsayin daftari don dubawa.",
     "templates.csvHint": "Shigo da bayanai da yawa ta CSV yana ƙirƙirar daftarin bayanan martaba ne kawai; tabbatar da su sannan ka aika don amincewa.",
     "templates.csvSector": "Sashe",
     "templates.customFieldName": "Sunan bayanin",
@@ -786,8 +786,8 @@
     "templates.importError": "An kasa kammala shigo da CSV.",
     "templates.importSummary": "An shigo da daftari {created}; layuka {rejected} na buƙatar kulawa.",
     "templates.individual": "Mutum ɗaya",
-    "templates.loadError": "An kasa loda bayanan da aka adana.",
-    "templates.noProfiles": "Ba a adana bayanai ba tukuna. Ƙirƙiri ɗaya a sama.",
+    "templates.loadError": "Ba a samun bayanan martaba na ɗan lokaci. Duba haɗin yanar gizo sannan a sake gwadawa.",
+    "templates.noProfiles": "Babu an adana bayanan martaba. Ƙirƙiri ɗaya a sama ko shigo da cikakken samfurin fanni.",
     "templates.organization": "Ƙungiya",
     "templates.previewEmpty": "Ƙara bayanai don ganin su a dubawarka.",
     "templates.previewHint": "Wannan dubawa tana sabuntawa yayin da kake cika fom ɗin.",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "Yana sabuntawa yayin da kake rubutu",
     "wizard.viewCodes": "Duba lambobin QR nawa",
     "wizard.visitorDescription": "Bayanin baƙi (na zaɓi)",
-    "wizard.whatCreating": "Me kake ƙirƙirawa?"
+    "wizard.whatCreating": "Me kake ƙirƙirawa?",
+    "templates.retryLoad": "Sake gwadawa"
   }
 }

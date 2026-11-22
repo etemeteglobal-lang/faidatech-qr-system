@@ -765,7 +765,7 @@
     "templates.approve": "Ansixi",
     "templates.chooseSector": "Dooro qaybta",
     "templates.createDraft": "Samee bog",
-    "templates.csvFormat": "Soo dejiso tusaalaha qaybta la doortay, ka dibna saf kasta ku dar hal bog oo muuqaal ah. Waxaad ku dari kartaa tiirar dheeraad ah adigoo adeegsanaya qaabka custom:Name. Bogagga muuqaalka ee la soo geliyo waxaa loo kaydiyaa qabyo ahaan si dib loogu eego.",
+    "templates.csvFormat": "Soo dejiso template-ka waaxda la doortay, saf kasta ku dar hal profile, kuna dar tiirar dheeraad ah haddii loo baahdo. Profile-yada la soo geliyo waxaa loo kaydiyaa qabyo si dib loogu eego.",
     "templates.csvHint": "Soo gelinta CSV ee xog badan waxay abuurtaa oo keliya astaamo qabyo ah; hubi oo u gudbi si loo ansixiyo.",
     "templates.csvSector": "Qayb",
     "templates.customFieldName": "Magaca faahfaahinta",
@@ -786,8 +786,8 @@
     "templates.importError": "Soo gelinta CSV lama dhammaystiri karin.",
     "templates.importSummary": "{created} qabyo-qoraal ayaa la soo geliyey; {rejected} saf ayaa u baahan in fiiro gaar ah loo yeesho.",
     "templates.individual": "Qof",
-    "templates.loadError": "Bogagga la kaydiyey lama soo dejin karin.",
-    "templates.noProfiles": "Weli bog lama kaydin. Mid kor ku samee.",
+    "templates.loadError": "Profile-yada la keydiyey hadda lama heli karo. Hubi isku xirkaaga dabadeed mar kale isku day.",
+    "templates.noProfiles": "Weli lama hayo profile la keydiyey. Mid ku samee kore ama soo geli template waaxeed la buuxiyey.",
     "templates.organization": "Urur",
     "templates.previewEmpty": "Ku dar faahfaahin si aad horudhaca uga aragto.",
     "templates.previewHint": "Horudhacani wuu is cusboonaysiinayaa markaad foomka buuxiso.",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "Wuu is cusboonaysiiyaa markaad qorayso",
     "wizard.viewCodes": "Eeg koodhadhkayga QR",
     "wizard.visitorDescription": "Sharaxaadda booqdayaasha (ikhtiyaari)",
-    "wizard.whatCreating": "Maxaad samaynaysaa?"
+    "wizard.whatCreating": "Maxaad samaynaysaa?",
+    "templates.retryLoad": "Mar kale isku day"
   }
 }

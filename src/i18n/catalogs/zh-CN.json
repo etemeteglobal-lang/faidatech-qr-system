@@ -765,7 +765,7 @@
     "templates.approve": "批准",
     "templates.chooseSector": "选择行业",
     "templates.createDraft": "创建档案",
-    "templates.csvFormat": "下载所选行业的模板，然后每行添加一个个人资料。您可以使用 custom:Name 格式添加额外列。导入的个人资料将保存为草稿以供审核。",
+    "templates.csvFormat": "下载所选行业模板，每行填写一个档案，并按需添加更多列。导入的档案将作为草稿保存以供审核。",
     "templates.csvHint": "CSV 批量导入仅会创建资料草稿；请检查并提交审核。",
     "templates.csvSector": "行业",
     "templates.customFieldName": "信息名称",
@@ -786,8 +786,8 @@
     "templates.importError": "无法完成 CSV 导入。",
     "templates.importSummary": "已导入 {created} 个草稿；{rejected} 行需要处理。",
     "templates.individual": "个人",
-    "templates.loadError": "无法加载已保存的档案。",
-    "templates.noProfiles": "尚未保存档案。请在上方创建。",
+    "templates.loadError": "暂时无法获取已保存的档案。请检查网络连接后重试。",
+    "templates.noProfiles": "还没有已保存的档案。请在上方创建，或导入已填写的行业模板。",
     "templates.organization": "机构",
     "templates.previewEmpty": "添加详细信息即可在预览中查看。",
     "templates.previewHint": "填写表单时，预览会同步更新。",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "输入时实时更新",
     "wizard.viewCodes": "查看我的 QR 码",
     "wizard.visitorDescription": "访客描述（可选）",
-    "wizard.whatCreating": "你要创建什么？"
+    "wizard.whatCreating": "你要创建什么？",
+    "templates.retryLoad": "重试"
   }
 }

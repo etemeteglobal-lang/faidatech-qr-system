@@ -765,7 +765,7 @@
     "templates.approve": "موافقة",
     "templates.chooseSector": "اختر قطاعًا",
     "templates.createDraft": "إنشاء ملف تعريفي",
-    "templates.csvFormat": "نزّل القالب الخاص بالقطاع المحدد، ثم أضف ملفًا شخصيًا واحدًا في كل صف. يمكنك إضافة أعمدة أخرى باستخدام النمط custom:Name. تُحفَظ الملفات الشخصية المستوردة كمسودات لمراجعتها.",
+    "templates.csvFormat": "نزّل نموذج القطاع المحدد، وأضف ملفًا شخصيًا واحدًا في كل صف، وأضف أعمدة إضافية عند الحاجة. تُحفظ الملفات المستوردة كمسودات للمراجعة.",
     "templates.csvHint": "ينشئ الاستيراد الجماعي عبر CSV ملفات تعريف مسودة فقط؛ تحقّق منها وأرسلها للموافقة.",
     "templates.csvSector": "القطاع",
     "templates.customFieldName": "اسم التفصيل",
@@ -786,8 +786,8 @@
     "templates.importError": "تعذّر إكمال استيراد CSV.",
     "templates.importSummary": "تم استيراد {created} مسودة؛ وتحتاج {rejected} صفوف إلى مراجعة.",
     "templates.individual": "فرد",
-    "templates.loadError": "تعذّر تحميل الملفات التعريفية المحفوظة.",
-    "templates.noProfiles": "لا توجد ملفات تعريفية محفوظة بعد. أنشئ واحدًا أعلاه.",
+    "templates.loadError": "الملفات الشخصية المحفوظة غير متاحة مؤقتًا. تحقق من الاتصال ثم حاول مرة أخرى.",
+    "templates.noProfiles": "لا توجد ملفات شخصية محفوظة بعد. أنشئ ملفًا أعلاه أو استورد نموذج قطاع مكتملًا.",
     "templates.organization": "مؤسسة",
     "templates.previewEmpty": "أضف تفاصيل لرؤيتها في المعاينة.",
     "templates.previewHint": "تتحدث هذه المعاينة أثناء تعبئة النموذج.",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "تُحدّث أثناء الكتابة",
     "wizard.viewCodes": "عرض رموز QR الخاصة بي",
     "wizard.visitorDescription": "وصف للزوار (اختياري)",
-    "wizard.whatCreating": "ما الذي تريد إنشاءه؟"
+    "wizard.whatCreating": "ما الذي تريد إنشاءه؟",
+    "templates.retryLoad": "حاول مرة أخرى"
   }
 }

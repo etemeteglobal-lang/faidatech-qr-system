@@ -768,7 +768,7 @@
     "templates.approve": "Approuver",
     "templates.chooseSector": "Choisir un secteur",
     "templates.createDraft": "Créer un profil",
-    "templates.csvFormat": "Téléchargez le modèle correspondant au secteur sélectionné, puis ajoutez un profil par ligne. Vous pouvez ajouter des colonnes supplémentaires en utilisant le format custom:Name. Les profils importés sont enregistrés comme brouillons pour être examinés.",
+    "templates.csvFormat": "Téléchargez le modèle du secteur choisi, ajoutez un profil par ligne et des colonnes supplémentaires si nécessaire. Les profils importés sont enregistrés comme brouillons à examiner.",
     "templates.csvHint": "L’import groupé CSV crée uniquement des profils brouillons. Vérifiez-les et soumettez-les pour validation.",
     "templates.csvSector": "Secteur",
     "templates.customFieldName": "Nom de l’information",
@@ -789,8 +789,8 @@
     "templates.importError": "Impossible d’importer le fichier CSV.",
     "templates.importSummary": "{created} brouillon(s) importé(s) ; {rejected} ligne(s) à vérifier.",
     "templates.individual": "Particulier",
-    "templates.loadError": "Impossible de charger les profils enregistrés.",
-    "templates.noProfiles": "Aucun profil enregistré. Créez-en un ci-dessus.",
+    "templates.loadError": "Les profils enregistrés sont temporairement indisponibles. Vérifiez votre connexion et réessayez.",
+    "templates.noProfiles": "Aucun profil enregistré pour le moment. Créez-en un ci-dessus ou importez un modèle de secteur rempli.",
     "templates.organization": "Organisation",
     "templates.previewEmpty": "Ajoutez des détails pour les voir dans l’aperçu.",
     "templates.previewHint": "Cet aperçu se met à jour au fur et à mesure que vous remplissez le formulaire.",
@@ -927,6 +927,7 @@
     "wizard.updatesAsYouType": "Mise à jour au fil de la saisie",
     "wizard.viewCodes": "Voir mes QR codes",
     "wizard.visitorDescription": "Description destinée aux visiteurs (facultatif)",
-    "wizard.whatCreating": "Que souhaitez-vous créer ?"
+    "wizard.whatCreating": "Que souhaitez-vous créer ?",
+    "templates.retryLoad": "Réessayer"
   }
 }

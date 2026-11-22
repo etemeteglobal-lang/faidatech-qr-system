@@ -765,7 +765,7 @@
     "templates.approve": "Fọwọ́ sí",
     "templates.chooseSector": "Yan ẹ̀ka iṣẹ́",
     "templates.createDraft": "Ṣẹ̀dá profaili",
-    "templates.csvFormat": "Ṣe ìgbàsílẹ̀ àdàkọ fún ẹ̀ka tí o yan, kí o sì fi ìṣàkóso profaili kan kún ìlà kọ̀ọ̀kan. O lè fi àwọn ọwọ̀n àfikún kún un nípa lílo àpẹẹrẹ custom:Name. A máa fi àwọn profaili tí a kó wọlé pamọ́ gẹ́gẹ́ bí àkọsílẹ̀ àfọwọ́kọ fún àyẹ̀wò.",
+    "templates.csvFormat": "Ṣe igbasilẹ àpẹẹrẹ ẹ̀ka tí a yan, fi profaili kan sí ìlà kọ̀ọ̀kan, kí o sì fi àwọn ọ̀wọ̀n míì kún un bí ó bá yẹ. A máa fi àwọn profaili tí a kó wọlé pamọ́ gẹ́gẹ́ bí àkọ́kọ́ fún àyẹ̀wò.",
     "templates.csvHint": "Gbigbe ọ̀pọ̀lọpọ̀ fáìlì CSV wọlé máa ń ṣẹ̀dá àwọn profáìlì àkọ́kọ́ nìkan; ṣàyẹ̀wò wọn, kí o sì fi ránṣẹ́ fún ìfọwọ́sí.",
     "templates.csvSector": "Ẹ̀ka",
     "templates.customFieldName": "Orúkọ àlàyé",
@@ -786,8 +786,8 @@
     "templates.importError": "A kò lè parí gbígbé CSV wọlé.",
     "templates.importSummary": "A gbé àkọpamọ́ {created} wọlé; àwọn ìlà {rejected} nílò àkíyèsí.",
     "templates.individual": "Olúkúlùkù",
-    "templates.loadError": "A kò lè ṣí àwọn profaili tí a ti fipamọ́.",
-    "templates.noProfiles": "O kò tíì fi profaili kankan pamọ́. Ṣẹ̀dá ọ̀kan lókè.",
+    "templates.loadError": "A kò lè rí àwọn profaili tí a fipamọ́ fún ìgbà díẹ̀. Ṣàyẹ̀wò ìsopọ̀ rẹ kí o tún gbìyànjú.",
+    "templates.noProfiles": "Ko si profaili tí a ti fipamọ́ síbẹ̀. Ṣẹ̀dá ọ̀kan lókè tàbí kó àpẹẹrẹ ẹ̀ka tí a ti kún wọlé.",
     "templates.organization": "Àjọ",
     "templates.previewEmpty": "Fi àwọn àlàyé kún un láti rí wọn nínú àkọ́kọ́ àwòrán rẹ.",
     "templates.previewHint": "Àkọ́kọ́ àwòrán yìí máa ń yí padà bí o ṣe ń kún fọ́ọ̀mù náà.",
@@ -924,6 +924,7 @@
     "wizard.updatesAsYouType": "Ó ń yí padà bí o ṣe ń tẹ̀wé",
     "wizard.viewCodes": "Wo àwọn kóòdù QR mi",
     "wizard.visitorDescription": "Àpèjúwe fún àlejò (àṣàyàn)",
-    "wizard.whatCreating": "Kí ni o ń ṣẹ̀dá?"
+    "wizard.whatCreating": "Kí ni o ń ṣẹ̀dá?",
+    "templates.retryLoad": "Tún gbìyànjú"
   }
 }

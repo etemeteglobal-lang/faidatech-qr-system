@@ -758,7 +758,7 @@
     "templates.approve": "Approve",
     "templates.chooseSector": "Choose a sector",
     "templates.createDraft": "Create a profile",
-    "templates.csvFormat": "Download the template for the selected sector, then add one profile per row. You can add extra columns using the custom:Name pattern. Imported profiles are saved as drafts for review.",
+    "templates.csvFormat": "Download the selected sector template, add one profile per row, and add extra columns when useful. Imported profiles are saved as drafts for review.",
     "templates.csvHint": "CSV bulk import creates draft profiles only; validate and submit them for approval.",
     "templates.csvSector": "Sector",
     "templates.customFieldName": "Detail name",
@@ -779,8 +779,8 @@
     "templates.importError": "CSV import could not be completed.",
     "templates.importSummary": "Imported {created} draft(s); {rejected} row(s) need attention.",
     "templates.individual": "Individual",
-    "templates.loadError": "Could not load saved profiles.",
-    "templates.noProfiles": "No profiles saved yet. Create one above.",
+    "templates.loadError": "Saved profiles are temporarily unavailable. Check your connection and try again.",
+    "templates.noProfiles": "No saved profiles yet. Create one above or import a completed sector template.",
     "templates.organization": "Organization",
     "templates.previewEmpty": "Add details to see them in your preview.",
     "templates.previewHint": "This preview updates as you fill in the form.",
@@ -917,6 +917,7 @@
     "wizard.updatesAsYouType": "Updates as you type",
     "wizard.viewCodes": "View my QR codes",
     "wizard.visitorDescription": "Visitor description (optional)",
-    "wizard.whatCreating": "What are you creating?"
+    "wizard.whatCreating": "What are you creating?",
+    "templates.retryLoad": "Try again"
   }
 }

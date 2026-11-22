@@ -770,7 +770,7 @@
     "templates.approve": "Leellishi",
     "templates.chooseSector": "Sektore doori",
     "templates.createDraft": "Profaayile uumi",
-    "templates.csvFormat": "Dooraminoonni sektorete CSV template woyyite; aanchite rowte giddo mittu profile le'ate. custom:Name pattern horonsidhe ledo columns dabalete le'ate dandaatto. Importi assino profileete review assate draft gede kaa'lamino.",
+    "templates.csvFormat": "Dooramino sektore template woyyite, rowte giddo mittu profile le’ate, baxxino columns le’ate. Import assino profileete draft gede review assate kaa’lamino.",
     "templates.csvHint": "CSV baalunku galchate draft profaayile qofa uumi; leellishi, qorooshsheete shiishi.",
     "templates.csvSector": "Sektore",
     "templates.customFieldName": "Xawishshate su'ma",
@@ -791,8 +791,8 @@
     "templates.importError": "CSV galchamme dandiinoonni.",
     "templates.importSummary": "{created} draft(s) galchamino; {rejected} raaqe ikkito hasiissanno.",
     "templates.individual": "Baxxino",
-    "templates.loadError": "Suuqqamino profaayile laadamme dandiinoonni.",
-    "templates.noProfiles": "Profaayile suuqamino baala. Albiinni mittu uumi.",
+    "templates.loadError": "Hakki profile kaa maxxanno gede dino. Connection ke qaagi, aanchite qolteeti yaali.",
+    "templates.noProfiles": "Hakki profile kaa maxxanno dino. Aliinni mittu uumi woy gutino sektore template galchi.",
     "templates.organization": "Oosishsha",
     "templates.previewEmpty": "Leellishshira leellishshotee garinni tito addi.",
     "templates.previewHint": "Formicha guutattoonni leellishshi haaroonsiisiisamanno.",
@@ -929,6 +929,7 @@
     "wizard.updatesAsYouType": "Borreessatto yannara haaromma",
     "wizard.viewCodes": "Kayi QR koodubba la'i",
     "wizard.visitorDescription": "La'annoha xawishsha (doorantino)",
-    "wizard.whatCreating": "Ma kalaqate?"
+    "wizard.whatCreating": "Ma kalaqate?",
+    "templates.retryLoad": "Qolteeti yaali"
   }
 }

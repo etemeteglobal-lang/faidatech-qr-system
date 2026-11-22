@@ -32,7 +32,12 @@ export async function GET(request: NextRequest): Promise<Response> {
       select: { id: true, sector: true, profileKind: true, displayName: true, slug: true, approvalStatus: true, profileData: true, customFields: true, approvedAt: true, rejectionReason: true, createdAt: true, updatedAt: true },
     });
     return Response.json({ data: profiles }, { headers: { "Cache-Control": "private, no-store" } });
-  } catch (error) { return apiErrorResponse(error); }
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && (error.code === "P2021" || error.code === "P2022")) {
+      return Response.json({ error: { code: "profiles_storage_unavailable" } }, { status: 503, headers: { "Cache-Control": "private, no-store" } });
+    }
+    return apiErrorResponse(error);
+  }
 }
 
 export async function POST(request: NextRequest): Promise<Response> {

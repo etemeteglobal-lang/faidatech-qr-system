@@ -766,7 +766,7 @@
     "templates.approve": "Mirkaneessi",
     "templates.chooseSector": "Damee filadhu",
     "templates.createDraft": "Piroofaayilii uumi",
-    "templates.csvFormat": "Unka damee filatameef ta’u buufadhaa; achiis tarree tokkoon tokkoon irratti profaayilii tokko dabalaa. Akkaataa custom:Name fayyadamuun tarjaawwan dabalataa dabaluun ni danda’ama. Profaayiloonni galfaman akka wixinee ilaalchaaf ni kuufamu.",
+    "templates.csvFormat": "Unka damee filatame buufadhu, tarree tokkoon tokkoon irratti profaayilii tokko galchi, yoo barbaachise tarjaawwan dabalataa dabali. Profaayiloonni galfaman akka wixinee ilaalchaaf ni kuufamu.",
     "templates.csvHint": "Galchiin CSV baay’inaan piroofaayiloota wixinee qofa uuma; mirkaneessii mirkaneessaaf ergi.",
     "templates.csvSector": "Damee",
     "templates.customFieldName": "Maqaa odeeffannoo",
@@ -787,8 +787,8 @@
     "templates.importError": "CSV galchuun hin danda'amne.",
     "templates.importSummary": "Yaadni {created} galfame; tarree {rejected} xiyyeeffannoo barbaada.",
     "templates.individual": "Dhuunfaa",
-    "templates.loadError": "Piroofaayiliiwwan kuufaman fe'uun hin danda'amne.",
-    "templates.noProfiles": "Hanga ammaatti piroofaayiliin hin kuufamne. Olii tokko uumi.",
+    "templates.loadError": "Profaayiloonni olkaa’aman yeroo gabaabaaf hin argaman. Walqabsiisa kee mirkaneessiitii irra deebi’ii yaali.",
+    "templates.noProfiles": "Hanga ammaatti profaayiloonni olkaa’aman hin jiran. Armaan olitti tokko uumi yookaan unka damee guutame galchi.",
     "templates.organization": "Dhaabbata",
     "templates.previewEmpty": "Durargii keessan keessatti arguu akka dandeessaniif odeeffannoo dabaluu.",
     "templates.previewHint": "Unka guutaa deemuun durargiin kun ni haaromfama.",
@@ -925,6 +925,7 @@
     "wizard.updatesAsYouType": "Yeroo barreessitu haaromfama",
     "wizard.viewCodes": "Koodota QR koo ilaali",
     "wizard.visitorDescription": "Ibsa daawwattootaaf (dirqama miti)",
-    "wizard.whatCreating": "Maal uumaa jirta?"
+    "wizard.whatCreating": "Maal uumaa jirta?",
+    "templates.retryLoad": "Irra deebi’ii yaali"
   }
 }

@@ -766,7 +766,7 @@
     "templates.approve": "አጽድቅ",
     "templates.chooseSector": "ዘርፍ ይምረጡ",
     "templates.createDraft": "መገለጫ ፍጠር",
-    "templates.csvFormat": "ለተመረጠው ዘርፍ የCSV አብነቱን ያውርዱ፤ ከዚያም በእያንዳንዱ ረድፍ አንድ ፕሮፋይል ያክሉ። custom:Name የሚለውን ቅርጸት በመጠቀም ተጨማሪ አምዶችን ማከል ይችላሉ። የመጡ ፕሮፋይሎች ለግምገማ እንደ ረቂቅ ይቀመጣሉ።",
+    "templates.csvFormat": "የተመረጠውን የዘርፍ አብነት ያውርዱ፣ በእያንዳንዱ ረድፍ አንድ ፕሮፋይል ያስገቡ፣ ካስፈለገም ተጨማሪ አምዶችን ይጨምሩ። የገቡ ፕሮፋይሎች ለግምገማ እንደ ረቂቅ ይቀመጣሉ።",
     "templates.csvHint": "በCSV በጅምላ ማስገባት ረቂቅ መገለጫዎችን ብቻ ይፈጥራል፤ አረጋግጠው ለማጽደቅ ያስገቡ።",
     "templates.csvSector": "ዘርፍ",
     "templates.customFieldName": "የዝርዝሩ ስም",
@@ -787,8 +787,8 @@
     "templates.importError": "CSV ማስገባት አልተሳካም።",
     "templates.importSummary": "{created} ረቂቅ(ዎች) ገብተዋል፤ {rejected} ረድፍ(ዎች) ተጨማሪ ማስተካከያ ይፈልጋሉ።",
     "templates.individual": "ግለሰብ",
-    "templates.loadError": "የተቀመጡ መገለጫዎችን መጫን አልተቻለም።",
-    "templates.noProfiles": "እስካሁን ምንም መገለጫ አልተቀመጠም። ከላይ አንድ ይፍጠሩ።",
+    "templates.loadError": "የተቀመጡ ፕሮፋይሎች ለጊዜው አይገኙም። ግንኙነትዎን ያረጋግጡና እንደገና ይሞክሩ።",
+    "templates.noProfiles": "እስካሁን የተቀመጡ ፕሮፋይሎች የሉም። ከላይ አዲስ ይፍጠሩ ወይም የተሞላ የዘርፍ አብነት ያስገቡ።",
     "templates.organization": "ድርጅት",
     "templates.previewEmpty": "በቅድመ እይታዎ ላይ ለማየት ዝርዝሮችን ያክሉ።",
     "templates.previewHint": "ቅጹን ሲሞሉ ይህ ቅድመ እይታ ይሻሻላል።",
@@ -925,6 +925,7 @@
     "wizard.updatesAsYouType": "ሲጽፉ ይዘምናል",
     "wizard.viewCodes": "የእኔን QR ኮዶች ይመልከቱ",
     "wizard.visitorDescription": "ለጎብኚ መግለጫ (አማራጭ)",
-    "wizard.whatCreating": "ምን እየፈጠሩ ነው?"
+    "wizard.whatCreating": "ምን እየፈጠሩ ነው?",
+    "templates.retryLoad": "እንደገና ይሞክሩ"
   }
 }

@@ -767,7 +767,7 @@
     "templates.approve": "Aprobar",
     "templates.chooseSector": "Elige un sector",
     "templates.createDraft": "Crear un perfil",
-    "templates.csvFormat": "Descarga la plantilla del sector seleccionado y añade un perfil por fila. Puedes añadir columnas adicionales con el formato custom:Name. Los perfiles importados se guardan como borradores para su revisión.",
+    "templates.csvFormat": "Descarga la plantilla del sector elegido, añade un perfil por fila y columnas adicionales si las necesitas. Los perfiles importados se guardan como borradores para revisión.",
     "templates.csvHint": "La importación masiva de CSV solo crea perfiles en borrador; valídalos y envíalos para su aprobación.",
     "templates.csvSector": "Sector",
     "templates.customFieldName": "Nombre del dato",
@@ -788,8 +788,8 @@
     "templates.importError": "No se pudo completar la importación del CSV.",
     "templates.importSummary": "Se importaron {created} borrador(es); {rejected} fila(s) necesitan atención.",
     "templates.individual": "Persona",
-    "templates.loadError": "No se pudieron cargar los perfiles guardados.",
-    "templates.noProfiles": "Aún no hay perfiles guardados. Crea uno arriba.",
+    "templates.loadError": "Los perfiles guardados no están disponibles temporalmente. Comprueba la conexión e inténtalo de nuevo.",
+    "templates.noProfiles": "Aún no hay perfiles guardados. Crea uno arriba o importa una plantilla sectorial completada.",
     "templates.organization": "Organización",
     "templates.previewEmpty": "Añade detalles para verlos en la vista previa.",
     "templates.previewHint": "Esta vista previa se actualiza mientras completas el formulario.",
@@ -926,6 +926,7 @@
     "wizard.updatesAsYouType": "Se actualiza mientras escribes",
     "wizard.viewCodes": "Ver mis códigos QR",
     "wizard.visitorDescription": "Descripción para visitantes (opcional)",
-    "wizard.whatCreating": "¿Qué vas a crear?"
+    "wizard.whatCreating": "¿Qué vas a crear?",
+    "templates.retryLoad": "Reintentar"
   }
 }
