@@ -11,18 +11,20 @@ export default function PublicVisitorLayout({
   title,
   localizedContent,
   branding,
+  hidePromotionalFooter = false,
 }: {
   children: ReactNode;
   title: string;
   localizedContent?: LocalizedContent;
   branding?: BrandIdentity;
+  hidePromotionalFooter?: boolean;
 }) {
   const { direction, t } = useI18n();
   return (
-    <main dir={direction} className="mx-auto min-h-screen w-full max-w-3xl px-4 py-5 sm:px-7 sm:py-10">
+    <div dir={direction} className="mx-auto min-h-screen w-full max-w-3xl px-4 py-5 sm:px-7 sm:py-10">
       <PublicVisitorHeader title={title} localizedContent={localizedContent} branding={branding} />
       {children}
-      <footer className="py-5 text-center text-[11px] text-slate-400">{t("visitor.poweredBy")}</footer>
-    </main>
+      {!hidePromotionalFooter ? <footer className="py-5 text-center text-[11px] text-slate-400">{t("visitor.poweredBy")}</footer> : null}
+    </div>
   );
 }

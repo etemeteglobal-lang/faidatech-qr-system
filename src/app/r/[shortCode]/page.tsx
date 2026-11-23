@@ -9,6 +9,7 @@ import type { MessageKey } from "@/i18n/messages";
 import { parseDestinationPayload } from "@/lib/qr/payload-schemas";
 import { scheduleQrScan } from "@/lib/qr/scan-logging";
 import { SHORT_CODE_PATTERN } from "@/lib/qr/short-code";
+import { shouldHidePublicPromoFooter } from "@/lib/billing/public-footer";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -63,8 +64,9 @@ export default async function PublicQrPage({ params }: PageProps) {
   if (qrCode.destinationType === "URL" && "url" in payload) redirect(payload.url);
   if (qrCode.destinationType === "PDF" && "fileUrl" in payload) redirect(payload.fileUrl);
 
+  const hidePromotionalFooter = await shouldHidePublicPromoFooter(qrCode.organizationId);
   return (
-    <PublicVisitorLayout title={qrCode.title} localizedContent={payload.localizedContent} branding={payload.branding}>
+    <PublicVisitorLayout hidePromotionalFooter={hidePromotionalFooter} title={qrCode.title} localizedContent={payload.localizedContent} branding={payload.branding}>
       <PublicQrExperience
         shortCode={qrCode.shortCode}
         title={qrCode.title}

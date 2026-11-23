@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import PublicSectorProfile from "@/components/qr/PublicSectorProfile";
+import PublicVisitorLayout from "@/components/qr/PublicVisitorLayout";
+import { shouldHidePublicPromoFooter } from "@/lib/billing/public-footer";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -20,7 +22,7 @@ async function getProfile(slug: string) {
   ensurePostgresConfigured();
   const profiles = await prisma.businessProfile.findMany({
     where: { slug, approvalStatus: "APPROVED" },
-    select: { displayName: true, sector: true, profileKind: true, profileData: true, customFields: true },
+    select: { organizationId: true, displayName: true, sector: true, profileKind: true, profileData: true, customFields: true },
     take: 2,
   });
   // Slugs are unique per organization; a path containing only the slug must not
@@ -41,12 +43,13 @@ export default async function PublicProfilePage({ params }: PageProps) {
   const { slug } = await params;
   const profile = await getProfile(slug);
   if (!profile) notFound();
-  return <PublicSectorProfile
+  const hidePromotionalFooter = await shouldHidePublicPromoFooter(profile.organizationId);
+  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter}><PublicSectorProfile
     slug={slug}
     displayName={profile.displayName}
     sector={profile.sector}
     profileKind={profile.profileKind}
     profileData={object(profile.profileData)}
     customFields={object(profile.customFields)}
-  />;
+  /></PublicVisitorLayout>;
 }
