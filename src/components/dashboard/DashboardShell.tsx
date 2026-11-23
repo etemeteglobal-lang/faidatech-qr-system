@@ -191,21 +191,6 @@ export default function DashboardShell({ children }: { children: React.ReactNode
         </nav>
 
         <div className="hidden border-t border-slate-100 p-4 md:block">
-          <div className="mb-3 rounded-2xl border border-emerald-100 bg-emerald-50/60 p-3">
-            <div className="flex items-center gap-2">
-              <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-faida-navy text-[10px] font-black text-faida-green">FT</span>
-              <div className="min-w-0">
-                <p className="truncate text-xs font-extrabold text-faida-navy">FaidATech</p>
-                <p className="truncate text-[10px] text-faida-slate">+251 900 000 000 · faidatech.et</p>
-              </div>
-            </div>
-            <Link
-              href="/dashboard/create"
-              className="mt-2.5 flex w-full items-center justify-center rounded-xl bg-faida-green px-3 py-1.5 text-xs font-bold text-faida-navy transition hover:bg-emerald-300"
-            >
-              ＋ {t("common.createQr")}
-            </Link>
-          </div>
           <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-100 text-xs font-extrabold text-teal-900">{displayName.slice(0, 1).toUpperCase()}</span>
             <span className="min-w-0"><strong className="block truncate text-xs text-faida-navy">{displayName}</strong><span className="block truncate text-[10px] text-faida-slate">{session?.organization.name || t("shell.loadingWorkspace")}</span></span>
