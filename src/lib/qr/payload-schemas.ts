@@ -138,6 +138,7 @@ export const sectorProfilePayloadSchema = z.object({
   spotlightMediaUrl: profileUrl,
   phone: optionalText(60),
   email: z.string().trim().email().optional(),
+  hours: optionalText(500),
   website: profileUrl,
   address: optionalText(400),
   mapUrl: profileUrl,

@@ -53,6 +53,7 @@ export type WizardForm = {
     spotlightMediaUrl: string;
     phone: string;
     email: string;
+    hours: string;
     website: string;
     address: string;
     mapUrl: string;
@@ -121,6 +122,7 @@ export function emptyWizardForm(): WizardForm {
       spotlightMediaUrl: "",
       phone: "",
       email: "",
+      hours: "",
       website: "",
       address: "",
       mapUrl: "",
@@ -243,6 +245,7 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       spotlightMediaUrl: stringAt(profile, "spotlightMediaUrl"),
       phone: stringAt(profile, "phone"),
       email: stringAt(profile, "email"),
+      hours: stringAt(profile, "hours"),
       website: stringAt(profile, "website"),
       address: stringAt(profile, "address"),
       mapUrl: stringAt(profile, "mapUrl"),
@@ -499,6 +502,7 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       spotlightMediaUrl: optionalWebUrl(form.profile.spotlightMediaUrl),
       phone: optional(form.profile.phone),
       email: optional(form.profile.email),
+      hours: optional(form.profile.hours),
       website: optionalWebUrl(form.profile.website),
       address: optional(form.profile.address),
       mapUrl: optionalWebUrl(form.profile.mapUrl),

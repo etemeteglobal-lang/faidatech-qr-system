@@ -4,7 +4,7 @@ import { useI18n } from "./LocaleProvider";
 import { catalogReviewStatus } from "./messages";
 import { localeMetadata, localeTiers } from "./registry";
 
-export default function LanguageSelector({ compact = false }: { compact?: boolean }) {
+export default function LanguageSelector({ compact = false, autoTranslate = false }: { compact?: boolean; autoTranslate?: boolean }) {
   const { locale, setLocale, t, direction } = useI18n();
   const status = catalogReviewStatus[locale];
   const statusNotice = status === "fallback_required"
@@ -22,7 +22,17 @@ export default function LanguageSelector({ compact = false }: { compact?: boolea
           aria-label={t("locale.choose")}
           value={locale}
           dir={direction}
-          onChange={(event) => setLocale(event.currentTarget.value as typeof locale)}
+          onChange={(event) => {
+            const nextLocale = event.currentTarget.value as typeof locale;
+            setLocale(nextLocale);
+            if (autoTranslate) {
+              try { window.localStorage.setItem("faidatech.locale", nextLocale); } catch { /* best-effort locale persistence */ }
+              const cookie = nextLocale === "en" ? "" : `googtrans=/en/${nextLocale};path=/;max-age=31536000;SameSite=Lax`;
+              if (cookie) document.cookie = cookie;
+              else document.cookie = "googtrans=;path=/;max-age=0";
+              window.location.reload();
+            }
+          }}
           className="min-w-0 flex-1 cursor-pointer truncate border-0 bg-transparent py-0.5 text-xs font-semibold outline-none focus-visible:ring-2 focus-visible:ring-teal-300"
         >
           {localeTiers.map((tier) => (
@@ -34,7 +44,7 @@ export default function LanguageSelector({ compact = false }: { compact?: boolea
           ))}
         </select>
       </label>
-      {statusNotice ? (
+      {statusNotice && !autoTranslate ? (
         <p lang="en" aria-live="polite" className="mt-1 px-1 text-[10px] leading-4 text-amber-800">
           {statusNotice}
         </p>
