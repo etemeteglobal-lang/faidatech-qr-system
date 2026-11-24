@@ -12,14 +12,27 @@ export type LocalizedTextOverride = {
 
 export type LocalizedContent = Partial<Record<LocaleCode, LocalizedTextOverride>>;
 
-export function localizedOverride(content: LocalizedContent | undefined, locale: LocaleCode): LocalizedTextOverride {
-  const english = content?.en ?? {};
-  if (locale === "en") return english;
-  const selected = content?.[locale] ?? {};
+function asContent(content: LocalizedContent | string | undefined): LocalizedContent {
+  if (!content) return {};
+  if (typeof content !== "string") return content;
+  try {
+    const parsed: unknown = JSON.parse(content);
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed as LocalizedContent : {};
+  } catch {
+    return { en: { title: content } };
+  }
+}
+
+export function localizedOverride(content: LocalizedContent | string | undefined, locale: LocaleCode): LocalizedTextOverride {
+  const normalized = asContent(content);
+  const english = normalized.en ?? {};
+  const selected = normalized[locale] ?? {};
+  const first = Object.values(normalized).find((value) => value && typeof value === "object") ?? {};
   return {
+    ...first,
     ...english,
     ...selected,
-    fields: { ...english.fields, ...selected.fields },
+    fields: { ...first.fields, ...english.fields, ...selected.fields },
   };
 }
 
@@ -32,6 +45,8 @@ export function localizedField(
   return candidate?.trim() ? candidate : fallback;
 }
 
-export function localizedText(candidate: string | undefined, fallback: string): string {
-  return candidate?.trim() ? candidate : fallback;
+export function localizedText(candidate: unknown, fallback: string): string {
+  if (typeof candidate === "string" && candidate.trim()) return candidate;
+  if (typeof candidate === "number" || typeof candidate === "boolean") return String(candidate);
+  return fallback;
 }

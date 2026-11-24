@@ -7,7 +7,7 @@ import { requireTenantContext } from "@/lib/auth/tenant-context";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { readBrandIdentity } from "@/lib/qr/brand";
 import { destinationTypeSchema, parseDestinationPayload } from "@/lib/qr/payload-schemas";
-import { generateQrImageDataUrl } from "@/lib/qr/qr-image";
+import { generateQrImageDataUrl, readQrLogoOptions } from "@/lib/qr/qr-image";
 
 const idSchema = z.string().cuid();
 
@@ -132,6 +132,7 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
       typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined,
+      readQrLogoOptions(updated.payload),
     );
 
     return Response.json(

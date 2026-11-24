@@ -1,10 +1,11 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useI18n } from "@/i18n/LocaleProvider";
 import type { MessageKey } from "@/i18n/messages";
 import { verticalTemplates } from "@/lib/templates/registry";
 import ProfileShareActions from "@/components/qr/ProfileShareActions";
+import PublicVisitorHeader from "@/components/qr/PublicVisitorHeader";
 
 type JsonObject = Record<string, unknown>;
 type Props = {
@@ -99,6 +100,7 @@ function humanize(value: string) {
 
 export default function PublicSectorProfile({ slug, displayName, sector, profileKind, profileData, customFields }: Props) {
   const { t } = useI18n();
+  const [enlarged, setEnlarged] = useState<string | null>(null);
   const data = object(profileData);
   const custom = object(customFields);
   const background = typeof data._pageBackground === "string" && /^#[0-9a-fA-F]{6}$/.test(data._pageBackground) ? data._pageBackground : "#f1f5f9";
@@ -110,24 +112,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const phone = fieldValue(custom.Phone ?? data.phone);
   const email = fieldValue(custom.Email ?? data.email);
   const whatsapp = fieldValue(custom.WhatsApp);
-  const website = fieldValue(custom.Website ?? custom.website ?? data.website ?? action.url);
-  const address = fieldValue(custom.Address ?? data.address);
-  const mapValue = fieldValue(custom.Map ?? data.map);
-  const location = mapValue ?? address;
-  const entityType = text(data.entityType ?? custom.entityType)?.toUpperCase();
-  const mandate = text(data.mandate ?? custom.Mandate ?? custom.mandate);
-  const jurisdiction = text(data.jurisdiction ?? custom.Jurisdiction ?? custom.jurisdiction);
-  const leadership = text(data.leadership ?? custom.Leadership ?? custom.leadership);
-  const members = text(data.members ?? custom.Members ?? custom.members);
-  const aboutImage = safeHttpUrl(data._aboutImage ?? custom._aboutImage);
-  const aboutText = text(data._about ?? data.about ?? data.description ?? custom.About ?? custom.about);
-  const spotlightType = (text(data._spotlightType ?? custom._spotlightType) ?? "text").toLowerCase();
-  const spotlightImage = safeHttpUrl(data._spotlightImage ?? custom._spotlightImage);
-  const spotlightVideoRaw = text(data._spotlightVideo ?? custom._spotlightVideo);
-  const spotlightVideoUrl = safeHttpUrl(spotlightVideoRaw);
-  const spotlightVideo = spotlightVideoUrl && new URL(spotlightVideoUrl).protocol === "https:" && /\.(mp4|webm|ogg)(?:$|[?#])/i.test(spotlightVideoUrl) ? spotlightVideoUrl : null;
-  const projectSource = data.projects ?? custom.projects ?? data._projects ?? custom._projects;
-  const projects = (Array.isArray(projectSource) ? projectSource : []).map((value) => object(value)).filter((project) => Object.keys(project).length > 0);
+  const location = fieldValue(custom.Map ?? custom.Address ?? data.address);
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
   const testimonial = fieldValue(custom.Testimonial) ?? text(review.text ?? review.content);
@@ -147,7 +132,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const sectorName = sector === "OTHER"
     ? text(custom.customSectorName) ?? t("templates.customSector")
     : t(`template.sector.${sector}` as MessageKey);
-  const profileTypeKey = entityType === "GOVERNANCE" ? "profile.entityGovernance" : entityType === "GROUP" ? "profile.entityGroup" : entityType === "INDIVIDUAL" ? "profile.entityIndividual" : ({ INDIVIDUAL: "templates.individual", ORGANIZATION: "templates.organization", GOVERNMENT: "templates.government", GROUP: "templates.group" } as Record<string, MessageKey>)[profileKind] ?? "templates.organization";
+  const profileTypeKey = ({ INDIVIDUAL: "templates.individual", ORGANIZATION: "templates.organization", GOVERNMENT: "templates.government", GROUP: "templates.group" } as Record<string, MessageKey>)[profileKind] ?? "templates.organization";
   const displayLabel = (key: string, item: unknown) => {
     const record = object(item);
     const explicit = text(record.label ?? record.name);
@@ -176,9 +161,10 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const reviewsEnabled = showReviews && (ratingMode === "stars" || ratingMode === "stars-review");
 
   return <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10" style={{ backgroundColor: background }}>
+    <div className="mx-auto max-w-3xl"><PublicVisitorHeader title={displayName} branding={brandLogo ? { logoUrl: brandLogo } : undefined} /></div>
     <article className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-      {spotlight ? <section className="bg-gradient-to-br from-teal-800 to-cyan-900 px-6 py-5 text-center text-sm font-semibold text-white" aria-label={t("profile.featured")}><h2 className="text-base font-bold">{text(data._spotlightTitle) ?? t("profile.featured")}</h2>{text(data._spotlightText) && (spotlightType === "text" || !["image", "video", "banner"].includes(spotlightType)) ? <p className="mx-auto mt-1 max-w-xl whitespace-pre-wrap text-sm font-normal leading-6 text-teal-50">{text(data._spotlightText)}</p> : null}{spotlightType === "image" && spotlightImage ? <img src={spotlightImage} alt={text(data._spotlightTitle) ?? t("profile.featured")} className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl object-cover" /> : null}{spotlightType === "video" && spotlightVideo ? <video className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl" controls playsInline preload="metadata"><source src={spotlightVideo} /></video> : null}{spotlightType === "banner" && spotlightImage ? <img src={spotlightImage} alt="" className="mx-auto mt-4 max-h-56 w-full max-w-3xl rounded-2xl object-cover" /> : null}</section> : null}
-      <header className="border-b border-slate-100 px-6 py-7 sm:px-10 sm:py-9">
+      {spotlight ? <div id="spotlight" className="scroll-mt-6 bg-teal-800 px-6 py-3 text-center text-sm font-semibold text-white">{text(data._spotlightTitle) ?? t("profile.featured")}{text(data._spotlightText) ? <p className="mx-auto mt-1 max-w-xl text-sm font-normal leading-6 text-teal-50">{text(data._spotlightText)}</p> : null}</div> : null}
+      <header id="about" className="scroll-mt-6 border-b border-slate-100 px-6 py-7 sm:px-10 sm:py-9">
         {brandLogo ? <img src={brandLogo} alt={`${displayName} logo`} className="mb-5 h-16 max-w-40 object-contain" /> : null}
         <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-800">{sectorName}</p>
         <h1 className="mt-3 break-words text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{displayName}</h1>
@@ -186,15 +172,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
       </header>
       <div className="space-y-7 px-6 py-6 sm:px-10 sm:py-8">
         <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-xs font-bold uppercase tracking-wider text-slate-500">{t("profile.publicLabel")}</p><ProfileShareActions /></div>
-        {aboutText || aboutImage || mandate || jurisdiction || leadership || members ? <section aria-label={humanize("about")} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">{aboutImage ? <img src={aboutImage} alt={displayName} className="max-h-80 w-full object-cover" /> : null}{aboutText || mandate || jurisdiction || leadership || members ? <div className="p-5"><h2 className="mb-2 text-lg font-bold text-slate-900">{humanize("about")}</h2>{aboutText ? <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{aboutText}</p> : null}{mandate ? <p className="mt-3 text-sm text-slate-700"><strong>{t("profile.mandate")}: </strong>{mandate}</p> : null}{jurisdiction ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.jurisdiction")}: </strong>{jurisdiction}</p> : null}{leadership ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.leadership")}: </strong>{leadership}</p> : null}{members ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.members")}: </strong>{members}</p> : null}</div> : null}</section> : null}
-        {projects.length ? <section aria-label={humanize("projects")}><h2 className="mb-3 text-lg font-bold text-slate-900">{humanize("projects")}</h2><div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 sm:-mx-10 sm:px-10">{projects.map((project, index) => {
-          const title = text(project.title ?? project.name) ?? `${humanize("project")} ${index + 1}`;
-          const image = safeHttpUrl(project.image ?? project.imageUrl ?? project.photo);
-          const stepsValue = project.steps;
-          const steps = Array.isArray(stepsValue) ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description))) : [];
-          return <article key={`${title}-${index}`} className="w-[min(82vw,22rem)] shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{image ? <img src={image} alt={title} className="h-40 w-full object-cover" /> : null}<div className="p-4"><h3 className="text-base font-bold text-slate-900">{title}</h3>{text(project.description ?? project.text) ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{text(project.description ?? project.text)}</p> : null}{steps.length ? <ol className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">{steps.map(({ raw, data }, stepIndex) => { const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`; const stepDescription = text(data.description ?? data.text); const stepImage = safeHttpUrl(data.imageUrl ?? data.image); return <li key={`${stepIndex}-${stepTitle}`} className="w-52 shrink-0 snap-start rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-700"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-900">{stepIndex + 1}</span>{stepImage ? <img src={stepImage} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" /> : null}<strong className="mt-2 block">{stepTitle}</strong>{stepDescription ? <span className="mt-1 block text-xs leading-5 text-slate-600">{stepDescription}</span> : null}</li>; })}</ol> : null}</div></article>;
-        })}</div></section> : null}
-        {showSocial && socialEntries.length > 0 ? <section aria-label={t("profile.findUsOnline")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.findUsOnline")}</h2><div className="grid gap-3 sm:grid-cols-2">{socialEntries.map(([key, value]) => {
+        {showSocial && socialEntries.length > 0 ? <section id="socials" className="scroll-mt-6" aria-label={t("profile.findUsOnline")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.findUsOnline")}</h2><div className="grid gap-3 sm:grid-cols-2">{socialEntries.map(([key, value]) => {
           const item = object(value);
           const platform = text(item.platform)?.toLowerCase() ?? "";
           const brand = SOCIAL_BRANDS[platform];
@@ -212,25 +190,24 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
             <span aria-hidden="true" className="text-xl text-slate-400">↗</span>
           </a>;
         })}</div></section> : null}
-        {showDetails && (otherDisplayData.length > 0 || customData.length > 0) ? <section aria-label={t("profile.details")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.details")}</h2><div className="grid gap-3 sm:grid-cols-2">{otherDisplayData.map(([key, value]) => <div key={key} className="min-w-0 rounded-2xl bg-slate-50 p-4"><h3 className="mb-2 text-sm font-semibold text-slate-700">{displayLabel(key, value)}</h3><div className="text-sm leading-6 text-slate-800">{renderValue(value, key)}</div></div>)}</div>{customData.length > 0 ? <dl className="mt-4 divide-y divide-slate-100 rounded-2xl border border-slate-100 px-4">{customData.map(([key, value]) => <div key={key} className="grid gap-1 py-4 sm:grid-cols-[minmax(9rem,.4fr)_1fr] sm:gap-6"><dt className="text-sm font-semibold text-slate-600">{displayLabel(key, value)}</dt><dd className="min-w-0 text-sm leading-6 text-slate-800">{renderValue(value, key)}</dd></div>)}</dl> : null}</section> : null}
-        {showDocuments && documents.length > 0 ? <section aria-label={t("profile.files")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.files")}</h2><div className="grid gap-3 sm:grid-cols-2">{documents.map(([key, value]) => {
+        {showDetails && (otherDisplayData.length > 0 || customData.length > 0) ? <section id="showcase" className="scroll-mt-6" aria-label={t("profile.details")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.details")}</h2><div className="grid gap-3 sm:grid-cols-2">{otherDisplayData.map(([key, value]) => <div key={key} className="min-w-0 rounded-2xl bg-slate-50 p-4"><h3 className="mb-2 text-sm font-semibold text-slate-700">{displayLabel(key, value)}</h3><div className="text-sm leading-6 text-slate-800">{renderValue(value, key)}</div></div>)}</div>{customData.length > 0 ? <dl className="mt-4 divide-y divide-slate-100 rounded-2xl border border-slate-100 px-4">{customData.map(([key, value]) => <div key={key} className="grid gap-1 py-4 sm:grid-cols-[minmax(9rem,.4fr)_1fr] sm:gap-6"><dt className="text-sm font-semibold text-slate-600">{displayLabel(key, value)}</dt><dd className="min-w-0 text-sm leading-6 text-slate-800">{renderValue(value, key)}</dd></div>)}</dl> : null}</section> : null}
+        {showDocuments && documents.length > 0 ? <section id="credentials" className="scroll-mt-6" aria-label={t("profile.files")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.files")}</h2><div className="grid gap-3 sm:grid-cols-2">{documents.map(([key, value]) => {
           const record = object(value);
           const href = safeHttpUrl(record.url ?? record.href ?? record.value);
           if (!href) return null;
           const title = text(record.fileName ?? record.name ?? record.label) ?? humanize(key);
           const pdf = title.toLowerCase().endsWith(".pdf") || href.toLowerCase().includes(".pdf");
-          return <a key={key} href={href} target="_blank" rel="noopener noreferrer" className="flex min-h-20 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm hover:border-teal-700"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-xs font-black text-teal-900">{pdf ? "PDF" : "FILE"}</span><span className="min-w-0"><span className="block break-words text-sm font-semibold text-slate-900">{title}</span><span className="mt-1 block text-xs font-semibold text-teal-800 underline">{t("preview.openDocument")}</span></span></a>;
+          return <article key={key} className="overflow-hidden rounded-2xl border border-slate-200 bg-white p-3 shadow-sm"><div className="flex items-center gap-3"><span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-xs font-black text-teal-900">{pdf ? "PDF" : "FILE"}</span><span className="min-w-0"><span className="block break-words text-sm font-semibold text-slate-900">{title}</span><a href={href} download className="mt-1 block text-xs font-semibold text-teal-800 underline">{t("profile.downloadFile")}</a></span></div>{pdf ? <iframe title={title} src={href} className="mt-3 h-44 w-full rounded-xl border border-slate-100" /> : <button type="button" onClick={() => setEnlarged(href)} className="mt-3 block w-full rounded-xl bg-slate-50 p-2 text-start"><img src={href} alt={title} className="h-32 w-full object-contain" /></button>}</article>;
         })}</div></section> : null}
-        {reviewsEnabled && (ratingStars || reviewPrompt || testimonial) ? <section className="rounded-2xl bg-amber-50 p-5" aria-label={t("profile.reviews")}><h2 className="text-lg font-bold text-amber-950">{t("profile.reviews")}</h2>{ratingStars ? <div className="mt-2 text-xl tracking-widest text-amber-600" aria-label={`${Math.round(ratingValue)} / 5`}>{ratingStars}</div> : null}{reviewPrompt ? <p className="mt-2 text-sm text-amber-950">{reviewPrompt}</p> : null}{testimonial ? <blockquote className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-amber-950">“{testimonial}”</blockquote> : null}{text(review.author) ? <p className="mt-3 text-xs font-semibold text-amber-900">{text(review.author)}</p> : null}</section> : null}
-        {showQuickActions && (phone || email || whatsapp || website || address || location) ? <nav className="grid gap-3 border-t border-slate-100 pt-5 sm:grid-cols-2" aria-label={t("templates.sectionQuickActions")}>
-          {phone ? <a className="rounded-2xl bg-teal-50 p-4 text-teal-950 transition hover:bg-teal-100" href={`tel:${encodeURIComponent(phone)}`}><span className="block text-xs font-bold uppercase tracking-wider text-teal-700">{t("profile.call")}</span><span className="mt-1 block break-all text-sm font-semibold">{phone}</span></a> : null}
-          {email ? <a className="rounded-2xl bg-blue-50 p-4 text-blue-950 transition hover:bg-blue-100" href={`mailto:${encodeURIComponent(email)}`}><span className="block text-xs font-bold uppercase tracking-wider text-blue-700">{t("profile.message")}</span><span className="mt-1 block break-all text-sm font-semibold">{email}</span></a> : !email && whatsapp ? <a className="rounded-2xl bg-green-50 p-4 text-green-950 transition hover:bg-green-100" href={`https://wa.me/${encodeURIComponent(whatsapp.replace(/\D/g, ""))}`} target="_blank" rel="noopener noreferrer"><span className="block text-xs font-bold uppercase tracking-wider text-green-700">WhatsApp</span><span className="mt-1 block break-all text-sm font-semibold">{whatsapp}</span></a> : null}
-          {website && safeHttpUrl(website) ? <a className="rounded-2xl bg-violet-50 p-4 text-violet-950 transition hover:bg-violet-100" href={safeHttpUrl(website)!} target="_blank" rel="noopener noreferrer"><span className="block text-xs font-bold uppercase tracking-wider text-violet-700">{humanize("website")}</span><span className="mt-1 block break-all text-sm font-semibold">{website}</span></a> : null}
-          {address ? <a className="rounded-2xl bg-amber-50 p-4 text-amber-950 transition hover:bg-amber-100" href={`https://maps.google.com/?q=${encodeURIComponent(mapValue ?? address)}`} target="_blank" rel="noopener noreferrer"><span className="block text-xs font-bold uppercase tracking-wider text-amber-700">{humanize("address")}</span><span className="mt-1 block break-words text-sm font-semibold">{address}</span></a> : location && !address ? <a className="rounded-2xl bg-amber-50 p-4 text-amber-950 transition hover:bg-amber-100" href={safeHttpUrl(location) ?? `https://maps.google.com/?q=${encodeURIComponent(location)}`} target="_blank" rel="noopener noreferrer"><span className="block text-xs font-bold uppercase tracking-wider text-amber-700">{t("profile.map")}</span><span className="mt-1 block break-words text-sm font-semibold">{location}</span></a> : null}
+        {reviewsEnabled && (ratingStars || reviewPrompt || testimonial) ? <section id="reviews" className="scroll-mt-6 rounded-2xl bg-amber-50 p-5" aria-label={t("profile.reviews")}><h2 className="text-lg font-bold text-amber-950">{t("profile.reviews")}</h2>{ratingStars ? <div className="mt-2 text-xl tracking-widest text-amber-600" aria-label={`${Math.round(ratingValue)} / 5`}>{ratingStars}</div> : null}{reviewPrompt ? <p className="mt-2 text-sm text-amber-950">{reviewPrompt}</p> : null}{testimonial ? <blockquote className="mt-3 whitespace-pre-wrap break-words text-sm leading-6 text-amber-950">“{testimonial}”</blockquote> : null}{text(review.author) ? <p className="mt-3 text-xs font-semibold text-amber-900">{text(review.author)}</p> : null}</section> : null}
+        {showQuickActions && (phone || email || whatsapp || location) ? <nav id="contact" className="scroll-mt-6 flex flex-wrap gap-3 border-t border-slate-100 pt-5" aria-label={t("templates.sectionQuickActions")}>
+          {phone ? <a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-teal-800 px-4 py-3 text-sm font-semibold text-white" href={`tel:${encodeURIComponent(phone)}`}>{t("profile.call")}</a> : null}
+          {email ? <a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-blue-700 px-4 py-3 text-sm font-semibold text-white" href={`mailto:${encodeURIComponent(email)}`}>{t("profile.message")}</a> : !email && whatsapp ? <a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-green-700 px-4 py-3 text-sm font-semibold text-white" href={`https://wa.me/${encodeURIComponent(whatsapp.replace(/\D/g, ""))}`} target="_blank" rel="noopener noreferrer">{t("profile.message")}</a> : null}
+          {location ? <a className="inline-flex min-h-11 items-center justify-center rounded-xl border border-teal-800 px-4 py-3 text-sm font-semibold text-teal-900" href={`https://maps.google.com/?q=${encodeURIComponent(location)}`} target="_blank" rel="noopener noreferrer">{t("profile.map")}</a> : null}
         </nav> : null}
         {actionUrl ? <div className="pt-1"><a href={actionUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-teal-800 px-6 py-3 text-center font-semibold text-white hover:bg-teal-900">{text(action.label) ?? t("profile.visitWebsite")}</a></div> : null}
         <div className="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-5"><a href={`/p/${encodeURIComponent(slug)}/vcard.vcf`} className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-800 hover:bg-slate-50">{t("profile.saveContact")}</a><span className="text-xs leading-5 text-slate-500">{t("visitor.digitalBusinessCard")}</span></div>
-      </div>
+      </div>{enlarged ? <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/80 p-5" role="dialog" aria-modal="true" onClick={() => setEnlarged(null)}><div className="max-h-full max-w-3xl rounded-2xl bg-white p-3" onClick={(event) => event.stopPropagation()}><button type="button" onClick={() => setEnlarged(null)} className="mb-2 float-end rounded-lg px-2 py-1 text-xl" aria-label={t("profile.closePreview")}>×</button><img src={enlarged} alt={t("profile.enlargedCredential")} className="max-h-[80vh] max-w-full object-contain" /></div></div> : null}
       <footer className="border-t border-slate-100 px-6 py-4 text-center text-xs text-slate-500">{t("profile.publicLabel")} · FaidATech</footer>
     </article>
   </main>;
