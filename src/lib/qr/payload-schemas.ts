@@ -63,24 +63,17 @@ const profileSocialLinkSchema = z.object({
   url: webUrl,
 }).strict();
 
+const profileProjectStepSchema = z.object({
+  title: optionalText(180),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+}).strict();
 const profileProjectSchema = z.object({
   title: z.string().trim().min(1).max(180),
   description: optionalText(2000),
   url: profileUrl,
   imageUrl: profileUrl,
-}).strict();
-
-const profileShowcaseItemSchema = z.object({
-  title: z.string().trim().min(1).max(180),
-  description: optionalText(2000),
-  imageUrl: profileUrl,
-  price: z.number().finite().min(0).optional(),
-  currency: z.string().trim().max(12).optional(),
-  availability: optionalText(80),
-  duration: optionalText(100),
-  summary: optionalText(1200),
-  step: z.number().int().min(1).max(100).optional(),
-  url: profileUrl,
+  steps: z.array(profileProjectStepSchema).max(20).default([]),
 }).strict();
 
 const profileCredentialSchema = z.object({
@@ -110,13 +103,21 @@ export const sectorProfilePayloadSchema = z.object({
   profileVersion: z.literal(1).default(1),
   sector: sectorIdSchema,
   customSectorName: z.string().trim().max(120).optional(),
-  firstName: z.string().trim().min(1).max(100),
-  lastName: z.string().trim().min(1).max(100),
-  role: z.string().trim().min(1).max(160),
+  entityType: z.enum(["INDIVIDUAL", "ORGANIZATION", "GROUP", "GOVERNANCE"]).default("ORGANIZATION"),
+  firstName: optionalText(100),
+  lastName: optionalText(100),
+  role: optionalText(160),
+  mandate: optionalText(1200),
+  jurisdiction: optionalText(240),
+  leadership: optionalText(1200),
+  members: optionalText(1200),
   organization: optionalText(160),
   tagline: optionalText(240),
   bio: optionalText(5000),
+  aboutImageUrl: profileUrl,
   spotlight: optionalText(500),
+  spotlightType: z.enum(["banner", "image", "video"]).default("banner"),
+  spotlightMediaUrl: profileUrl,
   phone: optionalText(60),
   email: z.string().trim().email().optional(),
   website: profileUrl,
@@ -124,8 +125,6 @@ export const sectorProfilePayloadSchema = z.object({
   mapUrl: profileUrl,
   socialLinks: z.array(profileSocialLinkSchema).max(20).default([]),
   projects: z.array(profileProjectSchema).max(30).default([]),
-  showcaseMode: z.enum(["product", "service", "steps"]).optional(),
-  showcaseItems: z.array(profileShowcaseItemSchema).max(50).optional(),
   credentials: z.array(profileCredentialSchema).max(30).default([]),
   reviews: z.array(profileReviewSchema).max(30).default([]),
   customFields: z.array(profileCustomFieldSchema).max(30).default([]),
@@ -137,12 +136,15 @@ export const sectorProfilePayloadSchema = z.object({
     contact: z.boolean().default(true),
   }).default({ projects: true, credentials: true, social: true, reviews: true, contact: true }),
   qrPageBackground: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  qrFrame: z.enum(["square", "rounded", "badge"]).default("rounded"),
+  qrFrame: z.enum(["square", "rounded", "badge", "none"]).default("rounded"),
   qrDots: z.enum(["square", "round"]).default("square"),
-  qrLogoPlacement: z.enum(["center", "above"]).default("center"),
+  qrLogoPlacement: z.enum(["none", "center", "above"]).default("center"),
   localizedContent: localizedContentSchema,
   branding: brandIdentitySchema.optional(),
 }).strict().superRefine((profile, context) => {
+  if (profile.entityType === "INDIVIDUAL" && (!profile.firstName || !profile.lastName || !profile.role)) context.addIssue({ code: "custom", path: ["firstName"], message: "Add the person’s name and profession." });
+  if (profile.entityType !== "INDIVIDUAL" && !profile.organization) context.addIssue({ code: "custom", path: ["organization"], message: "Add the organization or group name." });
+  if (profile.entityType === "GOVERNANCE" && !profile.mandate) context.addIssue({ code: "custom", path: ["mandate"], message: "Add the public mandate." });
   if (profile.sector === "OTHER" && !profile.customSectorName?.trim()) {
     context.addIssue({ code: "custom", path: ["customSectorName"], message: "A custom sector name is required." });
   }

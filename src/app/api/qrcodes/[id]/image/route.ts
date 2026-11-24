@@ -4,7 +4,7 @@ import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { readBrandIdentity } from "@/lib/qr/brand";
-import { generateQrPng, generateQrSvg, readQrLogoOptions } from "@/lib/qr/qr-image";
+import { generateQrPng, generateQrSvg } from "@/lib/qr/qr-image";
 
 const idSchema = z.string().cuid();
 const formatSchema = z.enum(["png", "svg"]);
@@ -33,10 +33,9 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const qrForeground = readBrandIdentity(qrCode.payload)?.qrForeground;
     const rawPayload = qrCode.payload && typeof qrCode.payload === "object" && !Array.isArray(qrCode.payload) ? qrCode.payload as Record<string, unknown> : {};
     const qrBackground = typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined;
-    const logo = readQrLogoOptions(qrCode.payload);
     const body = format === "svg"
-      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground, logo)
-      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground, logo));
+      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground)
+      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground));
     const contentType = format === "svg" ? "image/svg+xml; charset=utf-8" : "image/png";
     return new Response(body, {
       headers: {

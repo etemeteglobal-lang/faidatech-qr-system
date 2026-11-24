@@ -7,8 +7,6 @@ import { type ProfileFieldType, sectorOptions } from "@/lib/profile/sectors";
 export type WizardPurpose = "SECTOR_PROFILE" | "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "LOCAL_PAYMENTS";
 type MediaKind = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT";
 type KeyValue = { key: string; value: string };
-export type ShowcaseMode = "product" | "service" | "steps";
-export type ShowcaseItem = { title: string; description: string; imageUrl: string; price: string; currency: string; availability: string; duration: string; summary: string; step: number; url: string };
 const DEFAULT_ACCENT = "#10B981";
 const DEFAULT_QR_FOREGROUND = "#0F172A";
 
@@ -32,31 +30,37 @@ export type WizardForm = {
   paymentUrl: string;
   profile: {
     sector: (typeof sectorOptions)[number]["id"];
+    entityType: "INDIVIDUAL" | "ORGANIZATION" | "GROUP" | "GOVERNANCE";
     customSectorName: string;
     firstName: string;
     lastName: string;
     role: string;
+    mandate: string;
+    jurisdiction: string;
+    leadership: string;
+    members: string;
     organization: string;
     tagline: string;
     bio: string;
+    aboutImageUrl: string;
     spotlight: string;
+    spotlightType: "banner" | "image" | "video";
+    spotlightMediaUrl: string;
     phone: string;
     email: string;
     website: string;
     address: string;
     mapUrl: string;
     socialLinks: { platform: string; label: string; url: string }[];
-    projects: { title: string; description: string; url: string; imageUrl: string }[];
-    showcaseMode: ShowcaseMode;
-    showcaseItems: ShowcaseItem[];
+    projects: { title: string; description: string; url: string; imageUrl: string; steps: { title: string; description: string; imageUrl: string }[] }[];
     credentials: { title: string; issuer: string; year: string; fileUrl: string; fileName: string; mimeType: string }[];
     reviews: { name: string; role: string; rating: number; quote: string }[];
     customFields: { id: string; label: string; type: ProfileFieldType; value: string }[];
     sectionVisibility: { projects: boolean; credentials: boolean; social: boolean; reviews: boolean; contact: boolean };
     qrPageBackground: string;
-    qrFrame: "square" | "rounded" | "badge";
+    qrFrame: "none" | "square" | "rounded" | "badge";
     qrDots: "square" | "round";
-    qrLogoPlacement: "center" | "above";
+    qrLogoPlacement: "none" | "center" | "above";
   };
 };
 
@@ -91,14 +95,22 @@ export function emptyWizardForm(): WizardForm {
     paymentUrl: "",
     profile: {
       sector: "OTHER",
+      entityType: "ORGANIZATION",
       customSectorName: "",
       firstName: "",
       lastName: "",
       role: "",
+      mandate: "",
+      jurisdiction: "",
+      leadership: "",
+      members: "",
       organization: "",
       tagline: "",
       bio: "",
+      aboutImageUrl: "",
       spotlight: "",
+      spotlightType: "banner",
+      spotlightMediaUrl: "",
       phone: "",
       email: "",
       website: "",
@@ -106,8 +118,6 @@ export function emptyWizardForm(): WizardForm {
       mapUrl: "",
       socialLinks: [],
       projects: [],
-      showcaseMode: "service",
-      showcaseItems: [],
       credentials: [],
       reviews: [],
       customFields: [],
@@ -145,10 +155,6 @@ function recordToPairs(value: unknown): KeyValue[] {
 
 function mediaKind(value: unknown): MediaKind {
   return value === "IMAGE" || value === "VIDEO" || value === "AUDIO" || value === "DOCUMENT" ? value : "DOCUMENT";
-}
-
-function showcaseMode(value: unknown): ShowcaseMode {
-  return value === "product" || value === "steps" ? value : "service";
 }
 
 const legacyLocaleKeys: Partial<Record<LocaleCode, string>> = {
@@ -208,23 +214,29 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
     form.profile = {
       ...form.profile,
       sector: stringAt(profile, "sector") as WizardForm["profile"]["sector"],
+      entityType: (stringAt(profile, "entityType") || "ORGANIZATION") as WizardForm["profile"]["entityType"],
       customSectorName: stringAt(profile, "customSectorName"),
       firstName: stringAt(profile, "firstName"),
       lastName: stringAt(profile, "lastName"),
       role: stringAt(profile, "role"),
+      mandate: stringAt(profile, "mandate"),
+      jurisdiction: stringAt(profile, "jurisdiction"),
+      leadership: stringAt(profile, "leadership"),
+      members: stringAt(profile, "members"),
       organization: stringAt(profile, "organization"),
       tagline: stringAt(profile, "tagline"),
       bio: stringAt(profile, "bio"),
+      aboutImageUrl: stringAt(profile, "aboutImageUrl"),
       spotlight: stringAt(profile, "spotlight"),
+      spotlightType: (stringAt(profile, "spotlightType") || "banner") as WizardForm["profile"]["spotlightType"],
+      spotlightMediaUrl: stringAt(profile, "spotlightMediaUrl"),
       phone: stringAt(profile, "phone"),
       email: stringAt(profile, "email"),
       website: stringAt(profile, "website"),
       address: stringAt(profile, "address"),
       mapUrl: stringAt(profile, "mapUrl"),
       socialLinks: rows("socialLinks").map((item) => { const row = asRecord(item); return { platform: stringAt(row, "platform"), label: stringAt(row, "label"), url: stringAt(row, "url") }; }),
-      projects: rows("projects").map((item) => { const row = asRecord(item); return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl") }; }),
-      showcaseMode: showcaseMode(profile.showcaseMode),
-      showcaseItems: rows("showcaseItems").map((item, index) => { const row = asRecord(item); return { title: stringAt(row, "title"), description: stringAt(row, "description"), imageUrl: stringAt(row, "imageUrl"), price: typeof row.price === "number" ? String(row.price) : stringAt(row, "price"), currency: stringAt(row, "currency") || "ETB", availability: stringAt(row, "availability"), duration: stringAt(row, "duration"), summary: stringAt(row, "summary"), step: typeof row.step === "number" ? row.step : index + 1, url: stringAt(row, "url") }; }),
+      projects: rows("projects").map((item) => { const row = asRecord(item); const steps = Array.isArray(row.steps) ? row.steps.map((step) => asRecord(step)) : []; return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl"), steps: steps.map((step) => ({ title: stringAt(step, "title"), description: stringAt(step, "description"), imageUrl: stringAt(step, "imageUrl") })) }; }),
       credentials: rows("credentials").map((item) => { const row = asRecord(item); return { title: stringAt(row, "title"), issuer: stringAt(row, "issuer"), year: stringAt(row, "year"), fileUrl: stringAt(row, "fileUrl"), fileName: stringAt(row, "fileName"), mimeType: stringAt(row, "mimeType") || "application/pdf" }; }),
       reviews: rows("reviews").map((item) => { const row = asRecord(item); return { name: stringAt(row, "name"), role: stringAt(row, "role"), rating: typeof row.rating === "number" ? row.rating : 5, quote: stringAt(row, "quote") }; }),
       customFields: rows("customFields").map((item) => { const row = asRecord(item); return { id: stringAt(row, "id"), label: stringAt(row, "label"), type: stringAt(row, "type") as WizardForm["profile"]["customFields"][number]["type"], value: stringAt(row, "value") }; }),
@@ -383,7 +395,6 @@ export function validateWizardForm(form: WizardForm): WizardValidationError | nu
     if (form.profile.mapUrl.trim() && !/^https?:\/\//i.test(form.profile.mapUrl.trim())) return { key: "validation.profileMapUrl" };
     if (form.profile.socialLinks.some((link) => link.url.trim() && !/^https?:\/\//i.test(link.url.trim()))) return { key: "validation.profileSocialUrl" };
     if (form.profile.projects.some((project) => [project.url, project.imageUrl].some((url) => url.trim() && !/^https?:\/\//i.test(url.trim())))) return { key: "validation.profileProjectUrl" };
-    if (form.profile.showcaseItems.some((item) => [item.imageUrl, item.url].some((url) => url.trim() && !/^https?:\/\//i.test(url.trim())))) return { key: "validation.profileProjectUrl" };
     if (form.profile.credentials.some((credential) => !/^https?:\/\//i.test(credential.fileUrl.trim()))) return { key: "validation.profileFileUrl" };
   }
 
@@ -453,23 +464,29 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
     return withBranding({
       profileVersion: 1,
       sector: form.profile.sector,
+      entityType: form.profile.entityType,
       customSectorName: optional(form.profile.customSectorName),
       firstName: form.profile.firstName.trim(),
       lastName: form.profile.lastName.trim(),
-      role: form.profile.role.trim(),
+      role: optional(form.profile.role),
+      mandate: optional(form.profile.mandate),
+      jurisdiction: optional(form.profile.jurisdiction),
+      leadership: optional(form.profile.leadership),
+      members: optional(form.profile.members),
       organization: optional(form.profile.organization),
       tagline: optional(form.profile.tagline),
       bio: optional(form.profile.bio),
+      aboutImageUrl: optionalWebUrl(form.profile.aboutImageUrl),
       spotlight: optional(form.profile.spotlight),
+      spotlightType: form.profile.spotlightType,
+      spotlightMediaUrl: optionalWebUrl(form.profile.spotlightMediaUrl),
       phone: optional(form.profile.phone),
       email: optional(form.profile.email),
       website: optionalWebUrl(form.profile.website),
       address: optional(form.profile.address),
       mapUrl: optionalWebUrl(form.profile.mapUrl),
       socialLinks: form.profile.socialLinks.filter((item) => item.url.trim()).map((item) => ({ platform: item.platform.trim() || "Social", label: item.label.trim() || item.platform.trim() || "Profile", url: item.url.trim() })),
-      projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl) })),
-      showcaseMode: form.profile.showcaseMode,
-      showcaseItems: form.profile.showcaseItems.filter((item) => item.title.trim()).map((item, index) => ({ title: item.title.trim(), description: optional(item.description), imageUrl: optionalWebUrl(item.imageUrl), price: item.price.trim() ? Number(item.price) : undefined, currency: optional(item.currency) || "ETB", availability: optional(item.availability), duration: optional(item.duration), summary: optional(item.summary), step: form.profile.showcaseMode === "steps" ? item.step || index + 1 : undefined, url: optionalWebUrl(item.url) })),
+      projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl), steps: item.steps.filter((step) => step.title.trim() || step.description.trim() || step.imageUrl.trim()).map((step) => ({ title: step.title.trim() || "Step", description: optional(step.description), imageUrl: optionalWebUrl(step.imageUrl) })) })),
       credentials: form.profile.credentials.filter((item) => item.fileUrl.trim()).map((item) => ({ title: item.title.trim(), issuer: optional(item.issuer), year: optional(item.year), fileUrl: item.fileUrl.trim(), fileName: item.fileName.trim(), mimeType: item.mimeType })),
       reviews: form.profile.reviews.filter((item) => item.quote.trim()).map((item) => ({ name: item.name.trim(), role: optional(item.role), rating: item.rating, quote: item.quote.trim() })),
       customFields: form.profile.customFields.filter((item) => item.label.trim() && item.value.trim()).map((item) => ({ id: item.id.trim() || `field-${Math.random().toString(36).slice(2, 8)}`, label: item.label.trim(), type: item.type, value: item.value.trim() })),

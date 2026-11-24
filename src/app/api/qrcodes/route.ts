@@ -8,7 +8,7 @@ import { assertDynamicQrQuota, incrementDynamicQrUsage } from "@/lib/billing/ent
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { readBrandIdentity } from "@/lib/qr/brand";
 import { parseDestinationPayload, destinationTypeSchema } from "@/lib/qr/payload-schemas";
-import { generateQrImageDataUrl, readQrLogoOptions } from "@/lib/qr/qr-image";
+import { generateQrImageDataUrl } from "@/lib/qr/qr-image";
 import { createShortCode, getPublicQrUrl } from "@/lib/qr/short-code";
 
 const createQrCodeSchema = z
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       const shortCode = createShortCode();
       const redirectUrl = getPublicQrUrl(shortCode);
       const rawPayload = payload as Record<string, unknown>;
-      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground, typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined, readQrLogoOptions(payload));
+      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground, typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined);
 
       try {
         const qrCode = await prisma.qRCode.create({
