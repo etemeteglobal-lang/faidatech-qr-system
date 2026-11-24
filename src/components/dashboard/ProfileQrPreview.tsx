@@ -80,7 +80,7 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
     const { size, data } = matrix;
     const { viewWidth, viewHeight, qrX, qrY, total, logoX, logoY, logoSize } = layout;
     const scale = dots === "small" ? 0.62 : dots === "round" ? 0.78 : dots === "styled" ? 0.86 : 1;
-    const radius = dots === "round" ? scale / 2 : dots === "styled" ? 0.18 : 0;
+    const radius = ["round", "circle"].includes(dots) ? scale / 2 : dots === "styled" ? 0.18 : 0;
     const offset = (1 - scale) / 2;
     const finder = (x: number, y: number) => (x < 8 && y < 8) || (x >= size - 8 && y < 8) || (x < 8 && y >= size - 8);
     const cells: string[] = [];
@@ -91,7 +91,12 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
         const moduleScale = eye || dots === "large" ? 1 : scale;
         const moduleOffset = eye || dots === "large" ? 0 : offset;
         const moduleRadius = eye ? 0 : radius;
-        cells.push(`<rect x="${qrX + x + 4 + moduleOffset}" y="${qrY + y + 4 + moduleOffset}" width="${moduleScale}" height="${moduleScale}" rx="${moduleRadius}" fill="${safeForeground}"/>`);
+        const px = qrX + x + 4 + moduleOffset;
+        const py = qrY + y + 4 + moduleOffset;
+        if (!eye && dots === "diamond") cells.push(`<polygon points="${px + moduleScale/2},${py} ${px + moduleScale},${py + moduleScale/2} ${px + moduleScale/2},${py + moduleScale} ${px},${py + moduleScale/2}" fill="${safeForeground}"/>`);
+        else if (!eye && dots === "heart") cells.push(`<path d="M ${px + moduleScale/2} ${py + moduleScale} C ${px + moduleScale*.34} ${py + moduleScale*.78}, ${px} ${py + moduleScale*.54}, ${px + moduleScale*.1} ${py + moduleScale*.28} C ${px + moduleScale*.2} ${py - moduleScale*.02}, ${px + moduleScale*.43} ${py + moduleScale*.06}, ${px + moduleScale/2} ${py + moduleScale*.28} C ${px + moduleScale*.7} ${py - moduleScale*.02}, ${px + moduleScale*.98} ${py + moduleScale*.02}, ${px + moduleScale*.9} ${py + moduleScale*.34} C ${px + moduleScale*.82} ${py + moduleScale*.62}, ${px + moduleScale*.62} ${py + moduleScale*.84}, ${px + moduleScale/2} ${py + moduleScale} Z" fill="${safeForeground}"/>`);
+        else if (!eye && dots === "line") cells.push(`<rect x="${px}" y="${py + moduleScale*.25}" width="${moduleScale}" height="${moduleScale*.5}" rx="${moduleScale*.25}" fill="${safeForeground}"/>`);
+        else cells.push(`<rect x="${px}" y="${py}" width="${moduleScale}" height="${moduleScale}" rx="${moduleRadius}" fill="${safeForeground}"/>`);
       }
     }
 

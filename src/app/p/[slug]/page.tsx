@@ -4,7 +4,6 @@ import PublicSectorProfile from "@/components/qr/PublicSectorProfile";
 import PublicVisitorLayout from "@/components/qr/PublicVisitorLayout";
 import { shouldHidePublicPromoFooter } from "@/lib/billing/public-footer";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
-import type { LocalizedContent } from "@/i18n/localized-content";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -46,7 +45,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   if (!profile) notFound();
   const hidePromotionalFooter = await shouldHidePublicPromoFooter(profile.organizationId);
   const profileData = object(profile.profileData);
-  return <PublicVisitorLayout title={profile.displayName} localizedContent={profileData.localizedContent as LocalizedContent | undefined} hidePromotionalFooter={hidePromotionalFooter}><PublicSectorProfile
+  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter}><PublicSectorProfile
     slug={slug}
     displayName={profile.displayName}
     sector={profile.sector}

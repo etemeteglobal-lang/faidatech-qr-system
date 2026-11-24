@@ -57,7 +57,8 @@ export type WizardForm = {
     website: string;
     address: string;
     mapUrl: string;
-    socialLinks: { platform: string; label: string; url: string }[];
+    socialLinks: { platform: string; label: string; url: string; avatarUrl?: string }[];
+    highlights: string[];
     projects: { title: string; description: string; url: string; imageUrl: string; steps: { title: string; description: string; imageUrl: string }[] }[];
     showcaseMode: "PRODUCT_CATALOG" | "SERVICE_MENU" | "PROJECT_PROCESS";
     products: { name: string; description: string; imageUrl: string; price: string; currency: string; availability: "AVAILABLE" | "OUT_OF_STOCK" | "PREORDER" | "BY_REQUEST" }[];
@@ -67,8 +68,8 @@ export type WizardForm = {
     customFields: { id: string; label: string; type: ProfileFieldType; value: string }[];
     sectionVisibility: { projects: boolean; credentials: boolean; social: boolean; reviews: boolean; contact: boolean };
     qrPageBackground: string;
-    qrFrame: "none" | "square" | "rounded" | "badge";
-    qrDots: "square" | "round";
+    qrFrame: "none" | "square" | "rounded" | "badge" | "circle" | "brand";
+    qrDots: "square" | "round" | "circle" | "diamond" | "heart" | "line";
     qrLogoPlacement: "none" | "center" | "above";
   };
 };
@@ -127,6 +128,7 @@ export function emptyWizardForm(): WizardForm {
       address: "",
       mapUrl: "",
       socialLinks: [],
+      highlights: [],
       projects: [],
       showcaseMode: "PROJECT_PROCESS",
       products: [],
@@ -249,7 +251,8 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       website: stringAt(profile, "website"),
       address: stringAt(profile, "address"),
       mapUrl: stringAt(profile, "mapUrl"),
-      socialLinks: rows("socialLinks").map((item) => { const row = asRecord(item); return { platform: stringAt(row, "platform"), label: stringAt(row, "label"), url: stringAt(row, "url") }; }),
+      socialLinks: rows("socialLinks").map((item) => { const row = asRecord(item); return { platform: stringAt(row, "platform"), label: stringAt(row, "label"), url: stringAt(row, "url"), avatarUrl: stringAt(row, "avatarUrl") }; }),
+      highlights: rows("highlights").filter((item): item is string => typeof item === "string"),
       projects: rows("projects").map((item) => { const row = asRecord(item); const steps = Array.isArray(row.steps) ? row.steps.map((step) => asRecord(step)) : []; return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl"), steps: steps.map((step) => ({ title: stringAt(step, "title"), description: stringAt(step, "description"), imageUrl: stringAt(step, "imageUrl") })) }; }),
       showcaseMode: (stringAt(profile, "showcaseMode") || defaultShowcaseMode(stringAt(profile, "sector"))) as WizardForm["profile"]["showcaseMode"],
       products: rows("products").map((item) => { const row = asRecord(item); return { name: stringAt(row, "name"), description: stringAt(row, "description"), imageUrl: stringAt(row, "imageUrl"), price: typeof row.price === "number" ? String(row.price) : "", currency: stringAt(row, "currency") || "ETB", availability: (stringAt(row, "availability") || "AVAILABLE") as WizardForm["profile"]["products"][number]["availability"] }; }),
@@ -506,7 +509,8 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       website: optionalWebUrl(form.profile.website),
       address: optional(form.profile.address),
       mapUrl: optionalWebUrl(form.profile.mapUrl),
-      socialLinks: form.profile.socialLinks.filter((item) => item.url.trim()).map((item) => ({ platform: item.platform.trim() || "Social", label: item.label.trim() || item.platform.trim() || "Profile", url: item.url.trim() })),
+      socialLinks: form.profile.socialLinks.filter((item) => item.url.trim()).map((item) => ({ platform: item.platform.trim() || "Social", label: item.label.trim() || item.platform.trim() || "Profile", url: item.url.trim(), ...(item.avatarUrl?.trim() ? { avatarUrl: item.avatarUrl.trim() } : {}) })),
+      highlights: form.profile.highlights.map((item) => item.trim()).filter(Boolean),
       projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl), steps: item.steps.filter((step) => step.title.trim() || step.description.trim() || step.imageUrl.trim()).map((step) => ({ title: step.title.trim() || "Step", description: optional(step.description), imageUrl: optionalWebUrl(step.imageUrl) })) })),
       showcaseMode: form.profile.showcaseMode,
       products: form.profile.products.filter((item) => item.name.trim()).map((item) => ({ name: item.name.trim(), description: optional(item.description), imageUrl: optionalWebUrl(item.imageUrl), price: item.price.trim() ? Number(item.price) : undefined, currency: optional(item.currency), availability: item.availability })),

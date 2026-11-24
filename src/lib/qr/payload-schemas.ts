@@ -61,6 +61,7 @@ const profileSocialLinkSchema = z.object({
   platform: z.string().trim().min(1).max(40),
   label: z.string().trim().min(1).max(100),
   url: webUrl,
+  avatarUrl: webUrl.optional(),
 }).strict();
 
 const profileProjectStepSchema = z.object({
@@ -131,6 +132,7 @@ export const sectorProfilePayloadSchema = z.object({
   members: optionalText(1200),
   organization: optionalText(160),
   tagline: optionalText(240),
+  highlights: z.array(z.string().trim().min(1).max(80)).max(12).default([]),
   bio: optionalText(5000),
   aboutImageUrl: profileUrl,
   spotlight: optionalText(500),
@@ -158,8 +160,8 @@ export const sectorProfilePayloadSchema = z.object({
     contact: z.boolean().default(true),
   }).default({ projects: true, credentials: true, social: true, reviews: true, contact: true }),
   qrPageBackground: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
-  qrFrame: z.enum(["square", "rounded", "badge", "none"]).default("rounded"),
-  qrDots: z.enum(["square", "round"]).default("square"),
+  qrFrame: z.enum(["square", "rounded", "badge", "none", "circle", "brand"]).default("rounded"),
+  qrDots: z.enum(["square", "round", "circle", "diamond", "heart", "line"]).default("square"),
   qrLogoPlacement: z.enum(["none", "center", "above"]).default("center"),
   localizedContent: localizedContentSchema,
   branding: brandIdentitySchema.optional(),
