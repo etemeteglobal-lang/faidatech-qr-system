@@ -76,6 +76,24 @@ const profileProjectSchema = z.object({
   steps: z.array(profileProjectStepSchema).max(20).default([]),
 }).strict();
 
+const profileProductSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+  price: z.number().finite().nonnegative().optional(),
+  currency: z.string().trim().max(12).optional(),
+  availability: z.enum(["AVAILABLE", "OUT_OF_STOCK", "PREORDER", "BY_REQUEST"]).default("AVAILABLE"),
+}).strict();
+
+const profileServiceSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+  price: z.number().finite().nonnegative().optional(),
+  currency: z.string().trim().max(12).optional(),
+  duration: optionalText(80),
+}).strict();
+
 const profileCredentialSchema = z.object({
   title: z.string().trim().min(1).max(180),
   issuer: optionalText(160),
@@ -125,6 +143,9 @@ export const sectorProfilePayloadSchema = z.object({
   mapUrl: profileUrl,
   socialLinks: z.array(profileSocialLinkSchema).max(20).default([]),
   projects: z.array(profileProjectSchema).max(30).default([]),
+  showcaseMode: z.enum(["PRODUCT_CATALOG", "SERVICE_MENU", "PROJECT_PROCESS"]).default("PROJECT_PROCESS"),
+  products: z.array(profileProductSchema).max(100).default([]),
+  services: z.array(profileServiceSchema).max(100).default([]),
   credentials: z.array(profileCredentialSchema).max(30).default([]),
   reviews: z.array(profileReviewSchema).max(30).default([]),
   customFields: z.array(profileCustomFieldSchema).max(30).default([]),

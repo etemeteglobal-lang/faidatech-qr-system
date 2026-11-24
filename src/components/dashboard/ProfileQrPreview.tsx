@@ -40,6 +40,8 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
   const target = origin && path ? `${origin}${path}` : "";
   const safeForeground = /^#[0-9a-fA-F]{6}$/.test(foreground) && isQrForegroundContrastSafe(foreground) ? foreground : "#0F172A";
   const safeLogo = safeImageUrl(logoUrl);
+  const showLogo = Boolean(safeLogo) && logoPlacement !== "none";
+  const logoAbove = logoPlacement === "above" || logoPlacement === "top";
 
   useEffect(() => {
     if (!target) {
@@ -58,9 +60,9 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
     if (!matrix) return null;
     const total = matrix.size + 8;
     const logoSize = total * (logoPlacement === "center" ? 0.15 : 0.12);
-    const extra = safeLogo && (logoPlacement === "top" || logoPlacement === "bottom") ? logoSize + 5 : 0;
+    const extra = showLogo && (logoAbove || logoPlacement === "bottom") ? logoSize + 5 : 0;
     const padding = frame === "circle" ? Math.ceil(total * 0.28) : 4;
-    const qrY = padding + (safeLogo && logoPlacement === "top" ? extra : 0);
+    const qrY = padding + (showLogo && logoAbove ? extra : 0);
     return {
       viewWidth: total + padding * 2,
       viewHeight: total + padding * 2 + extra,
@@ -68,10 +70,10 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
       qrY,
       total,
       logoX: (total + padding * 2 - logoSize) / 2,
-      logoY: logoPlacement === "top" ? Math.max(1, (qrY - logoSize) / 2) : logoPlacement === "bottom" ? qrY + total + Math.max(1, (padding + extra - logoSize) / 2) : qrY + (total - logoSize) / 2,
+      logoY: logoAbove ? Math.max(1, (qrY - logoSize) / 2) : logoPlacement === "bottom" ? qrY + total + Math.max(1, (padding + extra - logoSize) / 2) : qrY + (total - logoSize) / 2,
       logoSize,
     };
-  }, [frame, matrix, logoPlacement, safeLogo]);
+  }, [frame, matrix, logoPlacement, showLogo, logoAbove]);
 
   const svg = useMemo(() => {
     if (!matrix || !layout) return "";
@@ -101,13 +103,13 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
           ? `<rect x="0.5" y="0.5" width="${viewWidth - 1}" height="${viewHeight - 1}" rx="3" fill="#ffffff" stroke="#d1d5db" stroke-width="0.6"/>`
           : `<rect x="0.5" y="0.5" width="${viewWidth - 1}" height="${viewHeight - 1}" fill="#ffffff" stroke="#e2e8f0" stroke-width="0.35"/>`;
     const whiteCodePanel = `<rect x="${qrX}" y="${qrY}" width="${total}" height="${total}" fill="#ffffff"/>`;
-    const logoMarkup = safeLogo
+    const logoMarkup = showLogo
       ? logoPlacement === "center"
         ? `<rect x="${qrX + total / 2 - logoSize * 0.72}" y="${qrY + total / 2 - logoSize * 0.72}" width="${logoSize * 1.44}" height="${logoSize * 1.44}" rx="1.1" fill="#ffffff"/><image href="${escapeXml(safeLogo)}" x="${qrX + total / 2 - logoSize / 2}" y="${qrY + total / 2 - logoSize / 2}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`
         : `<image href="${escapeXml(safeLogo)}" x="${logoX}" y="${logoY}" width="${logoSize}" height="${logoSize}" preserveAspectRatio="xMidYMid meet"/>`
       : "";
     return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${viewWidth} ${viewHeight}" role="img" aria-label="Scannable QR code"><rect width="100%" height="100%" fill="#ffffff"/>${frameMarkup}${whiteCodePanel}${cells.join("")}${logoMarkup}</svg>`;
-  }, [dots, frame, layout, matrix, safeForeground, safeLogo, logoPlacement]);
+  }, [dots, frame, layout, matrix, safeForeground, safeLogo, logoPlacement, showLogo]);
 
   const imageHref = useMemo(() => svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}` : "", [svg]);
 
@@ -150,7 +152,7 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
         qrImage.src = svgUrl;
       });
       context.drawImage(qrImage, 0, 0, canvas.width, canvas.height);
-      if (safeLogo) {
+      if (showLogo && safeLogo) {
         const logo = new Image();
         logo.crossOrigin = "anonymous";
         try {

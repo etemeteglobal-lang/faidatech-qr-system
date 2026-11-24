@@ -128,10 +128,15 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     revalidatePath("/dashboard/analytics");
     revalidatePath(`/r/${updated.shortCode}`);
     const rawPayload = updated.payload && typeof updated.payload === "object" && !Array.isArray(updated.payload) ? updated.payload as Record<string, unknown> : {};
+    const profileBranding = rawPayload.branding && typeof rawPayload.branding === "object" ? rawPayload.branding as Record<string, unknown> : {};
+    const profileLogoUrl = updated.destinationType === "SECTOR_PROFILE" && typeof profileBranding.logoUrl === "string" ? profileBranding.logoUrl : undefined;
+    const profileLogoPlacement = updated.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
     const qrImageDataUrl = await generateQrImageDataUrl(
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
       typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined,
+      profileLogoUrl,
+      profileLogoPlacement,
     );
 
     return Response.json(

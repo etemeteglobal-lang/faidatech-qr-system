@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const format = formatSchema.parse(new URL(request.url).searchParams.get("format") ?? "png");
     const qrCode = await prisma.qRCode.findFirst({
       where: { id, organizationId: tenant.organizationId, deletedAt: null },
-      select: { shortCode: true, payload: true },
+      select: { shortCode: true, payload: true, destinationType: true },
     });
 
     if (!qrCode) {
@@ -33,9 +33,12 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const qrForeground = readBrandIdentity(qrCode.payload)?.qrForeground;
     const rawPayload = qrCode.payload && typeof qrCode.payload === "object" && !Array.isArray(qrCode.payload) ? qrCode.payload as Record<string, unknown> : {};
     const qrBackground = typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined;
+    const profileBranding = rawPayload.branding && typeof rawPayload.branding === "object" ? rawPayload.branding as Record<string, unknown> : {};
+    const profileLogoUrl = qrCode.destinationType === "SECTOR_PROFILE" && typeof profileBranding.logoUrl === "string" ? profileBranding.logoUrl : undefined;
+    const profileLogoPlacement = qrCode.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
     const body = format === "svg"
-      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground)
-      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground));
+      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement)
+      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement));
     const contentType = format === "svg" ? "image/svg+xml; charset=utf-8" : "image/png";
     return new Response(body, {
       headers: {
