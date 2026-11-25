@@ -87,6 +87,27 @@ function safeHttpUrl(value: unknown): string | null {
   }
 }
 
+function normalizeLegacyShowcaseChild(value: unknown, parentTitle: string, index: number, label: string): ShowcaseCardItem {
+  const data = object(value);
+  const childLabel = `${label} ${index + 1}`;
+  const title = text(data.title ?? data.name ?? value) ?? childLabel;
+  const price = text(data.price);
+  const nested = Array.isArray(data.children) ? data.children.map((item, nestedIndex) => normalizeLegacyShowcaseChild(item, title, nestedIndex, label)) : [];
+  return {
+    id: `${parentTitle}-child-${index}`,
+    title,
+    kicker: `${parentTitle} · ${childLabel}`,
+    imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
+    imageAlt: `${parentTitle} — ${childLabel}`,
+    badge: text(data.badge ?? data.availability) ?? undefined,
+    meta: price ? `${text(data.currency) ?? "ETB"} ${price}` : undefined,
+    description: text(data.description ?? data.text) ?? undefined,
+    link: safeHttpUrl(data.link ?? data.url) ?? undefined,
+    children: nested,
+    childrenLabel: label,
+  };
+}
+
 function safeSocialUrl(value: unknown, platformValue: unknown): string | null {
   const href = safeHttpUrl(value);
   const platform = text(platformValue)?.toLowerCase();
@@ -167,6 +188,9 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
         imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
         imageAlt: `${title} — ${stepLabel}`,
         description: text(data.description ?? data.text) ?? undefined,
+        link: safeHttpUrl(data.link ?? data.url) ?? undefined,
+        children: Array.isArray(data.children) ? data.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, stepTitle, childIndex, showcaseLabels.childSingular)) : [],
+        childrenLabel: showcaseLabels.childPlural,
       } satisfies ShowcaseCardItem;
     });
     return {
@@ -197,23 +221,17 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
       badge: showcaseMode === "PRODUCT_CATALOG" ? text(item.availability) ?? undefined : undefined,
       meta,
       description: text(item.description) ?? undefined,
+      children: showcaseMode === "SERVICE_MENU" && Array.isArray(item.children)
+        ? item.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, title, childIndex, showcaseLabels.childSingular))
+        : [],
+      childrenLabel: showcaseLabels.childPlural,
     };
   });
   const productVariantItems: ShowcaseCardItem[] = showcaseMode === "PRODUCT_CATALOG"
     ? products.map((item, index) => {
       const parentTitle = text(item.name ?? item.title) ?? `Item ${index + 1}`;
       const variants = Array.isArray(item.variants) ? item.variants.map(object).filter((variant) => Boolean(text(variant.title ?? variant.name ?? variant.description ?? variant.imageUrl ?? variant.image))) : [];
-      const children = variants.map((variant, variantIndex) => {
-        const childLabel = `${showcaseLabels.childSingular} ${variantIndex + 1}`;
-        return {
-          id: `catalog-${index}-variant-${variantIndex}`,
-          title: text(variant.title ?? variant.name) ?? childLabel,
-          kicker: `${parentTitle} · ${childLabel}`,
-          imageAlt: `${parentTitle} — ${childLabel}`,
-          imageUrl: safeHttpUrl(variant.imageUrl ?? variant.image) ?? undefined,
-          description: text(variant.description ?? variant.text) ?? undefined,
-        };
-      });
+      const children = variants.map((variant, variantIndex) => normalizeLegacyShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular));
       return {
         ...catalogShowcaseItems[index],
         children,

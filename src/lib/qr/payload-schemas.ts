@@ -57,6 +57,28 @@ const sectorIdSchema = z.enum(sectorOptions.map((sector) => sector.id) as [strin
 const profileFieldTypeSchema = z.enum(profileFieldTypes.map((field) => field.id) as [string, ...string[]]);
 const profileUrl = webUrl.optional();
 
+type ProfileShowcaseChildPayload = {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  price?: number;
+  currency?: string;
+  badge?: string;
+  link?: string;
+  children?: ProfileShowcaseChildPayload[];
+};
+
+const profileShowcaseChildSchema: z.ZodType<ProfileShowcaseChildPayload> = z.lazy(() => z.object({
+  title: optionalText(180),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+  price: z.number().finite().nonnegative().optional(),
+  currency: z.string().trim().max(12).optional(),
+  badge: optionalText(80),
+  link: profileUrl,
+  children: profileShowcaseChildSchema.array().max(20).optional(),
+}).strict());
+
 const profileSocialLinkSchema = z.object({
   platform: z.string().trim().min(1).max(40),
   label: z.string().trim().min(1).max(100),
@@ -68,6 +90,8 @@ const profileProjectStepSchema = z.object({
   title: optionalText(180),
   description: optionalText(1200),
   imageUrl: profileUrl,
+  link: profileUrl,
+  children: profileShowcaseChildSchema.array().max(20).optional(),
 }).strict();
 const profileProjectSchema = z.object({
   title: z.string().trim().min(1).max(180),
@@ -84,7 +108,7 @@ const profileProductSchema = z.object({
   price: z.number().finite().nonnegative().optional(),
   currency: z.string().trim().max(12).optional(),
   availability: z.enum(["AVAILABLE", "OUT_OF_STOCK", "PREORDER", "BY_REQUEST"]).default("AVAILABLE"),
-  variants: z.array(z.object({ title: optionalText(180), description: optionalText(1200), imageUrl: profileUrl }).strict()).max(30).optional(),
+  variants: z.array(profileShowcaseChildSchema).max(30).optional(),
 }).strict();
 
 const profileServiceSchema = z.object({
@@ -94,6 +118,7 @@ const profileServiceSchema = z.object({
   price: z.number().finite().nonnegative().optional(),
   currency: z.string().trim().max(12).optional(),
   duration: optionalText(80),
+  children: z.array(profileShowcaseChildSchema).max(30).optional(),
 }).strict();
 
 const profileCredentialSchema = z.object({

@@ -11,6 +11,25 @@ import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseT
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
 
 type ProfilePayload = z.infer<typeof sectorProfilePayloadSchema>;
+type ProfileShowcaseChild = NonNullable<NonNullable<ProfilePayload["products"][number]["variants"]>[number]>;
+
+function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: string, index: number, label: string): ShowcaseCardItem {
+  const childLabel = `${label} ${index + 1}`;
+  const meta = child.price !== undefined ? `${child.currency || "ETB"} ${child.price.toLocaleString()}` : undefined;
+  return {
+    id: `${parentTitle}-child-${index}`,
+    title: child.title || childLabel,
+    kicker: `${parentTitle} · ${childLabel}`,
+    imageUrl: child.imageUrl,
+    imageAlt: `${parentTitle} — ${childLabel}`,
+    badge: child.badge,
+    meta,
+    description: child.description,
+    link: child.link,
+    children: (child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label)),
+    childrenLabel: label,
+  };
+}
 
 export default function SectorProfileExperience({ payload, shortCode }: { payload: ProfilePayload; shortCode: string }) {
   const { t } = useI18n();
@@ -43,6 +62,9 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
           imageUrl: step.imageUrl,
           imageAlt: `${project.title} — ${stepLabel}`,
           description: step.description,
+          link: step.link,
+          children: (step.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, step.title || stepLabel, childIndex, showcaseLabels.childSingular)),
+          childrenLabel: showcaseLabels.childPlural,
         } satisfies ShowcaseCardItem;
       });
     return {
@@ -72,19 +94,7 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
         meta: item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : undefined,
         description: item.description,
       } satisfies ShowcaseCardItem;
-      const variants = (item.variants ?? [])
-        .filter((variant) => variant.title || variant.description || variant.imageUrl)
-        .map((variant, variantIndex) => {
-          const childLabel = `${showcaseLabels.childSingular} ${variantIndex + 1}`;
-          return {
-            id: `product-${index}-variant-${variantIndex}`,
-            title: variant.title || childLabel,
-            kicker: `${parentTitle} · ${childLabel}`,
-            imageUrl: variant.imageUrl,
-            imageAlt: `${parentTitle} — ${childLabel}`,
-            description: variant.description,
-          } satisfies ShowcaseCardItem;
-        });
+      const variants = (item.variants ?? []).map((variant, variantIndex) => mapProfileShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular));
       return { ...parent, children: variants, childrenLabel: showcaseLabels.childPlural };
     })
     : payload.services.map((item, index) => ({
@@ -95,6 +105,8 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
       imageAlt: item.name,
       meta: [item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : "", item.duration || ""].filter(Boolean).join(" · ") || undefined,
       description: item.description,
+      children: (item.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, item.name, childIndex, showcaseLabels.childSingular)),
+      childrenLabel: showcaseLabels.childPlural,
     }));
   const showcaseItems = payload.showcaseMode === "PROJECT_PROCESS" ? projectShowcaseItems : catalogShowcaseItems;
   const showcaseTitle = showcaseLabels.sectionTitle;
