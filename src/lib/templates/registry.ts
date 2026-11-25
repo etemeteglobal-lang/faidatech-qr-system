@@ -80,7 +80,7 @@ export function validateProfileSubmission(input: unknown) {
     ...(template?.fields ?? []),
     "_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement", "_qrLogo", "_brandLogo",
     "_showDetails", "_showSocial", "_showDocuments", "_showReviews", "_showSpotlight", "_showQuickActions",
-    "_spotlightTitle", "_spotlightText", "_ratingMode", "_testimonialPrompt", "_review", "_action",
+    "_spotlightTitle", "_spotlightText", "_announcements", "_ratingMode", "_testimonialPrompt", "_review", "_action",
   ];
   const unsupportedFields = Object.keys(parsed.data.profileData).filter((key) => !registeredFields.includes(key));
   if (unsupportedFields.length) return { success: false as const, error: { formErrors: [`Fields are not registered for ${parsed.data.sector}: ${unsupportedFields.slice(0, 8).join(", ")}. Put organization-specific extensions in customFields.`], fieldErrors: {} } };

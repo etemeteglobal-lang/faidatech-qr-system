@@ -1,3 +1,5 @@
+import type { ProfileAnnouncement } from "@/lib/qr/announcements";
+
 export const sectorOptions = [
   { id: "ARCHITECTURE", label: "Architecture & Design" },
   { id: "ENGINEERING", label: "Engineering & Infrastructure" },
@@ -60,6 +62,7 @@ export type SectorProfilePayload = {
   tagline?: string;
   bio?: string;
   spotlight?: string;
+  announcements?: ProfileAnnouncement[];
   phone?: string;
   email?: string;
   website?: string;

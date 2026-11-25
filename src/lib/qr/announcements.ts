@@ -39,14 +39,32 @@ function announcement(value: unknown): ProfileAnnouncement | null {
   return { text, ...(badge ? { badge } : {}), ...(link ? { link } : {}) };
 }
 
+function parseSerialized(value: string): unknown {
+  const trimmed = value.trim();
+  if (!trimmed.startsWith("[") && !trimmed.startsWith("{")) return value;
+  try {
+    return JSON.parse(trimmed) as unknown;
+  } catch {
+    return value;
+  }
+}
+
 /**
- * Normalize current announcement arrays and older one-off spotlight fields.
- * An explicit empty array means the owner intentionally removed all ticker items,
- * so it does not fall back to the legacy single announcement.
+ * Normalize current arrays, JSON-serialized arrays, and older single spotlight
+ * fields. An explicit empty array intentionally suppresses legacy fallback.
  */
 export function normalizeAnnouncements(value: unknown, legacy?: LegacyAnnouncement): ProfileAnnouncement[] {
-  if (Array.isArray(value)) return value.map(announcement).filter((item): item is ProfileAnnouncement => item !== null);
-  if (value !== undefined && value !== null) {
+  const normalizedValue = typeof value === "string" ? parseSerialized(value) : value;
+  if (Array.isArray(normalizedValue)) return normalizedValue.map(announcement).filter((item): item is ProfileAnnouncement => item !== null);
+  if (normalizedValue && typeof normalizedValue === "object") {
+    const single = announcement(normalizedValue);
+    if (single) return [single];
+  }
+  if (typeof normalizedValue === "string" && normalizedValue !== value) {
+    const parsedSingle = announcement(normalizedValue);
+    if (parsedSingle) return [parsedSingle];
+  }
+  if (value !== undefined && value !== null && typeof value !== "string") {
     const single = announcement(value);
     if (single) return [single];
   }

@@ -118,6 +118,12 @@ const profileCustomFieldSchema = z.object({
   value: z.string().trim().max(2000),
 }).strict();
 
+const profileAnnouncementSchema = z.object({
+  text: z.string().trim().min(1).max(500),
+  badge: optionalText(40),
+  link: profileUrl,
+}).strict();
+
 export const sectorProfilePayloadSchema = z.object({
   profileVersion: z.literal(1).default(1),
   sector: sectorIdSchema,
@@ -136,6 +142,7 @@ export const sectorProfilePayloadSchema = z.object({
   bio: optionalText(5000),
   aboutImageUrl: profileUrl,
   spotlight: optionalText(500),
+  announcements: z.array(profileAnnouncementSchema).max(30).optional(),
   spotlightType: z.enum(["banner", "image", "video"]).default("banner"),
   spotlightMediaUrl: profileUrl,
   phone: optionalText(60),

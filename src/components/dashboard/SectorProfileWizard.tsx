@@ -5,6 +5,9 @@ import { useI18n } from "@/i18n/LocaleProvider";
 import type { MessageKey } from "@/i18n/messages";
 import ProfileQrPreview from "@/components/dashboard/ProfileQrPreview";
 import { verticalTemplates, type ProfileKindCode } from "@/lib/templates/registry";
+import AnnouncementItemsEditor from "@/components/dashboard/wizard/AnnouncementItemsEditor";
+import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
+import { normalizeAnnouncements, type ProfileAnnouncement } from "@/lib/qr/announcements";
 
 type SocialPlatform = "telegram" | "tiktok" | "instagram" | "linkedin" | "whatsapp" | "youtube" | "facebook" | "x";
 type CustomField = { id: number; name: string; value: string; kind: "text" | "link" | "file" | "social"; platform?: SocialPlatform; fileName?: string };
@@ -23,8 +26,8 @@ type Envelope<T> = { data?: T; error?: { message?: string; code?: string } };
 
 const RESERVED_PROFILE_KEYS = new Set([
   "_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement", "_qrLogo", "_brandLogo",
-  "_showDetails", "_showSocial", "_showDocuments", "_showReviews", "_showSpotlight", "_showQuickActions",
-  "_spotlightTitle", "_spotlightText", "_announcements", "_ratingMode", "_testimonialPrompt", "_review", "_action",
+  "_showDetails", "_showSocial", "_showDocuments", "_showReviews", "_showSpotlight", "_showQuickActions", "_announcements",
+  "_spotlightTitle", "_spotlightText", "_ratingMode", "_testimonialPrompt", "_review", "_action",
 ]);
 const CUSTOM_PRESETS = ["Phone", "Email", "Website", "Address", "WhatsApp", "Facebook", "Instagram", "LinkedIn", "YouTube", "Telegram", "TikTok", "X", "Testimonial", "Rating", "Map"];
 const SOCIAL_PLATFORMS: { value: SocialPlatform; label: string; host: string }[] = [
@@ -60,6 +63,7 @@ function objectStrings(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value).map(([key, item]) => {
     if (typeof item === "string" || typeof item === "number" || typeof item === "boolean") return [key, String(item)];
+    if ((key === "_announcements" || key === "announcements") && Array.isArray(item)) return [key, JSON.stringify(item)];
     if (item && typeof item === "object" && !Array.isArray(item)) {
       if (key === "_review" || key === "_action") return [key, JSON.stringify(item)];
       const record = item as Record<string, unknown>;
@@ -86,6 +90,12 @@ function stringValue(value: unknown) {
   return typeof value === "string" ? value : value === null || value === undefined ? "" : String(value);
 }
 
+function announcementSlots(value: unknown, legacy?: { text?: unknown; badge?: unknown; link?: unknown }): ProfileAnnouncement[] {
+  const items = normalizeAnnouncements(value, legacy).slice(0, 5);
+  while (items.length < 3) items.push({ text: "", badge: "", link: "" });
+  return items;
+}
+
 export default function SectorProfileWizard() {
   const { t, locale } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
@@ -95,6 +105,7 @@ export default function SectorProfileWizard() {
   const [profileKind, setProfileKind] = useState<ProfileKindCode>("ORGANIZATION");
   const [displayName, setDisplayName] = useState("");
   const [profileData, setProfileData] = useState<Record<string, string>>({});
+  const [announcements, setAnnouncements] = useState<ProfileAnnouncement[]>(() => announcementSlots(undefined));
   const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [profilesLoading, setProfilesLoading] = useState(true);
@@ -171,6 +182,7 @@ export default function SectorProfileWizard() {
   function resetForm() {
     setDisplayName("");
     setProfileData({});
+    setAnnouncements(announcementSlots(undefined));
     setCustomFields([]);
     setProfileKind("ORGANIZATION");
     setEditingId(null);
@@ -244,6 +256,14 @@ export default function SectorProfileWizard() {
         ? { type: "social", platform: field.platform ?? platformFromName(key), value: field.value.trim(), label: key }
         : { type: field.kind === "file" ? "file" : field.kind === "link" ? "link" : "text", value: field.value.trim(), label: key, ...(field.fileName ? { fileName: field.fileName } : {}) };
     }
+    const savedAnnouncements = announcements
+      .map((item) => ({ text: item.text.trim(), badge: item.badge?.trim() ?? "", link: item.link?.trim() ?? "" }))
+      .filter((item) => item.text)
+      .slice(0, 5)
+      .map((item) => {
+        const link = safeExternalUrl(item.link);
+        return { text: item.text, ...(item.badge ? { badge: item.badge } : {}), ...(link ? { link } : {}) };
+      });
     if (sector === "OTHER") extensions.customSectorName = customSectorName.trim();
     try {
       const response = await fetch(editingId ? `/api/profiles/${encodeURIComponent(editingId)}` : "/api/profiles", {
@@ -256,6 +276,7 @@ export default function SectorProfileWizard() {
           displayName: displayName.trim(),
           profileData: Object.fromEntries(Object.entries({
             ...profileData,
+            _announcements: JSON.stringify(savedAnnouncements),
             _ratingMode: sectionIsVisible("_showReviews") ? "stars-review" : "off",
           }).filter(([, value]) => value.trim()).map(([key, value]) => [key, value.trim()])),
           customFields: extensions,
@@ -309,6 +330,11 @@ export default function SectorProfileWizard() {
     for (const key of ["_ratingMode", "_testimonialPrompt", "_spotlightTitle", "_spotlightText"]) {
       if (!savedProfileData[key] && typeof custom[key] === "string") savedProfileData[key] = custom[key] as string;
     }
+    setAnnouncements(announcementSlots(savedProfileData._announcements ?? savedProfileData.announcements, {
+      text: savedProfileData._spotlightText ?? custom._spotlightText ?? savedProfileData.spotlight,
+      badge: savedProfileData._spotlightTitle ?? custom._spotlightTitle,
+      link: savedProfileData._announcementLink ?? custom._announcementLink,
+    }));
     if (!savedProfileData._showSpotlight && (custom._spotlight === true || custom._spotlight === "true")) savedProfileData._showSpotlight = "true";
     setProfileData(savedProfileData);
     const fields = parseCustomFields(profile.customFields);
@@ -392,6 +418,7 @@ export default function SectorProfileWizard() {
   const ratingPreview = Number(profileValue("Rating"));
   const ratingStarsPreview = Number.isFinite(ratingPreview) && ratingPreview >= 0 && ratingPreview <= 5 ? "★".repeat(Math.round(ratingPreview)) + "☆".repeat(5 - Math.round(ratingPreview)) : "";
   const testimonialPreview = profileValue("Testimonial");
+  const previewAnnouncements = announcements.filter((item) => item.text.trim()).slice(0, 5);
   const visibleCustomFields = customFields.filter((field) => field.name.trim() && field.value.trim());
   const socialFields = visibleCustomFields.filter((field) => field.kind === "social");
   const documentFields = visibleCustomFields.filter((field) => field.kind === "file");
@@ -435,6 +462,8 @@ export default function SectorProfileWizard() {
         </div>
         {templateFields.length > 4 ? <button type="button" onClick={() => setShowAllSectorFields((show) => !show)} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold text-faida-navy">{showAllSectorFields ? t("templates.showCoreFields") : t("templates.showMoreFields")}</button> : null}
 
+        <AnnouncementItemsEditor announcements={announcements} onChange={setAnnouncements} />
+
         <section className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <h3 className="font-semibold text-faida-navy">{t("templates.designTitle")}</h3>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -456,59 +485,6 @@ export default function SectorProfileWizard() {
             ] as const).map(([key, messageKey]) => <label key={key} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2.5 text-sm text-slate-700"><input type="checkbox" checked={sectionIsVisible(key)} onChange={(event) => updateProfileSetting(key, String(event.target.checked))} />{t(messageKey)}</label>)}
           </div>
           {sectionIsVisible("_showSpotlight") ? <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-xs font-semibold text-slate-700">{t("templates.sectionSpotlight")}<input maxLength={120} value={profileData._spotlightTitle ?? ""} onChange={(event) => updateProfileSetting("_spotlightTitle", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label><label className="text-xs font-semibold text-slate-700">{t("templates.previewHint")}<textarea rows={2} maxLength={500} value={profileData._spotlightText ?? ""} onChange={(event) => updateProfileSetting("_spotlightText", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label></div> : null}
-          {sectionIsVisible("_showSpotlight") ? (() => {
-            type AnnSlot = { text: string; badge?: string; link?: string };
-            let parsed: AnnSlot[] = [];
-            try {
-              const arr = JSON.parse(profileData._announcements || "[]");
-              if (Array.isArray(arr)) parsed = arr.map((x) => ({ text: String(x?.text ?? ""), badge: String(x?.badge ?? ""), link: String(x?.link ?? "") }));
-            } catch {}
-            const slots: AnnSlot[] = parsed.length >= 3
-              ? parsed.slice(0, 5)
-              : [...parsed, ...Array.from({ length: 3 - parsed.length }, () => ({ text: "", badge: "", link: "" }))];
-            const saveSlots = (next: AnnSlot[]) => {
-              const cleaned = next.slice(0, 5).filter((s) => s.text.trim() || s.badge?.trim() || s.link?.trim());
-              updateProfileSetting("_announcements", cleaned.length ? JSON.stringify(cleaned) : "");
-            };
-            const updateSlot = (idx: number, patch: Partial<AnnSlot>) => {
-              const next = slots.map((s, i) => (i === idx ? { ...s, ...patch } : s));
-              const keepDrafts = next.slice(0, Math.max(3, next.length));
-              updateProfileSetting("_announcements", JSON.stringify(keepDrafts));
-              if (patch.text?.trim()) updateProfileSetting("_showSpotlight", "true");
-            };
-            return (
-              <div className="mt-4 space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3.5">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-xs font-bold text-faida-navy">Scrolling announcements (3�5 slots)</p>
-                    <p className="text-[11px] text-faida-slate">Fill 3 to 5 items to test smooth horizontal scrolling & recycling on the public profile.</p>
-                  </div>
-                  {slots.length < 5 ? (
-                    <button type="button" onClick={() => updateProfileSetting("_announcements", JSON.stringify([...slots, { text: "", badge: "", link: "" }]))} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-faida-navy">+ Add slot ({slots.length}/5)</button>
-                  ) : null}
-                </div>
-                <div className="space-y-2.5">
-                  {slots.map((slot, idx) => (
-                    <div key={idx} className="grid gap-2 rounded-lg border border-emerald-100 bg-white p-2.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(7rem,.6fr)_minmax(0,1fr)_auto] sm:items-end">
-                      <label className="text-[11px] font-semibold text-slate-700">Announcement #{idx + 1}
-                        <input maxLength={500} value={slot.text} onChange={(e) => updateSlot(idx, { text: e.target.value })} placeholder="e.g. Grand opening discount 20% off" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
-                      </label>
-                      <label className="text-[11px] font-semibold text-slate-700">Badge
-                        <input maxLength={40} value={slot.badge ?? ""} onChange={(e) => updateSlot(idx, { badge: e.target.value })} placeholder="NEW" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
-                      </label>
-                      <label className="text-[11px] font-semibold text-slate-700">Link (optional)
-                        <input value={slot.link ?? ""} onChange={(e) => updateSlot(idx, { link: e.target.value })} placeholder="https://..." className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
-                      </label>
-                      <button type="button" onClick={() => {
-                        const cleared = slots.map((s, i) => (i === idx ? { text: "", badge: "", link: "" } : s));
-                        updateProfileSetting("_announcements", JSON.stringify(cleared));
-                      }} className="rounded-lg px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Clear</button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })() : null}
           {sectionIsVisible("_showReviews") ? <label className="mt-3 block text-xs font-semibold text-slate-700">{t("templates.sectionReviews")}<input maxLength={500} value={profileData._testimonialPrompt ?? ""} onChange={(event) => updateProfileSetting("_testimonialPrompt", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label> : null}
         </section>
 
@@ -541,6 +517,7 @@ export default function SectorProfileWizard() {
       <p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("templates.profilePreview")}</p><p className="mt-1 text-xs text-faida-slate">{t("templates.previewHint")}</p>
       <div className="mx-auto mt-5 w-full max-w-[292px] rounded-[34px] border-[7px] border-faida-navy bg-faida-navy p-1.5 shadow-xl"><div className="max-h-[70vh] min-h-[410px] overflow-y-auto overscroll-contain scroll-smooth rounded-[25px]" style={{ backgroundColor: pageBackground }}>
         <div className="sticky top-0 z-10 flex h-8 items-center justify-center bg-white"><span className="h-1.5 w-14 rounded-full bg-slate-200" /></div>
+        <AnnouncementTicker announcements={previewAnnouncements} />
         <div className="px-4 pb-5 pt-5">
           {brandLogo ? <img src={brandLogo} alt={t("templates.brandLogo")} className="mb-3 h-10 max-w-24 object-contain" /> : null}
           {sectionIsVisible("_showSpotlight") && (profileData._spotlightTitle || profileData._spotlightText) ? <div className="mb-3 rounded-xl bg-teal-800 px-3 py-2 text-[10px] font-semibold text-white">{profileData._spotlightTitle || t("profile.featured")}{profileData._spotlightText ? <p className="mt-1 font-normal">{profileData._spotlightText}</p> : null}</div> : null}

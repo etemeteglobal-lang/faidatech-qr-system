@@ -3,6 +3,7 @@ import { localeMetadata, uniqueLocaleCodes, type LocaleCode } from "@/i18n/regis
 import type { MessageKey } from "@/i18n/messages";
 import type { LocalizedContent, LocalizedTextOverride } from "@/i18n/localized-content";
 import { type ProfileFieldType, sectorOptions } from "@/lib/profile/sectors";
+import { normalizeAnnouncements, type ProfileAnnouncement } from "@/lib/qr/announcements";
 
 export type WizardPurpose = "SECTOR_PROFILE" | "LANDING_PAGE" | "VCARD" | "MENU" | "TOURISM_AUDIO" | "PDF" | "LOCAL_PAYMENTS";
 type MediaKind = "IMAGE" | "VIDEO" | "AUDIO" | "DOCUMENT";
@@ -51,6 +52,7 @@ export type WizardForm = {
     spotlight: string;
     spotlightType: "banner" | "image" | "video";
     spotlightMediaUrl: string;
+    announcements: ProfileAnnouncement[];
     phone: string;
     email: string;
     hours: string;
@@ -121,6 +123,7 @@ export function emptyWizardForm(): WizardForm {
       spotlight: "",
       spotlightType: "banner",
       spotlightMediaUrl: "",
+      announcements: [],
       phone: "",
       email: "",
       hours: "",
@@ -245,6 +248,11 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       spotlight: stringAt(profile, "spotlight"),
       spotlightType: (stringAt(profile, "spotlightType") || "banner") as WizardForm["profile"]["spotlightType"],
       spotlightMediaUrl: stringAt(profile, "spotlightMediaUrl"),
+      announcements: normalizeAnnouncements(profile.announcements ?? profile._announcements, {
+        text: profile.spotlight ?? profile._spotlightText,
+        badge: profile._spotlightTitle,
+        link: profile._announcementLink,
+      }),
       phone: stringAt(profile, "phone"),
       email: stringAt(profile, "email"),
       hours: stringAt(profile, "hours"),
@@ -503,6 +511,7 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       spotlight: optional(form.profile.spotlight),
       spotlightType: form.profile.spotlightType,
       spotlightMediaUrl: optionalWebUrl(form.profile.spotlightMediaUrl),
+      announcements: form.profile.announcements.filter((item) => item.text.trim()).map((item) => ({ text: item.text.trim(), badge: optional(item.badge ?? ""), link: optionalWebUrl(item.link ?? "") })),
       phone: optional(form.profile.phone),
       email: optional(form.profile.email),
       hours: optional(form.profile.hours),
