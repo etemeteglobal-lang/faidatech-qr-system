@@ -13,6 +13,7 @@ export type ShowcaseCardItem = {
   description?: string;
   link?: string;
   linkLabel?: string;
+  detailHref?: string;
   children?: ShowcaseCardItem[];
   childrenLabel?: string;
 };
@@ -22,10 +23,9 @@ type ShowcaseRailProps = {
   ariaLabel: string;
   className?: string;
   child?: boolean;
-  onSelect?: (item: ShowcaseCardItem) => void;
 };
 
-function ShowcaseRail({ items, ariaLabel, className = "", child = false, onSelect }: ShowcaseRailProps) {
+function ShowcaseRail({ items, ariaLabel, className = "", child = false }: ShowcaseRailProps) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const sequenceRef = useRef<HTMLDivElement>(null);
   const sequenceWidthRef = useRef(0);
@@ -182,19 +182,20 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false, onSelec
         item={item}
         decorative={copyIndex > 0}
         child={child}
-        onSelect={onSelect}
-      />)}</div>)}
+      />)}</div>) }
     </div>
   </div>;
 }
 
-function ShowcaseCard({ item, decorative, child, onSelect }: { item: ShowcaseCardItem; decorative: boolean; child: boolean; onSelect?: (item: ShowcaseCardItem) => void }) {
+function ShowcaseCard({ item, decorative, child }: { item: ShowcaseCardItem; decorative: boolean; child: boolean }) {
   if (child) {
     return <button
       type="button"
       className="profile-showcase-child-card"
       tabIndex={decorative ? -1 : undefined}
-      onClick={() => onSelect?.(item)}
+      onClick={() => {
+        if (item.detailHref) window.location.href = item.detailHref;
+      }}
       aria-label={`View details for ${item.title}`}
     >
       {item.imageUrl
@@ -234,51 +235,53 @@ function ShowcaseCard({ item, decorative, child, onSelect }: { item: ShowcaseCar
       >{item.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
       {item.children?.length ? <div className="profile-showcase-children">
         <p className="profile-showcase-children-title">{item.childrenLabel ?? "Details"}</p>
-        <ShowcaseRail items={item.children} ariaLabel={`${item.title} ${item.childrenLabel ?? "details"}`} child onSelect={onSelect} />
+        <ShowcaseRail items={item.children} ariaLabel={`${item.title} ${item.childrenLabel ?? "details"}`} child />
       </div> : null}
     </div>
   </article>;
 }
 
-function ShowcaseDetailsDialog({ item, onClose }: { item: ShowcaseCardItem; onClose: () => void }) {
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") onClose(); };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return <div className="profile-showcase-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="profile-showcase-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-showcase-dialog-title">
-      <div className="profile-showcase-dialog-header">
-        <div>
-          {item.kicker ? <p className="profile-showcase-kicker">{item.kicker}</p> : null}
-          <h2 id="profile-showcase-dialog-title" className="text-xl font-bold text-slate-900">{item.title}</h2>
-        </div>
-        <button type="button" onClick={onClose} aria-label="Close details" className="profile-showcase-dialog-close">×</button>
-      </div>
-      {item.imageUrl ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} className="profile-showcase-dialog-media" /> : null}
-      {item.badge ? <span className="profile-showcase-badge">{item.badge}</span> : null}
+export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showcase" }: { item: ShowcaseCardItem; backHref: string; backLabel?: string }) {
+  return <article className="profile-showcase-detail-page">
+    <a href={backHref} className="profile-showcase-back-link">← {backLabel}</a>
+    {item.imageUrl ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} className="profile-showcase-detail-media" /> : null}
+    <div className="profile-showcase-detail-body">
+      {item.kicker ? <p className="profile-showcase-kicker">{item.kicker}</p> : null}
+      <div className="flex items-start justify-between gap-3"><h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{item.title}</h1>{item.badge ? <span className="profile-showcase-badge">{item.badge}</span> : null}</div>
       {item.meta ? <p className="mt-3 text-base font-bold text-emerald-800">{item.meta}</p> : null}
-      {item.description ? <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.description}</p> : null}
-      {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="mt-4 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 underline">{item.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
-      {item.children?.length ? <div className="profile-showcase-dialog-children">
-        <h3 className="text-sm font-bold uppercase tracking-wide text-slate-500">{item.childrenLabel ?? "More details"}</h3>
-        <div className="mt-3 grid gap-2">
-          {item.children.map((child) => <div key={child.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-            <div className="flex items-start justify-between gap-2"><h4 className="font-semibold text-slate-900">{child.title}</h4>{child.badge ? <span className="profile-showcase-badge">{child.badge}</span> : null}</div>
+      {item.description ? <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.description}</p> : null}
+      {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 underline">{item.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
+      {item.children?.length ? <section className="profile-showcase-detail-children" aria-label={item.childrenLabel ?? "More details"}>
+        <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{item.childrenLabel ?? "More details"}</h2>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          {item.children.map((child) => <article key={child.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            {child.imageUrl ? <img src={child.imageUrl} alt={child.imageAlt ?? child.title} className="mb-3 aspect-[4/3] w-full rounded-lg object-cover" /> : null}
+            <div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{child.title}</h3>{child.badge ? <span className="profile-showcase-badge">{child.badge}</span> : null}</div>
             {child.meta ? <p className="mt-1 text-sm font-bold text-emerald-800">{child.meta}</p> : null}
-            {child.description ? <p className="mt-1 text-sm leading-6 text-slate-600">{child.description}</p> : null}
-          </div>)}
+            {child.description ? <p className="mt-2 text-sm leading-6 text-slate-600">{child.description}</p> : null}
+            {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-2">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700"><strong>{nested.title}</strong>{nested.meta ? ` · ${nested.meta}` : ""}{nested.description ? ` — ${nested.description}` : ""}</li>)}</ul></div> : null}
+          </article>)}
         </div>
-      </div> : null}
-    </section>
-  </div>;
+      </section> : null}
+    </div>
+  </article>;
 }
 
 export default function ShowcaseTicker({ items, ariaLabel = "Showcase", className = "" }: { items: ShowcaseCardItem[]; ariaLabel?: string; className?: string }) {
-  const [selectedItem, setSelectedItem] = useState<ShowcaseCardItem | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  useEffect(() => {
+    setActiveIndex((current) => Math.min(current, Math.max(items.length - 1, 0)));
+  }, [items.length]);
+  if (!items.length) return null;
+  const activeItem = items[activeIndex] ?? items[0];
   return <>
-    <ShowcaseRail items={items} ariaLabel={ariaLabel} className={className} onSelect={setSelectedItem} />
-    {selectedItem ? <ShowcaseDetailsDialog item={selectedItem} onClose={() => setSelectedItem(null)} /> : null}
+    <section className={`profile-showcase-parent-stage ${className}`.trim()} aria-label={ariaLabel}>
+      <ShowcaseCard item={activeItem} decorative={false} child={false} />
+      {items.length > 1 ? <nav className="profile-showcase-parent-navigation" aria-label={`${ariaLabel} navigation`}>
+        <button type="button" onClick={() => setActiveIndex((current) => (current - 1 + items.length) % items.length)} aria-label={`Previous ${ariaLabel.toLowerCase()} item`} className="profile-showcase-parent-control">‹</button>
+        <span aria-live="polite" className="profile-showcase-parent-indicator">{activeIndex + 1} / {items.length}</span>
+        <button type="button" onClick={() => setActiveIndex((current) => (current + 1) % items.length)} aria-label={`Next ${ariaLabel.toLowerCase()} item`} className="profile-showcase-parent-control">›</button>
+      </nav> : null}
+    </section>
   </>;
 }

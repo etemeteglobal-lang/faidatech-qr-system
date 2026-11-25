@@ -7,7 +7,7 @@ import type { MessageKey } from "@/i18n/messages";
 import { verticalTemplates } from "@/lib/templates/registry";
 import ProfileShareActions from "@/components/qr/ProfileShareActions";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
-import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseTicker";
+import ShowcaseTicker, { type ShowcaseCardItem, ShowcaseDetailView } from "@/components/qr/ShowcaseTicker";
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
 import { getSectorShowcaseLabels, normalizeShowcaseMode } from "@/lib/profile/sectors";
 
@@ -19,6 +19,7 @@ type Props = {
   profileKind: string;
   profileData: JsonObject;
   customFields: JsonObject;
+  showcaseItemId?: string;
 };
 
 type SocialBrand = { name: string; mark: string; color: string };
@@ -87,14 +88,15 @@ function safeHttpUrl(value: unknown): string | null {
   }
 }
 
-function normalizeLegacyShowcaseChild(value: unknown, parentTitle: string, index: number, label: string): ShowcaseCardItem {
+function normalizeLegacyShowcaseChild(value: unknown, parentTitle: string, index: number, label: string, idPrefix: string, detailBase: string): ShowcaseCardItem {
   const data = object(value);
   const childLabel = `${label} ${index + 1}`;
   const title = text(data.title ?? data.name ?? value) ?? childLabel;
+  const id = `${idPrefix}-${index}`;
   const price = text(data.price);
-  const nested = Array.isArray(data.children) ? data.children.map((item, nestedIndex) => normalizeLegacyShowcaseChild(item, title, nestedIndex, label)) : [];
+  const nested = Array.isArray(data.children) ? data.children.map((item, nestedIndex) => normalizeLegacyShowcaseChild(item, title, nestedIndex, label, `${id}-child`, detailBase)) : [];
   return {
-    id: `${parentTitle}-child-${index}`,
+    id,
     title,
     kicker: `${parentTitle} · ${childLabel}`,
     imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
@@ -103,9 +105,19 @@ function normalizeLegacyShowcaseChild(value: unknown, parentTitle: string, index
     meta: price ? `${text(data.currency) ?? "ETB"} ${price}` : undefined,
     description: text(data.description ?? data.text) ?? undefined,
     link: safeHttpUrl(data.link ?? data.url) ?? undefined,
+    detailHref: `${detailBase}/${encodeURIComponent(id)}`,
     children: nested,
     childrenLabel: label,
   };
+}
+
+function findShowcaseItem(items: ShowcaseCardItem[], id: string): ShowcaseCardItem | null {
+  for (const item of items) {
+    if (item.id === id) return item;
+    const nested = item.children ? findShowcaseItem(item.children, id) : null;
+    if (nested) return nested;
+  }
+  return null;
 }
 
 function safeSocialUrl(value: unknown, platformValue: unknown): string | null {
@@ -123,7 +135,7 @@ function humanize(value: string) {
   return value.replace(/([a-z0-9])([A-Z])/g, "$1 $2").replaceAll("_", " ").replace(/^./, (first) => first.toUpperCase());
 }
 
-export default function PublicSectorProfile({ slug, displayName, sector, profileKind, profileData, customFields }: Props) {
+export default function PublicSectorProfile({ slug, displayName, sector, profileKind, profileData, customFields, showcaseItemId }: Props) {
   const { t } = useI18n();
   const [credentialPreview, setCredentialPreview] = useState<{ title: string; url: string } | null>(null);
   const [copied, setCopied] = useState(false);
@@ -189,7 +201,8 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
         imageAlt: `${title} — ${stepLabel}`,
         description: text(data.description ?? data.text) ?? undefined,
         link: safeHttpUrl(data.link ?? data.url) ?? undefined,
-        children: Array.isArray(data.children) ? data.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, stepTitle, childIndex, showcaseLabels.childSingular)) : [],
+        detailHref: `/p/${encodeURIComponent(slug)}/showcase/${encodeURIComponent(`project-${index}-step-${stepIndex}`)}`,
+        children: Array.isArray(data.children) ? data.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, stepTitle, childIndex, showcaseLabels.childSingular, `project-${index}-step-${stepIndex}-child`, `/p/${encodeURIComponent(slug)}/showcase`)) : [],
         childrenLabel: showcaseLabels.childPlural,
       } satisfies ShowcaseCardItem;
     });
@@ -222,7 +235,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
       meta,
       description: text(item.description) ?? undefined,
       children: showcaseMode === "SERVICE_MENU" && Array.isArray(item.children)
-        ? item.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, title, childIndex, showcaseLabels.childSingular))
+        ? item.children.map((child, childIndex) => normalizeLegacyShowcaseChild(child, title, childIndex, showcaseLabels.childSingular, `service-${index}-child`, `/p/${encodeURIComponent(slug)}/showcase`))
         : [],
       childrenLabel: showcaseLabels.childPlural,
     };
@@ -231,7 +244,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
     ? products.map((item, index) => {
       const parentTitle = text(item.name ?? item.title) ?? `Item ${index + 1}`;
       const variants = Array.isArray(item.variants) ? item.variants.map(object).filter((variant) => Boolean(text(variant.title ?? variant.name ?? variant.description ?? variant.imageUrl ?? variant.image))) : [];
-      const children = variants.map((variant, variantIndex) => normalizeLegacyShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular));
+      const children = variants.map((variant, variantIndex) => normalizeLegacyShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular, `catalog-${index}-variant`, `/p/${encodeURIComponent(slug)}/showcase`));
       return {
         ...catalogShowcaseItems[index],
         children,
@@ -241,6 +254,11 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
     : [];
   const showcaseItems = showcaseMode === "PRODUCT_CATALOG" ? productVariantItems : showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
   const showcaseTitle = showcaseLabels.sectionTitle;
+  if (showcaseItemId) {
+    const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
+    if (!detailItem) return null;
+    return <ShowcaseDetailView item={detailItem} backHref={`/p/${encodeURIComponent(slug)}`} />;
+  }
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
   const testimonial = fieldValue(custom.Testimonial) ?? text(review.text ?? review.content);

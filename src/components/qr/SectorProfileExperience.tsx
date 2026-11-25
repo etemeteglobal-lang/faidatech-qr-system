@@ -7,17 +7,18 @@ import { getReadableTextColor } from "@/lib/qr/brand-presentation";
 import { getSectorShowcaseLabels } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
-import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseTicker";
+import ShowcaseTicker, { type ShowcaseCardItem, ShowcaseDetailView } from "@/components/qr/ShowcaseTicker";
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
 
 type ProfilePayload = z.infer<typeof sectorProfilePayloadSchema>;
 type ProfileShowcaseChild = NonNullable<NonNullable<ProfilePayload["products"][number]["variants"]>[number]>;
 
-function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: string, index: number, label: string): ShowcaseCardItem {
+function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: string, index: number, label: string, idPrefix: string, detailBase: string): ShowcaseCardItem {
   const childLabel = `${label} ${index + 1}`;
+  const id = `${idPrefix}-${index}`;
   const meta = child.price !== undefined ? `${child.currency || "ETB"} ${child.price.toLocaleString()}` : undefined;
   return {
-    id: `${parentTitle}-child-${index}`,
+    id,
     title: child.title || childLabel,
     kicker: `${parentTitle} · ${childLabel}`,
     imageUrl: child.imageUrl,
@@ -26,12 +27,22 @@ function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: strin
     meta,
     description: child.description,
     link: child.link,
-    children: (child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label)),
+    detailHref: `${detailBase}/${encodeURIComponent(id)}`,
+    children: (child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label, `${id}-child`, detailBase)),
     childrenLabel: label,
   };
 }
 
-export default function SectorProfileExperience({ payload, shortCode }: { payload: ProfilePayload; shortCode: string }) {
+function findShowcaseItem(items: ShowcaseCardItem[], id: string): ShowcaseCardItem | null {
+  for (const item of items) {
+    if (item.id === id) return item;
+    const nested = item.children ? findShowcaseItem(item.children, id) : null;
+    if (nested) return nested;
+  }
+  return null;
+}
+
+export default function SectorProfileExperience({ payload, shortCode, showcaseItemId }: { payload: ProfilePayload; shortCode: string; showcaseItemId?: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [credentialPreview, setCredentialPreview] = useState<{ title: string; url: string } | null>(null);
@@ -63,7 +74,8 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
           imageAlt: `${project.title} — ${stepLabel}`,
           description: step.description,
           link: step.link,
-          children: (step.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, step.title || stepLabel, childIndex, showcaseLabels.childSingular)),
+          detailHref: `/r/${encodeURIComponent(shortCode)}/showcase/${encodeURIComponent(`project-${index}-step-${stepIndex}`)}`,
+          children: (step.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, step.title || stepLabel, childIndex, showcaseLabels.childSingular, `project-${index}-step-${stepIndex}-child`, `/r/${encodeURIComponent(shortCode)}/showcase`)),
           childrenLabel: showcaseLabels.childPlural,
         } satisfies ShowcaseCardItem;
       });
@@ -94,7 +106,7 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
         meta: item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : undefined,
         description: item.description,
       } satisfies ShowcaseCardItem;
-      const variants = (item.variants ?? []).map((variant, variantIndex) => mapProfileShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular));
+      const variants = (item.variants ?? []).map((variant, variantIndex) => mapProfileShowcaseChild(variant, parentTitle, variantIndex, showcaseLabels.childSingular, `product-${index}-variant`, `/r/${encodeURIComponent(shortCode)}/showcase`));
       return { ...parent, children: variants, childrenLabel: showcaseLabels.childPlural };
     })
     : payload.services.map((item, index) => ({
@@ -105,11 +117,17 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
       imageAlt: item.name,
       meta: [item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : "", item.duration || ""].filter(Boolean).join(" · ") || undefined,
       description: item.description,
-      children: (item.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, item.name, childIndex, showcaseLabels.childSingular)),
+      children: (item.children ?? []).map((child, childIndex) => mapProfileShowcaseChild(child, item.name, childIndex, showcaseLabels.childSingular, `service-${index}-child`, `/r/${encodeURIComponent(shortCode)}/showcase`)),
       childrenLabel: showcaseLabels.childPlural,
     }));
   const showcaseItems = payload.showcaseMode === "PROJECT_PROCESS" ? projectShowcaseItems : catalogShowcaseItems;
   const showcaseTitle = showcaseLabels.sectionTitle;
+
+  if (showcaseItemId) {
+    const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
+    if (!detailItem) return null;
+    return <ShowcaseDetailView item={detailItem} backHref={`/r/${encodeURIComponent(shortCode)}`} />;
+  }
 
   return <article className="overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
     <AnnouncementTicker announcements={announcements} />

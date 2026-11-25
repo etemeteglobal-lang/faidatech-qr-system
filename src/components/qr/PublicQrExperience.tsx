@@ -29,6 +29,7 @@ type Props = {
   title: string;
   destinationType: DestinationType;
   payload: unknown;
+  showcaseItemId?: string;
 };
 
 function brandPalette(branding?: BrandIdentity) {
@@ -36,7 +37,7 @@ function brandPalette(branding?: BrandIdentity) {
   return { accent, accentText: getReadableTextColor(accent) };
 }
 
-export default function PublicQrExperience({ shortCode, title, destinationType, payload }: Props) {
+export default function PublicQrExperience({ shortCode, title, destinationType, payload, showcaseItemId }: Props) {
   const { locale, t } = useI18n();
   if (destinationType === "VCARD") {
     const card = payload as VCardPayload;
@@ -77,7 +78,7 @@ export default function PublicQrExperience({ shortCode, title, destinationType, 
 
   if (destinationType === "MENU") return <InteractiveMenu payload={payload as MenuPayload} />;
   if (destinationType === "TOURISM_AUDIO") return <TourismGuideExperience payload={payload as TourismPayload} />;
-  if (destinationType === "SECTOR_PROFILE") return <SectorProfileExperience payload={payload as SectorProfilePayload} shortCode={shortCode} />;
+  if (destinationType === "SECTOR_PROFILE") return <SectorProfileExperience payload={payload as SectorProfilePayload} shortCode={shortCode} showcaseItemId={showcaseItemId} />;
 
   const landing = payload as LandingPayload;
   const { accent, accentText } = brandPalette(landing.branding);

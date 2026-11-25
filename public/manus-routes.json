@@ -16,6 +16,8 @@
     { "path": "/dashboard/agent", "title": "Field agent portal — FaidATech" },
     { "path": "/dashboard/settings", "title": "Settings — FaidATech" },
     { "path": "/s/:organizationSlug/:slug", "title": "Public shared service" },
-    { "path": "/r/:shortCode", "title": "Dynamic QR destination" }
+    { "path": "/r/:shortCode", "title": "Dynamic QR destination" },
+    { "path": "/r/:shortCode/showcase/:itemId", "title": "Dynamic QR showcase detail" },
+    { "path": "/p/:slug/showcase/:itemId", "title": "Public showcase detail" }
   ]
 }
