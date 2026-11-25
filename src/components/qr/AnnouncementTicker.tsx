@@ -1,15 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import type { ProfileAnnouncement } from "@/lib/qr/announcements";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { normalizeAnnouncements, type ProfileAnnouncement } from "@/lib/qr/announcements";
 
 function AnnouncementItem({ item, decorative = false }: { item: ProfileAnnouncement; decorative?: boolean }) {
+  const media = item.mediaUrl && item.type === "image"
+    ? <img src={item.mediaUrl} alt={item.text || item.badge || "Announcement image"} className="h-12 w-20 shrink-0 rounded-md object-cover" />
+    : item.mediaUrl && item.type === "video"
+      ? <video controls={!decorative} tabIndex={decorative ? -1 : 0} muted playsInline preload="metadata" aria-label={item.text || item.badge || "Announcement video"} className="h-12 w-20 shrink-0 rounded-md bg-slate-950 object-cover"><source src={item.mediaUrl} /></video>
+      : null;
   const content = <>
     {item.badge ? <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">{item.badge}</span> : null}
-    <span>{item.text}</span>
+    {media}
+    {item.text ? <span>{item.text}</span> : null}
     <span aria-hidden="true" className="text-emerald-200">·</span>
   </>;
 
+  if (item.type === "video" && item.mediaUrl) return <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-1 py-1 text-sm text-white">
+    {item.badge ? <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">{item.badge}</span> : null}
+    {media}
+    {item.text ? <span>{item.text}</span> : null}
+    {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" tabIndex={decorative ? -1 : undefined} className="underline underline-offset-4">Open</a> : null}
+    <span aria-hidden="true" className="text-emerald-200">·</span>
+  </span>;
   if (item.link) return <a href={item.link} target="_blank" rel="noopener noreferrer" tabIndex={decorative ? -1 : undefined} className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-1 py-1 text-sm text-white underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{content}</a>;
   return <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-1 py-1 text-sm text-white">{content}</span>;
 }
@@ -18,6 +31,7 @@ export default function AnnouncementTicker({ announcements }: { announcements: P
   const viewportRef = useRef<HTMLDivElement>(null);
   const sequenceRef = useRef<HTMLDivElement>(null);
   const [copies, setCopies] = useState(1);
+  const safeAnnouncements = useMemo(() => normalizeAnnouncements(announcements), [announcements]);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -40,9 +54,9 @@ export default function AnnouncementTicker({ announcements }: { announcements: P
       observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [announcements]);
+  }, [safeAnnouncements]);
 
-  if (!announcements.length) return null;
+  if (!safeAnnouncements.length) return null;
 
   return <section ref={viewportRef} role="region" aria-label="Announcements" className="announcement-ticker overflow-hidden bg-emerald-800 text-white">
     <div className="announcement-ticker-track">
@@ -52,7 +66,7 @@ export default function AnnouncementTicker({ announcements }: { announcements: P
           ref={trackIndex === 0 && copyIndex === 0 ? sequenceRef : undefined}
           aria-hidden={trackIndex === 1 || copyIndex > 0 ? true : undefined}
           className="announcement-ticker-set"
-        >{announcements.map((item, index) => <AnnouncementItem key={`${index}-${item.text}`} item={item} decorative={trackIndex === 1 || copyIndex > 0} />)}</div>)}
+        >{safeAnnouncements.map((item, index) => <AnnouncementItem key={`${index}-${item.text}-${item.mediaUrl ?? ""}`} item={item} decorative={trackIndex === 1 || copyIndex > 0} />)}</div>)}
       </div>)}
     </div>
   </section>;

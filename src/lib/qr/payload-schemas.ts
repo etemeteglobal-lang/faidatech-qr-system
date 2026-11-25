@@ -119,10 +119,20 @@ const profileCustomFieldSchema = z.object({
 }).strict();
 
 const profileAnnouncementSchema = z.object({
-  text: z.string().trim().min(1).max(500),
+  text: z.string().trim().max(500).optional(),
   badge: optionalText(40),
   link: profileUrl,
-}).strict();
+  type: z.enum(["text", "image", "video"]).optional(),
+  mediaUrl: profileUrl,
+}).strict().superRefine((announcement, context) => {
+  const type = announcement.type ?? (announcement.mediaUrl ? "image" : "text");
+  if (type === "text" && !announcement.text?.trim()) {
+    context.addIssue({ code: "custom", path: ["text"], message: "Text announcements must include text." });
+  }
+  if ((type === "image" || type === "video") && !announcement.mediaUrl) {
+    context.addIssue({ code: "custom", path: ["mediaUrl"], message: "Image and video announcements must include media." });
+  }
+});
 
 export const sectorProfilePayloadSchema = z.object({
   profileVersion: z.literal(1).default(1),

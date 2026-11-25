@@ -227,6 +227,18 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
     const profile = asRecord(payload);
     const visibility = asRecord(profile.sectionVisibility);
     const rows = (key: string) => Array.isArray(profile[key]) ? profile[key] as unknown[] : [];
+    const announcements = normalizeAnnouncements(profile.announcements ?? profile._announcements);
+    const legacyAnnouncements = normalizeAnnouncements(undefined, {
+      text: profile.spotlight ?? profile._spotlightText,
+      badge: profile._spotlightTitle,
+      link: profile._announcementLink,
+      spotlightType: profile.spotlightType ?? profile._spotlightType,
+      spotlightMediaUrl: profile.spotlightMediaUrl ?? profile._spotlightMediaUrl ?? profile._spotlightImage ?? profile._spotlightVideo,
+    });
+    for (const item of legacyAnnouncements) {
+      const duplicate = announcements.some((existing) => (item.mediaUrl && existing.mediaUrl === item.mediaUrl) || (item.text && existing.text.trim() === item.text.trim() && existing.type === item.type));
+      if (!duplicate) announcements.push(item);
+    }
     form.purpose = "SECTOR_PROFILE";
     form.title = `${stringAt(profile, "firstName")} ${stringAt(profile, "lastName")}`.trim() || title;
     form.profile = {
@@ -245,14 +257,10 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       tagline: stringAt(profile, "tagline"),
       bio: stringAt(profile, "bio"),
       aboutImageUrl: stringAt(profile, "aboutImageUrl"),
-      spotlight: stringAt(profile, "spotlight"),
-      spotlightType: (stringAt(profile, "spotlightType") || "banner") as WizardForm["profile"]["spotlightType"],
-      spotlightMediaUrl: stringAt(profile, "spotlightMediaUrl"),
-      announcements: normalizeAnnouncements(profile.announcements ?? profile._announcements, {
-        text: profile.spotlight ?? profile._spotlightText,
-        badge: profile._spotlightTitle,
-        link: profile._announcementLink,
-      }),
+      spotlight: "",
+      spotlightType: "banner",
+      spotlightMediaUrl: "",
+      announcements: announcements.slice(0, 5),
       phone: stringAt(profile, "phone"),
       email: stringAt(profile, "email"),
       hours: stringAt(profile, "hours"),
@@ -422,6 +430,9 @@ export function validateWizardForm(form: WizardForm): WizardValidationError | nu
     if (form.profile.website.trim() && !/^https?:\/\//i.test(form.profile.website.trim())) return { key: "validation.profileWebsite" };
     if (form.profile.mapUrl.trim() && !/^https?:\/\//i.test(form.profile.mapUrl.trim())) return { key: "validation.profileMapUrl" };
     if (form.profile.socialLinks.some((link) => link.url.trim() && !/^https?:\/\//i.test(link.url.trim()))) return { key: "validation.profileSocialUrl" };
+    if (form.profile.announcements.some((item) => item.link?.trim() && !/^https?:\/\//i.test(item.link.trim()))) return { key: "validation.profileWebsite" };
+    if (form.profile.announcements.some((item) => item.mediaUrl?.trim() && !/^https?:\/\//i.test(item.mediaUrl.trim()))) return { key: "validation.profileFileUrl" };
+    if (form.profile.announcements.some((item) => item.type && item.type !== "text" && (item.text.trim() || item.badge?.trim() || item.link?.trim()) && !item.mediaUrl?.trim())) return { key: "validation.profileFileUrl" };
     if (form.profile.projects.some((project) => [project.url, project.imageUrl].some((url) => url.trim() && !/^https?:\/\//i.test(url.trim())))) return { key: "validation.profileProjectUrl" };
     if (form.profile.projects.some((project) => project.steps.some((step) => step.imageUrl.trim() && !/^https?:\/\//i.test(step.imageUrl.trim())))) return { key: "validation.profileProjectUrl" };
     if (form.profile.products.some((item) => (item.imageUrl.trim() && !/^https?:\/\//i.test(item.imageUrl.trim())) || (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)))) return { key: "validation.profileProjectUrl" };
@@ -511,7 +522,15 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       spotlight: optional(form.profile.spotlight),
       spotlightType: form.profile.spotlightType,
       spotlightMediaUrl: optionalWebUrl(form.profile.spotlightMediaUrl),
-      announcements: form.profile.announcements.filter((item) => item.text.trim()).map((item) => ({ text: item.text.trim(), badge: optional(item.badge ?? ""), link: optionalWebUrl(item.link ?? "") })),
+      announcements: form.profile.announcements
+        .filter((item) => item.text.trim() || item.mediaUrl?.trim())
+        .map((item) => ({
+          ...(item.text.trim() ? { text: item.text.trim() } : {}),
+          type: item.type ?? (item.mediaUrl ? "image" : "text"),
+          badge: optional(item.badge ?? ""),
+          link: optionalWebUrl(item.link ?? ""),
+          mediaUrl: optionalWebUrl(item.mediaUrl ?? ""),
+        })),
       phone: optional(form.profile.phone),
       email: optional(form.profile.email),
       hours: optional(form.profile.hours),

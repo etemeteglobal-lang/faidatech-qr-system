@@ -6,6 +6,8 @@ import type { WizardForm } from "@/components/dashboard/wizard/model";
 import { profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementItemsEditor from "@/components/dashboard/wizard/AnnouncementItemsEditor";
+import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
+import { uploadProfileFile } from "@/lib/profile/upload";
 
 type Props = { form: WizardForm; setFormAction: (next: WizardForm) => void };
 
@@ -15,15 +17,6 @@ function TextInput({ label, value, onChange, type = "text", placeholder }: { lab
 
 function TextArea({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (value: string) => void; placeholder?: string }) {
   return <label className="block text-sm font-semibold text-slate-700"><span>{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={4} className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-6 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>;
-}
-
-async function uploadProfileFile(file: File): Promise<{ url: string; fileName: string; mimeType: string }> {
-  const body = new FormData();
-  body.append("file", file);
-  const response = await fetch("/api/assets/profile", { method: "POST", body });
-  const result = await response.json().catch(() => ({})) as { data?: { url: string; fileName: string; mimeType: string }; error?: { message?: string } };
-  if (!response.ok || !result.data) throw new Error(result.error?.message || "The profile file could not be uploaded.");
-  return result.data;
 }
 
 function LiveProfileQr({ form }: Props) {
@@ -37,27 +30,65 @@ function LiveProfileQr({ form }: Props) {
       const quiet = 4;
       const unit = size / (matrix.size + quiet * 2);
       const canvas = document.createElement("canvas");
-      canvas.width = size; canvas.height = size;
+      canvas.width = size;
+      canvas.height = size;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Canvas unavailable");
       context.fillStyle = form.profile.qrPageBackground;
       context.fillRect(0, 0, size, size);
       context.fillStyle = form.branding.qrForeground;
-      for (let row = 0; row < matrix.size; row += 1) for (let col = 0; col < matrix.size; col += 1) {
-        if (!matrix.get(row, col)) continue;
-        const x = (col + quiet) * unit; const y = (row + quiet) * unit;
-        if (form.profile.qrDots === "round") { context.beginPath(); context.arc(x + unit / 2, y + unit / 2, unit * 0.46, 0, Math.PI * 2); context.fill(); }
-        else context.fillRect(x, y, unit + 0.1, unit + 0.1);
+      for (let row = 0; row < matrix.size; row += 1) {
+        for (let col = 0; col < matrix.size; col += 1) {
+          if (!matrix.get(row, col)) continue;
+          const x = (col + quiet) * unit;
+          const y = (row + quiet) * unit;
+          if (form.profile.qrDots === "round") {
+            context.beginPath();
+            context.arc(x + unit / 2, y + unit / 2, unit * 0.46, 0, Math.PI * 2);
+            context.fill();
+          } else context.fillRect(x, y, unit + 0.1, unit + 0.1);
+        }
       }
       const image = canvas.toDataURL("image/png");
       if (active) setDataUrl(image);
-    } catch { if (active) setDataUrl(""); }
+    } catch {
+      if (active) setDataUrl("");
+    }
     return () => { active = false; };
   }, [form.branding.qrForeground, form.profile.qrPageBackground, form.profile.qrDots]);
+
   const logoAbove = form.profile.qrLogoPlacement === "above" && form.branding.logoUrl;
   const logoCenter = form.profile.qrLogoPlacement === "center" && form.branding.logoUrl;
   const frame = form.profile.qrFrame === "badge" ? "rounded-[30px] border-2 border-emerald-700 p-4 shadow-md" : form.profile.qrFrame === "rounded" ? "rounded-2xl border border-slate-200 p-4" : "border-0 p-0";
-  return <aside className={`rounded-2xl ${frame}`} style={{ backgroundColor: form.profile.qrPageBackground }}><p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("profile.qrPreview")}</p><p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p><div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white"><div className="flex items-center gap-3 p-3"><span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-emerald-50 text-sm font-black text-emerald-900">{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-full w-full object-contain" /> : (form.profile.organization || `${form.profile.firstName} ${form.profile.lastName}`).slice(0,1).toUpperCase()}</span><div className="min-w-0"><p className="truncate text-sm font-bold text-slate-900">{form.profile.entityType === "INDIVIDUAL" ? `${form.profile.firstName} ${form.profile.lastName}`.trim() || t("profile.firstName") : form.profile.organization || t("profile.organization")}</p><p className="truncate text-xs text-slate-500">{form.profile.role || form.profile.sector.replaceAll("_", " ")}</p></div></div>{form.profile.aboutImageUrl ? <img src={form.profile.aboutImageUrl} alt="" className="h-24 w-full object-cover" /> : null}{form.profile.spotlight ? <div className="mx-3 mt-2 rounded-lg bg-emerald-50 p-2 text-xs text-emerald-950">{form.profile.spotlight}{form.profile.spotlightType === "image" && form.profile.spotlightMediaUrl ? <img src={form.profile.spotlightMediaUrl} alt="" className="mt-2 max-h-24 w-full rounded object-cover" /> : null}{form.profile.spotlightType === "video" && form.profile.spotlightMediaUrl ? <video controls playsInline preload="metadata" className="mt-2 max-h-24 w-full rounded bg-black"><source src={form.profile.spotlightMediaUrl} /></video> : null}</div> : null}<p className="px-3 py-2 text-xs leading-5 text-slate-600">{form.profile.bio || form.profile.tagline || t("profile.guidedNote")}</p><div className="flex gap-2 px-3 pb-3">{form.profile.phone ? <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-900">☎ {t("profile.callAction")}</span> : null}{form.profile.email ? <span className="rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-900">✉ {t("profile.emailAction")}</span> : null}</div></div>{logoAbove ? <img src={form.branding.logoUrl} alt="" className="mx-auto mt-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}<div className="relative mx-auto mt-4 h-48 w-48 overflow-hidden bg-white p-2 shadow-sm"><img src={dataUrl} alt={t("profile.qrPreview")} className="h-full w-full object-contain" />{logoCenter ? <span className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-white p-1.5 shadow"><img src={form.branding.logoUrl} alt="" className="max-h-full max-w-full object-contain" /></span> : null}</div>{form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}</aside>;
+  return <aside className={`rounded-2xl ${frame}`} style={{ backgroundColor: form.profile.qrPageBackground }}>
+    <p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("profile.qrPreview")}</p>
+    <p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p>
+    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <AnnouncementTicker announcements={form.profile.announcements} />
+      <div className="flex items-center gap-3 p-3">
+        <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-emerald-50 text-sm font-black text-emerald-900">
+          {form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-full w-full object-contain" /> : (form.profile.organization || `${form.profile.firstName} ${form.profile.lastName}`).slice(0, 1).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-slate-900">{form.profile.entityType === "INDIVIDUAL" ? `${form.profile.firstName} ${form.profile.lastName}`.trim() || t("profile.firstName") : form.profile.organization || t("profile.organization")}</p>
+          <p className="truncate text-xs text-slate-500">{form.profile.role || form.profile.sector.replaceAll("_", " ")}</p>
+        </div>
+      </div>
+      {form.profile.aboutImageUrl ? <img src={form.profile.aboutImageUrl} alt="" className="h-24 w-full object-cover" /> : null}
+      {!form.profile.announcements.length && form.profile.spotlight ? <div className="mx-3 mt-2 rounded-lg bg-emerald-50 p-2 text-xs text-emerald-950">{form.profile.spotlight}{form.profile.spotlightType === "image" && form.profile.spotlightMediaUrl ? <img src={form.profile.spotlightMediaUrl} alt="" className="mt-2 max-h-24 w-full rounded object-cover" /> : null}{form.profile.spotlightType === "video" && form.profile.spotlightMediaUrl ? <video controls playsInline preload="metadata" className="mt-2 max-h-24 w-full rounded bg-black"><source src={form.profile.spotlightMediaUrl} /></video> : null}</div> : null}
+      <p className="px-3 py-2 text-xs leading-5 text-slate-600">{form.profile.bio || form.profile.tagline || t("profile.guidedNote")}</p>
+      <div className="flex gap-2 px-3 pb-3">
+        {form.profile.phone ? <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-900">☎ {t("profile.callAction")}</span> : null}
+        {form.profile.email ? <span className="rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-900">✉ {t("profile.emailAction")}</span> : null}
+      </div>
+    </div>
+    {logoAbove ? <img src={form.branding.logoUrl} alt="" className="mx-auto mt-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}
+    <div className="relative mx-auto mt-4 h-48 w-48 overflow-hidden bg-white p-2 shadow-sm">
+      <img src={dataUrl} alt={t("profile.qrPreview")} className="h-full w-full object-contain" />
+      {logoCenter ? <span className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-white p-1.5 shadow"><img src={form.branding.logoUrl} alt="" className="max-h-full max-w-full object-contain" /></span> : null}
+    </div>
+    {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
+  </aside>;
 }
 function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Partial<WizardForm["profile"]>) => void }) {
   const { t } = useI18n();
@@ -100,23 +131,6 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
     try { const result = await uploadProfileFile(file); update({ aboutImageUrl: result.url }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
   }
 
-  async function uploadSpotlightImage(file: File) {
-    setUploading("spotlight"); setUploadError("");
-    try { const result = await uploadProfileFile(file); update({ spotlightMediaUrl: result.url, spotlightType: "image" }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
-  }
-
-  async function uploadSpotlightVideo(file: File) {
-    if (!["video/mp4", "video/webm", "video/ogg"].includes(file.type)) { setUploadError(t("profile.videoTypeError")); return; }
-    if (file.size > 10 * 1024 * 1024) { setUploadError(t("profile.videoSizeError")); return; }
-    setUploading("spotlight-video"); setUploadError("");
-    try {
-      const objectUrl = URL.createObjectURL(file);
-      const duration = await new Promise<number>((resolve, reject) => { const video = document.createElement("video"); video.preload = "metadata"; video.onloadedmetadata = () => { URL.revokeObjectURL(objectUrl); resolve(video.duration); }; video.onerror = () => { URL.revokeObjectURL(objectUrl); reject(new Error(t("profile.videoReadError"))); }; video.src = objectUrl; });
-      if (!Number.isFinite(duration) || duration > 30) throw new Error(t("profile.videoDurationError"));
-      const result = await uploadProfileFile(file);
-      update({ spotlightMediaUrl: result.url, spotlightType: "video" });
-    } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
-  }
   async function uploadProjectImage(index: number, file: File, stepIndex?: number) {
     setUploading(`project-${index}-${stepIndex ?? "cover"}`); setUploadError("");
     try {
@@ -151,7 +165,10 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
 
     <section id="profile-about" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.builder.about")}</h3><TextArea label={t("profile.bio")} value={profile.bio} onChange={(value) => update({ bio: value })} placeholder={t("profile.bioPlaceholder")} /><label className="block text-sm font-semibold text-slate-700"><span>Key Highlights / Service Badges (one per line)</span><textarea value={profile.highlights.join("\n")} onChange={(event) => update({ highlights: event.target.value.split("\n").slice(0, 12) })} rows={3} maxLength={1000} placeholder="Locally owned\nSame-day service\nLicensed professionals" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-normal" /></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.aboutImage")}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAboutImage(file); }} className="mt-2 block w-full text-xs" />{uploading === "about" ? <span className="mt-1 block text-xs">{t("profile.uploading")}</span> : null}</label>{profile.aboutImageUrl ? <img src={profile.aboutImageUrl} alt={t("profile.aboutImage")} className="h-36 w-full rounded-xl object-cover" /> : null}</section>
 
-    <section id="profile-news" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.builder.news")}</h3><AnnouncementItemsEditor announcements={profile.announcements} onChange={(announcements) => setFormAction({ ...form, profile: { ...form.profile, announcements } })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.spotlightType")}</span><select value={profile.spotlightType} onChange={(event) => update({ spotlightType: event.target.value as typeof profile.spotlightType })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="banner">{t("profile.spotlight.banner")}</option><option value="image">{t("profile.spotlight.image")}</option><option value="video">{t("profile.spotlight.video")}</option></select></label><TextArea label={t("profile.spotlight")} value={profile.spotlight} onChange={(value) => update({ spotlight: value })} placeholder={t("profile.spotlightPlaceholder")} />{profile.spotlightType === "banner" ? null : profile.spotlightType === "image" ? <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.spotlight.image")}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadSpotlightImage(file); }} className="mt-2 block w-full text-xs" /></label> : <div className="space-y-3"><TextInput label={t("profile.spotlight.videoUrl")} value={profile.spotlightMediaUrl} onChange={(value) => update({ spotlightMediaUrl: value })} type="url" placeholder="https://…/clip.mp4 or .webm" /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.videoUpload")}</span><input type="file" accept="video/mp4,video/webm,video/ogg" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadSpotlightVideo(file); }} className="mt-2 block w-full text-xs" />{uploading === "spotlight-video" ? <span className="mt-1 block text-xs">{t("profile.uploading")}</span> : null}</label>{profile.spotlightMediaUrl ? <video controls playsInline preload="metadata" className="max-h-56 w-full rounded-xl bg-black"><source src={profile.spotlightMediaUrl} /></video> : null}</div>}<p className="text-xs text-slate-500">{t("profile.spotlight.videoHint")}</p></section>
+    <section id="profile-news" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
+      <h3 className="font-semibold text-faida-navy">{t("profile.builder.news")}</h3>
+      <AnnouncementItemsEditor announcements={profile.announcements} onChange={(announcements) => setFormAction({ ...form, profile: { ...form.profile, announcements } })} />
+    </section>
 
     <section id="profile-contact" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.contactTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><TextInput label={t("profile.phone")} value={profile.phone} onChange={(value) => update({ phone: value })} type="tel" /><TextInput label={t("profile.email")} value={profile.email} onChange={(value) => update({ email: value })} type="email" /><TextInput label="Opening hours" value={profile.hours} onChange={(value) => update({ hours: value })} placeholder="Mon–Fri, 9:00–17:00" /><TextInput label={t("profile.website")} value={profile.website} onChange={(value) => update({ website: value })} type="url" /><TextInput label={t("profile.address")} value={profile.address} onChange={(value) => update({ address: value })} /><TextInput label={t("profile.mapUrl")} value={profile.mapUrl} onChange={(value) => update({ mapUrl: value })} type="url" /></div></section>
 

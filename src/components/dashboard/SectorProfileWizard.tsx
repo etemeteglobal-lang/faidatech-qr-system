@@ -90,9 +90,14 @@ function stringValue(value: unknown) {
   return typeof value === "string" ? value : value === null || value === undefined ? "" : String(value);
 }
 
-function announcementSlots(value: unknown, legacy?: { text?: unknown; badge?: unknown; link?: unknown }): ProfileAnnouncement[] {
-  const items = normalizeAnnouncements(value, legacy).slice(0, 5);
-  while (items.length < 3) items.push({ text: "", badge: "", link: "" });
+function announcementSlots(value: unknown, legacy?: { text?: unknown; badge?: unknown; link?: unknown; type?: unknown; spotlightType?: unknown; mediaUrl?: unknown; spotlightMediaUrl?: unknown }): ProfileAnnouncement[] {
+  const items = normalizeAnnouncements(value);
+  for (const item of normalizeAnnouncements(undefined, legacy)) {
+    const duplicate = items.some((existing) => (item.mediaUrl && existing.mediaUrl === item.mediaUrl) || (item.text && existing.text.trim() === item.text.trim() && existing.type === item.type));
+    if (!duplicate) items.push(item);
+  }
+  items.splice(5);
+  while (items.length < 3) items.push({ text: "", badge: "", link: "", type: "text" });
   return items;
 }
 
@@ -257,13 +262,25 @@ export default function SectorProfileWizard() {
         : { type: field.kind === "file" ? "file" : field.kind === "link" ? "link" : "text", value: field.value.trim(), label: key, ...(field.fileName ? { fileName: field.fileName } : {}) };
     }
     const savedAnnouncements = announcements
-      .map((item) => ({ text: item.text.trim(), badge: item.badge?.trim() ?? "", link: item.link?.trim() ?? "" }))
-      .filter((item) => item.text)
+      .map((item) => ({ text: item.text.trim(), badge: item.badge?.trim() ?? "", link: item.link?.trim() ?? "", mediaUrl: item.mediaUrl?.trim() ?? "", type: item.type ?? "text" }))
+      .filter((item) => item.text || item.mediaUrl)
       .slice(0, 5)
       .map((item) => {
         const link = safeExternalUrl(item.link);
-        return { text: item.text, ...(item.badge ? { badge: item.badge } : {}), ...(link ? { link } : {}) };
+        const mediaUrl = safeExternalUrl(item.mediaUrl);
+        const type = item.type === "image" || item.type === "video" ? item.type : "text";
+        return {
+          ...(item.text ? { text: item.text } : {}),
+          type: type !== "text" && mediaUrl ? type : "text",
+          ...(item.badge ? { badge: item.badge } : {}),
+          ...(link ? { link } : {}),
+          ...(mediaUrl ? { mediaUrl } : {}),
+        };
       });
+    const profileDataForSave = { ...profileData };
+    for (const key of ["spotlight", "spotlightType", "spotlightMediaUrl", "_spotlightTitle", "_spotlightText", "_spotlightType", "_spotlightImage", "_spotlightMediaUrl", "_spotlightVideo", "_announcementLink"]) {
+      delete profileDataForSave[key];
+    }
     if (sector === "OTHER") extensions.customSectorName = customSectorName.trim();
     try {
       const response = await fetch(editingId ? `/api/profiles/${encodeURIComponent(editingId)}` : "/api/profiles", {
@@ -275,7 +292,7 @@ export default function SectorProfileWizard() {
           profileKind,
           displayName: displayName.trim(),
           profileData: Object.fromEntries(Object.entries({
-            ...profileData,
+            ...profileDataForSave,
             _announcements: JSON.stringify(savedAnnouncements),
             _ratingMode: sectionIsVisible("_showReviews") ? "stars-review" : "off",
           }).filter(([, value]) => value.trim()).map(([key, value]) => [key, value.trim()])),
@@ -334,6 +351,10 @@ export default function SectorProfileWizard() {
       text: savedProfileData._spotlightText ?? custom._spotlightText ?? savedProfileData.spotlight,
       badge: savedProfileData._spotlightTitle ?? custom._spotlightTitle,
       link: savedProfileData._announcementLink ?? custom._announcementLink,
+      type: savedProfileData._spotlightType ?? custom._spotlightType,
+      spotlightType: savedProfileData._spotlightType ?? custom._spotlightType,
+      mediaUrl: savedProfileData._spotlightMediaUrl ?? savedProfileData._spotlightImage ?? savedProfileData._spotlightVideo ?? custom._spotlightMediaUrl,
+      spotlightMediaUrl: savedProfileData._spotlightMediaUrl ?? savedProfileData._spotlightImage ?? savedProfileData._spotlightVideo ?? custom._spotlightMediaUrl,
     }));
     if (!savedProfileData._showSpotlight && (custom._spotlight === true || custom._spotlight === "true")) savedProfileData._showSpotlight = "true";
     setProfileData(savedProfileData);
@@ -520,7 +541,7 @@ export default function SectorProfileWizard() {
         <AnnouncementTicker announcements={previewAnnouncements} />
         <div className="px-4 pb-5 pt-5">
           {brandLogo ? <img src={brandLogo} alt={t("templates.brandLogo")} className="mb-3 h-10 max-w-24 object-contain" /> : null}
-          {sectionIsVisible("_showSpotlight") && (profileData._spotlightTitle || profileData._spotlightText) ? <div className="mb-3 rounded-xl bg-teal-800 px-3 py-2 text-[10px] font-semibold text-white">{profileData._spotlightTitle || t("profile.featured")}{profileData._spotlightText ? <p className="mt-1 font-normal">{profileData._spotlightText}</p> : null}</div> : null}
+          {!previewAnnouncements.length && sectionIsVisible("_showSpotlight") && (profileData._spotlightTitle || profileData._spotlightText) ? <div className="mb-3 rounded-xl bg-teal-800 px-3 py-2 text-[10px] font-semibold text-white">{profileData._spotlightTitle || t("profile.featured")}{profileData._spotlightText ? <p className="mt-1 font-normal">{profileData._spotlightText}</p> : null}</div> : null}
           <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-teal-800">{sectorLabel}</p><h2 className="mt-2 break-words text-lg font-bold text-faida-navy">{displayName.trim() || t("templates.previewName")}</h2><p className="mt-1 text-[10px] text-faida-slate">{t(({ INDIVIDUAL: "templates.individual", ORGANIZATION: "templates.organization", GOVERNMENT: "templates.government", GROUP: "templates.group" } as const)[profileKind])}</p>
           {sectionIsVisible("_showDetails") && (profileData._highlights || profileData.highlights) ? <div className="mt-3 flex flex-wrap gap-1">{String(profileData._highlights || profileData.highlights).split(/[\n,]/).map((item) => item.trim()).filter(Boolean).slice(0, 12).map((item) => <span key={item} className="rounded-full bg-emerald-50 px-2 py-1 text-[9px] font-semibold text-emerald-900">{item}</span>)}</div> : null}
           {sectionIsVisible("_showDetails") ? <div className="mt-4 space-y-2">{templateFields.filter((field) => profileData[field]?.trim()).map((field) => <div key={field} className="rounded-xl border border-slate-200 bg-white p-3"><p className="text-[9px] font-bold text-teal-800">{t(fieldMessage(field))}</p><p className="mt-1 line-clamp-3 whitespace-pre-wrap break-words text-[10px] leading-4 text-slate-700">{profileData[field]}</p></div>)}</div> : null}

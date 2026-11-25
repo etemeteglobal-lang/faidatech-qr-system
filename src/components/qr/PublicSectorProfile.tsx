@@ -128,17 +128,19 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const members = text(data.members ?? custom.Members ?? custom.members);
   const aboutImage = safeHttpUrl(data._aboutImage ?? custom._aboutImage);
   const aboutText = text(data._about ?? data.about ?? data.description ?? custom.About ?? custom.about);
-  const spotlightType = (text(data._spotlightType ?? custom._spotlightType) ?? "text").toLowerCase();
+  const spotlightType = (text(data._spotlightType ?? custom._spotlightType ?? data.spotlightType ?? custom.spotlightType) ?? "text").toLowerCase();
   const announcements = normalizeAnnouncements(
     data.announcements ?? custom.announcements ?? data._announcements ?? custom._announcements,
     {
       text: data._spotlightText ?? custom._spotlightText ?? data.spotlight ?? custom.spotlight ?? (typeof data._spotlight === "string" ? data._spotlight : undefined),
       badge: data._spotlightTitle ?? custom._spotlightTitle,
       link: data._announcementLink ?? custom._announcementLink,
+      spotlightType: data._spotlightType ?? custom._spotlightType,
+      spotlightMediaUrl: data._spotlightMediaUrl ?? custom._spotlightMediaUrl ?? data.spotlightMediaUrl ?? custom.spotlightMediaUrl ?? data._spotlightImage ?? custom._spotlightImage ?? data._spotlightVideo ?? custom._spotlightVideo,
     },
   );
-  const spotlightImage = safeHttpUrl(data._spotlightImage ?? custom._spotlightImage);
-  const spotlightVideoRaw = text(data._spotlightVideo ?? custom._spotlightVideo);
+  const spotlightImage = safeHttpUrl(data._spotlightImage ?? custom._spotlightImage ?? data._spotlightMediaUrl ?? custom._spotlightMediaUrl ?? data.spotlightMediaUrl ?? custom.spotlightMediaUrl);
+  const spotlightVideoRaw = text(data._spotlightVideo ?? custom._spotlightVideo ?? data._spotlightMediaUrl ?? custom._spotlightMediaUrl ?? data.spotlightMediaUrl ?? custom.spotlightMediaUrl);
   const spotlightVideoUrl = safeHttpUrl(spotlightVideoRaw);
   const spotlightVideo = spotlightVideoUrl && new URL(spotlightVideoUrl).protocol === "https:" && /\.(mp4|webm|ogg)(?:$|[?#])/i.test(spotlightVideoUrl) ? spotlightVideoUrl : null;
   const projectSource = data.projects ?? custom.projects ?? data._projects ?? custom._projects;
@@ -197,7 +199,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   return <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10" style={{ backgroundColor: background }}>
     <article className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <AnnouncementTicker announcements={announcements} />
-      {spotlight ? <section id="spotlight" data-visitor-section data-visitor-label={t("profile.featured")} className="bg-gradient-to-br from-teal-800 to-cyan-900 px-6 py-5 text-center text-sm font-semibold text-white" aria-label={t("profile.featured")}><h2 className="text-base font-bold">{text(data._spotlightTitle) ?? t("profile.featured")}</h2>{text(data._spotlightText) && (spotlightType === "text" || !["image", "video", "banner"].includes(spotlightType)) ? <p className="mx-auto mt-1 max-w-xl whitespace-pre-wrap text-sm font-normal leading-6 text-teal-50">{text(data._spotlightText)}</p> : null}{spotlightType === "image" && spotlightImage ? <img src={spotlightImage} alt={text(data._spotlightTitle) ?? t("profile.featured")} className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl object-cover" /> : null}{spotlightType === "video" && spotlightVideo ? <video className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl" controls playsInline preload="metadata"><source src={spotlightVideo} /></video> : null}{spotlightType === "banner" && spotlightImage ? <img src={spotlightImage} alt="" className="mx-auto mt-4 max-h-56 w-full max-w-3xl rounded-2xl object-cover" /> : null}</section> : null}
+      {spotlight && !announcements.length ? <section id="spotlight" data-visitor-section data-visitor-label={t("profile.featured")} className="bg-gradient-to-br from-teal-800 to-cyan-900 px-6 py-5 text-center text-sm font-semibold text-white" aria-label={t("profile.featured")}><h2 className="text-base font-bold">{text(data._spotlightTitle) ?? t("profile.featured")}</h2>{text(data._spotlightText) && (spotlightType === "text" || !["image", "video", "banner"].includes(spotlightType)) ? <p className="mx-auto mt-1 max-w-xl whitespace-pre-wrap text-sm font-normal leading-6 text-teal-50">{text(data._spotlightText)}</p> : null}{spotlightType === "image" && spotlightImage ? <img src={spotlightImage} alt={text(data._spotlightTitle) ?? t("profile.featured")} className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl object-cover" /> : null}{spotlightType === "video" && spotlightVideo ? <video className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl" controls playsInline preload="metadata"><source src={spotlightVideo} /></video> : null}{spotlightType === "banner" && spotlightImage ? <img src={spotlightImage} alt="" className="mx-auto mt-4 max-h-56 w-full max-w-3xl rounded-2xl object-cover" /> : null}</section> : null}
       <header className="border-b border-slate-100 px-6 py-7 sm:px-10 sm:py-9">
         {brandLogo ? <img src={brandLogo} alt={`${visitorName} logo`} className="mb-5 h-16 max-w-40 object-contain" /> : null}
         <p className="text-xs font-bold uppercase tracking-[.18em] text-teal-800">{sectorName}</p>
