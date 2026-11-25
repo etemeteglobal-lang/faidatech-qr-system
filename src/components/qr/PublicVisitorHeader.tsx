@@ -67,7 +67,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
         role="dialog"
         aria-modal="true"
         aria-label="FaidATech menu"
-        className="visitor-drawer-motion fixed inset-y-0 left-0 z-50 flex h-dvh w-80 max-w-[85vw] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:p-5"
+        className="visitor-drawer-motion fixed inset-y-0 left-0 z-50 flex h-dvh w-1/2 max-w-[50vw] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:p-5"
         style={{ animation: "visitor-drawer-in 220ms ease-out both" }}
       >
         <div className="flex shrink-0 items-center justify-between gap-2">
