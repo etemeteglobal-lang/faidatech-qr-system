@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { ProfileAnnouncement } from "@/lib/profile/announcements";
+import type { ProfileAnnouncement } from "@/lib/qr/announcements";
 
 function AnnouncementItem({ item, decorative = false }: { item: ProfileAnnouncement; decorative?: boolean }) {
   const content = <>

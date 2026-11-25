@@ -2,17 +2,23 @@
 
 import type { WizardForm } from "@/components/dashboard/wizard/model";
 
+type AnnouncementSlot = {
+  text: string;
+  badge?: string;
+  link?: string;
+};
+
 const INITIAL_SLOTS = 3;
 const MAX_SLOTS = 5;
 
 export default function AnnouncementItemsEditor({ form, setFormAction }: { form: WizardForm; setFormAction: (next: WizardForm) => void }) {
-  const rawItems = form.profile.announcements;
-  const items = rawItems.length >= INITIAL_SLOTS
+  const rawItems: AnnouncementSlot[] = Array.isArray(form.profile.announcements) ? form.profile.announcements : [];
+  const items: AnnouncementSlot[] = rawItems.length >= INITIAL_SLOTS
     ? rawItems.slice(0, MAX_SLOTS)
-    : [...rawItems, ...Array.from({ length: INITIAL_SLOTS - rawItems.length }, () => ({ text: "", badge: "", link: "" }))];
+    : [...rawItems, ...Array.from({ length: INITIAL_SLOTS - rawItems.length }, (): AnnouncementSlot => ({ text: "", badge: "", link: "" }))];
 
-  const update = (next: WizardForm["profile"]["announcements"]) => {
-    const trimmed = next.slice(0, MAX_SLOTS);
+  const update = (next: AnnouncementSlot[]) => {
+    const trimmed = next.slice(0, MAX_SLOTS) as WizardForm["profile"]["announcements"];
     setFormAction({ ...form, profile: { ...form.profile, announcements: trimmed } });
   };
 
@@ -27,21 +33,21 @@ export default function AnnouncementItemsEditor({ form, setFormAction }: { form:
       ) : null}
     </div>
     <div className="space-y-3">
-      {items.map((item, index) => (
+      {items.map((item: AnnouncementSlot, index: number) => (
         <article key={index} className="grid gap-3 rounded-xl border border-emerald-100 bg-white p-3 sm:grid-cols-[minmax(0,1.3fr)_minmax(8rem,.6fr)_minmax(0,1fr)_auto] sm:items-end">
           <label className="block text-sm font-semibold text-slate-700">
             <span>Announcement #{index + 1}</span>
-            <textarea value={item.text} onChange={(event) => update(items.map((row, rowIndex) => rowIndex === index ? { ...row, text: event.target.value } : row))} rows={2} maxLength={500} placeholder="Share a timely update, offer, or news item" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-5 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
+            <textarea value={item.text} onChange={(event) => update(items.map((row: AnnouncementSlot, rowIndex: number) => rowIndex === index ? { ...row, text: event.target.value } : row))} rows={2} maxLength={500} placeholder="Share a timely update, offer, or news item" className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-5 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
           </label>
           <label className="block text-sm font-semibold text-slate-700">
             <span>Badge (optional)</span>
-            <input value={item.badge ?? ""} onChange={(event) => update(items.map((row, rowIndex) => rowIndex === index ? { ...row, badge: event.target.value } : row))} maxLength={40} placeholder="e.g. NEW" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
+            <input value={item.badge ?? ""} onChange={(event) => update(items.map((row: AnnouncementSlot, rowIndex: number) => rowIndex === index ? { ...row, badge: event.target.value } : row))} maxLength={40} placeholder="e.g. NEW" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
           </label>
           <label className="block text-sm font-semibold text-slate-700">
             <span>Link URL (optional)</span>
-            <input type="url" value={item.link ?? ""} onChange={(event) => update(items.map((row, rowIndex) => rowIndex === index ? { ...row, link: event.target.value } : row))} placeholder="https://example.com/news" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
+            <input type="url" value={item.link ?? ""} onChange={(event) => update(items.map((row: AnnouncementSlot, rowIndex: number) => rowIndex === index ? { ...row, link: event.target.value } : row))} placeholder="https://example.com/news" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
           </label>
-          <button type="button" aria-label={`Clear announcement ${index + 1}`} onClick={() => update(items.map((row, rowIndex) => rowIndex === index ? { text: "", badge: "", link: "" } : row))} className="rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50 sm:self-end">Clear</button>
+          <button type="button" aria-label={`Clear announcement ${index + 1}`} onClick={() => update(items.map((row: AnnouncementSlot, rowIndex: number) => rowIndex === index ? { text: "", badge: "", link: "" } : row))} className="rounded-lg px-3 py-2 text-left text-sm font-semibold text-red-700 hover:bg-red-50 sm:self-end">Clear</button>
         </article>
       ))}
     </div>
