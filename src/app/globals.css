@@ -272,6 +272,57 @@ body {
   padding: 1rem;
 }
 
+.profile-showcase-children {
+  width: 100%;
+  margin-top: 1rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.85rem;
+}
+
+.profile-showcase-children-title {
+  color: #475569;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-showcase-child-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.65rem;
+}
+
+.profile-showcase-child {
+  display: flex;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+}
+
+.profile-showcase-child-media {
+  width: 5.5rem;
+  min-height: 5.5rem;
+  flex: 0 0 5.5rem;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+
+.profile-showcase-child-body {
+  min-width: 0;
+  padding: 0.65rem 0.75rem;
+}
+
+.profile-showcase-child-kicker {
+  margin-bottom: 0.2rem;
+  color: #047857;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .profile-showcase-kicker {
   margin-bottom: 0.4rem;
   color: #047857;

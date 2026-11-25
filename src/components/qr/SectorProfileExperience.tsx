@@ -31,18 +31,8 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
     } catch { /* dismissed share sheet */ }
   }
 
-  const projectShowcaseItems: ShowcaseCardItem[] = payload.projects.flatMap((project, index): ShowcaseCardItem[] => [
-    {
-      id: `project-${index}`,
-      title: project.title,
-      kicker: showcaseLabels.parentSingular,
-      imageUrl: project.imageUrl,
-      imageAlt: project.title,
-      description: project.description,
-      link: project.url,
-      linkLabel: t("profile.viewProject"),
-    },
-    ...project.steps
+  const projectShowcaseItems: ShowcaseCardItem[] = payload.projects.map((project, index) => {
+    const children = project.steps
       .filter((step) => step.title || step.description || step.imageUrl)
       .map((step, stepIndex) => {
         const stepLabel = `${showcaseLabels.childSingular} ${stepIndex + 1}`;
@@ -53,12 +43,24 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
           imageUrl: step.imageUrl,
           imageAlt: `${project.title} — ${stepLabel}`,
           description: step.description,
-        };
-      }),
-  ]);
+        } satisfies ShowcaseCardItem;
+      });
+    return {
+      id: `project-${index}`,
+      title: project.title,
+      kicker: showcaseLabels.parentSingular,
+      imageUrl: project.imageUrl,
+      imageAlt: project.title,
+      description: project.description,
+      link: project.url,
+      linkLabel: t("profile.viewProject"),
+      children,
+      childrenLabel: showcaseLabels.childPlural,
+    };
+  });
 
   const catalogShowcaseItems: ShowcaseCardItem[] = payload.showcaseMode === "PRODUCT_CATALOG"
-    ? payload.products.flatMap((item, index): ShowcaseCardItem[] => {
+    ? payload.products.map((item, index): ShowcaseCardItem => {
       const parentTitle = item.name;
       const parent = {
         id: `product-${index}`,
@@ -83,7 +85,7 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
             description: variant.description,
           } satisfies ShowcaseCardItem;
         });
-      return [parent, ...variants];
+      return { ...parent, children: variants, childrenLabel: showcaseLabels.childPlural };
     })
     : payload.services.map((item, index) => ({
       id: `service-${index}`,

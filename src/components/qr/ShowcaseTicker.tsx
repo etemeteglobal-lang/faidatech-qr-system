@@ -13,6 +13,8 @@ export type ShowcaseCardItem = {
   description?: string;
   link?: string;
   linkLabel?: string;
+  children?: ShowcaseCardItem[];
+  childrenLabel?: string;
 };
 
 function ShowcaseCard({ item, decorative }: { item: ShowcaseCardItem; decorative: boolean }) {
@@ -35,6 +37,24 @@ function ShowcaseCard({ item, decorative }: { item: ShowcaseCardItem; decorative
         tabIndex={decorative ? -1 : undefined}
         className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 underline underline-offset-2 focus-visible:rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700"
       >{item.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
+      {item.children?.length ? <div className="profile-showcase-children">
+        <p className="profile-showcase-children-title">{item.childrenLabel ?? "Details"}</p>
+        <div className="profile-showcase-child-list">
+          {item.children.map((child) => <div key={child.id} className="profile-showcase-child">
+            {child.imageUrl ? <img src={child.imageUrl} alt={child.imageAlt ?? child.title} loading="lazy" decoding="async" className="profile-showcase-child-media" /> : null}
+            <div className="profile-showcase-child-body">
+              {child.kicker ? <p className="profile-showcase-child-kicker">{child.kicker.split(" · ").at(-1)}</p> : null}
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="min-w-0 text-sm font-bold text-slate-900">{child.title}</h4>
+                {child.badge ? <span className="profile-showcase-badge">{child.badge}</span> : null}
+              </div>
+              {child.meta ? <p className="mt-1 text-xs font-bold text-emerald-800">{child.meta}</p> : null}
+              {child.description ? <p className="mt-1 whitespace-pre-wrap break-words text-xs leading-5 text-slate-600">{child.description}</p> : null}
+              {child.link ? <a href={child.link} target="_blank" rel="noopener noreferrer" tabIndex={decorative ? -1 : undefined} className="mt-2 inline-flex text-xs font-bold text-emerald-800 underline">{child.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
+            </div>
+          </div>)}
+        </div>
+      </div> : null}
     </div>
   </article>;
 }

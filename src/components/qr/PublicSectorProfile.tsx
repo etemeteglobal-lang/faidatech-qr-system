@@ -151,14 +151,25 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const showcaseLabels = getSectorShowcaseLabels(sector, showcaseMode, text(data.customSectorName ?? custom.customSectorName) ?? "");
   const products = (Array.isArray(data.products ?? custom.products) ? (data.products ?? custom.products) as unknown[] : []).map(object);
   const services = (Array.isArray(data.services ?? custom.services) ? (data.services ?? custom.services) as unknown[] : []).map(object);
-  const projectShowcaseItems = projects.flatMap((project, index): ShowcaseCardItem[] => {
+  const projectShowcaseItems = projects.map((project, index): ShowcaseCardItem => {
     const title = text(project.title ?? project.name) ?? `${humanize("project")} ${index + 1}`;
     const stepsValue = project.steps;
     const steps = Array.isArray(stepsValue)
       ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description ?? data.imageUrl ?? data.image)))
       : [];
-    return [
-      {
+    const children = steps.map(({ raw, data }, stepIndex) => {
+      const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`;
+      const stepLabel = `${showcaseLabels.childSingular} ${stepIndex + 1}`;
+      return {
+        id: `project-${index}-step-${stepIndex}`,
+        title: stepTitle,
+        kicker: `${title} · ${stepLabel}`,
+        imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
+        imageAlt: `${title} — ${stepLabel}`,
+        description: text(data.description ?? data.text) ?? undefined,
+      } satisfies ShowcaseCardItem;
+    });
+    return {
         id: `project-${index}`,
         title,
         kicker: showcaseLabels.parentSingular,
@@ -167,20 +178,9 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
         description: text(project.description ?? project.text) ?? undefined,
         link: safeHttpUrl(project.url) ?? undefined,
         linkLabel: t("profile.viewProject"),
-      },
-      ...steps.map(({ raw, data }, stepIndex) => {
-        const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`;
-        const stepLabel = `${showcaseLabels.childSingular} ${stepIndex + 1}`;
-        return {
-          id: `project-${index}-step-${stepIndex}`,
-          title: stepTitle,
-          kicker: `${title} · ${stepLabel}`,
-          imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
-          imageAlt: `${title} — ${stepLabel}`,
-          description: text(data.description ?? data.text) ?? undefined,
-        };
-      }),
-    ];
+        children,
+        childrenLabel: showcaseLabels.childPlural,
+      };
   });
   const catalogShowcaseItems: ShowcaseCardItem[] = (showcaseMode === "PRODUCT_CATALOG" ? products : showcaseMode === "SERVICE_MENU" ? services : []).map((item, index) => {
     const title = text(item.name ?? item.title) ?? `Item ${index + 1}`;
@@ -200,10 +200,10 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
     };
   });
   const productVariantItems: ShowcaseCardItem[] = showcaseMode === "PRODUCT_CATALOG"
-    ? products.flatMap((item, index) => {
+    ? products.map((item, index) => {
       const parentTitle = text(item.name ?? item.title) ?? `Item ${index + 1}`;
       const variants = Array.isArray(item.variants) ? item.variants.map(object).filter((variant) => Boolean(text(variant.title ?? variant.name ?? variant.description ?? variant.imageUrl ?? variant.image))) : [];
-      return variants.map((variant, variantIndex) => {
+      const children = variants.map((variant, variantIndex) => {
         const childLabel = `${showcaseLabels.childSingular} ${variantIndex + 1}`;
         return {
           id: `catalog-${index}-variant-${variantIndex}`,
@@ -214,9 +214,14 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
           description: text(variant.description ?? variant.text) ?? undefined,
         };
       });
+      return {
+        ...catalogShowcaseItems[index],
+        children,
+        childrenLabel: showcaseLabels.childPlural,
+      };
     })
     : [];
-  const showcaseItems = showcaseMode === "PRODUCT_CATALOG" ? [...catalogShowcaseItems, ...productVariantItems] : showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
+  const showcaseItems = showcaseMode === "PRODUCT_CATALOG" ? productVariantItems : showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
   const showcaseTitle = showcaseLabels.sectionTitle;
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
