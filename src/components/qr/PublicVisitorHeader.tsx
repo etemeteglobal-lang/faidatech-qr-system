@@ -14,7 +14,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
   const [menuOpen, setMenuOpen] = useState(false);
   const [sections, setSections] = useState<{ id: string; label: string }[]>([]);
   const [activeSection, setActiveSection] = useState("");
-  const supportPhone = process.env.NEXT_PUBLIC_FAIDATECH_PHONE?.trim();
+  const supportPhone = process.env.NEXT_PUBLIC_FAIDATECH_PHONE?.trim() || "+251975498916";
   const localized = localizedOverride(localizedContent, locale);
   const visitorTitle = localizedText(localized.title, title);
   const brandName = branding?.brandName || "FaidATech";
@@ -72,8 +72,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
       >
         <div className="flex shrink-0 items-center justify-between gap-2">
           <Link href="/" onClick={() => setMenuOpen(false)} className="flex min-w-0 items-center gap-2">
-            <img src="/logo.png" alt="FaidATech" className="h-9 w-16 shrink-0 rounded-lg bg-white object-contain p-1" />
-            <strong translate="no" className="notranslate truncate text-sm text-faida-navy">FaidATech</strong>
+            <img src="/logo.png" alt="FaidATech" className="h-11 w-24 shrink-0 rounded-lg bg-white object-contain p-1" />
           </Link>
           <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="shrink-0 rounded-lg px-2 py-1 text-2xl leading-none text-faida-navy">×</button>
         </div>
@@ -102,15 +101,14 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
 
         <footer className="mt-3 shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="FaidATech" className="h-8 w-14 shrink-0 rounded-lg bg-white object-contain p-1" />
-            <strong translate="no" className="notranslate text-xs text-faida-navy">FaidATech</strong>
+            <img src="/logo.png" alt="FaidATech" className="h-11 w-24 shrink-0 rounded-lg bg-white object-contain p-1" />
           </div>
           <p className="mt-2 break-words text-[10px] leading-4 text-slate-700">
             Phone support: {supportPhone
               ? <a className="font-semibold underline" href={`tel:${supportPhone.replace(/[^+0-9]/g, "")}`}>{supportPhone}</a>
-              : <a className="font-semibold underline" href="https://faidatech.et">faidatech.et</a>}
+              : <a className="font-semibold underline" href="https://faidatech.pro.et">faidatech.pro.et</a>}
           </p>
-          <a href="https://faidatech.et" className="mt-1 inline-block text-[10px] font-semibold text-emerald-900 underline">faidatech.et</a>
+          <a href="https://faidatech.pro.et" className="mt-1 inline-block text-[10px] font-semibold text-emerald-900 underline">faidatech.pro.et</a>
           <Link href="/" onClick={() => setMenuOpen(false)} className="mt-2 block rounded-lg bg-emerald-700 px-2 py-2 text-center text-[10px] font-bold text-white">Create your own QR</Link>
         </footer>
       </aside>
