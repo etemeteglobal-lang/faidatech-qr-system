@@ -84,6 +84,7 @@ const profileProductSchema = z.object({
   price: z.number().finite().nonnegative().optional(),
   currency: z.string().trim().max(12).optional(),
   availability: z.enum(["AVAILABLE", "OUT_OF_STOCK", "PREORDER", "BY_REQUEST"]).default("AVAILABLE"),
+  variants: z.array(z.object({ title: optionalText(180), description: optionalText(1200), imageUrl: profileUrl }).strict()).max(30).optional(),
 }).strict();
 
 const profileServiceSchema = z.object({
