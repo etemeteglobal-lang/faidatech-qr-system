@@ -52,6 +52,67 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
       </Link>
       <LanguageSelector compact autoTranslate />
     </div>
-    {menuOpen ? <><button type="button" aria-label="Close menu" onClick={() => setMenuOpen(false)} className="fixed inset-0 z-40 cursor-default bg-slate-950/30" /><aside id="visitor-side-menu" role="dialog" aria-modal="true" aria-label="FaidATech menu" className="fixed inset-y-0 left-0 z-50 flex w-[min(22rem,50vw)] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:p-5"><div className="flex items-center justify-between gap-2"><Link href="/" className="flex min-w-0 items-center gap-2" onClick={() => setMenuOpen(false)}><img src="/logo.png" alt="FaidATech" className="h-9 w-16 shrink-0 rounded-lg bg-white object-contain p-1" /><strong translate="no" className="notranslate truncate text-sm text-faida-navy">FaidATech</strong></Link><button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="rounded-lg px-2 py-1 text-xl">×</button></div><div className="mt-4 min-h-0 flex-1 overflow-y-auto"><p className="break-words text-xs text-slate-600">{visitorTitle}</p><div className="mt-3"><LanguageSelector compact autoTranslate /></div>{sections.length ? <nav aria-label="Profile sections" className="mt-4"><p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">On this page</p><ul className="space-y-1">{sections.map((section) => <li key={section.id}><button type="button" aria-current={activeSection === section.id ? "location" : undefined} onClick={() => { document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" }); setActiveSection(section.id); setMenuOpen(false); }} className={`w-full rounded-lg px-2 py-2 text-left text-xs font-semibold ${activeSection === section.id ? "bg-emerald-50 text-emerald-900" : "text-slate-700 hover:bg-slate-50"}`}>{section.label}</button></li>)}</ul></nav> : null}</div><footer className="mt-3 shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-2.5"><div className="flex items-center gap-2"><img src="/logo.png" alt="FaidATech" className="h-8 w-14 rounded-lg bg-white object-contain p-1" /><strong translate="no" className="notranslate text-xs text-faida-navy">FaidATech</strong></div><p className="mt-2 break-words text-[10px] leading-4 text-slate-700">Phone support: {supportPhone ? <a className="font-semibold underline" href={`tel:${supportPhone.replace(/[^+0-9]/g, "")}`}>{supportPhone}</a> : <span>Contact details: <a className="font-semibold underline" href="https://faidatech.et">faidatech.et</a></span>}</p><a href="https://faidatech.et" className="mt-1 inline-block text-[10px] font-semibold text-emerald-900 underline">faidatech.et</a><Link href="/" onClick={() => setMenuOpen(false)} className="mt-2 block rounded-lg bg-emerald-700 px-2 py-2 text-center text-[10px] font-bold text-white">Create your own QR</Link></footer></aside></> : null}
+    {menuOpen ? <>
+      <style jsx global>{`@keyframes visitor-drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } } @keyframes visitor-backdrop-in { from { opacity: 0; } to { opacity: 1; } } @media (prefers-reduced-motion: reduce) { .visitor-drawer-motion, .visitor-backdrop-motion { animation-duration: 1ms !important; } }`}</style>
+      <button
+        type="button"
+        aria-label="Close menu"
+        onClick={() => setMenuOpen(false)}
+        className="visitor-backdrop-motion fixed inset-0 z-40 cursor-default bg-slate-950/30"
+        style={{ animation: "visitor-backdrop-in 180ms ease-out both" }}
+      />
+      <aside
+        id="visitor-side-menu"
+        role="dialog"
+        aria-modal="true"
+        aria-label="FaidATech menu"
+        className="visitor-drawer-motion fixed inset-y-0 left-0 z-50 flex h-full max-h-dvh w-[min(22rem,88vw)] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:w-[min(24rem,50vw)] sm:p-5"
+        style={{ animation: "visitor-drawer-in 220ms ease-out both" }}
+      >
+        <div className="flex shrink-0 items-center justify-between gap-2">
+          <Link href="/" onClick={() => setMenuOpen(false)} className="flex min-w-0 items-center gap-2">
+            <img src="/logo.png" alt="FaidATech" className="h-9 w-16 shrink-0 rounded-lg bg-white object-contain p-1" />
+            <strong translate="no" className="notranslate truncate text-sm text-faida-navy">FaidATech</strong>
+          </Link>
+          <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="shrink-0 rounded-lg px-2 py-1 text-2xl leading-none text-faida-navy">×</button>
+        </div>
+
+        <div className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <p className="break-words text-xs text-slate-600">{visitorTitle}</p>
+          <div className="mt-3"><LanguageSelector compact autoTranslate /></div>
+          {sections.length ? <nav aria-label="On this page" className="mt-4">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-wider text-slate-500">On this page</p>
+            <ul className="space-y-1">
+              {sections.map((section) => <li key={section.id}>
+                <button
+                  type="button"
+                  aria-current={activeSection === section.id ? "location" : undefined}
+                  onClick={() => {
+                    document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    setActiveSection(section.id);
+                    setMenuOpen(false);
+                  }}
+                  className={`w-full rounded-lg px-2 py-2 text-left text-xs font-semibold ${activeSection === section.id ? "bg-emerald-50 text-emerald-900" : "text-slate-700 hover:bg-slate-50"}`}
+                >{section.label}</button>
+              </li>)}
+            </ul>
+          </nav> : null}
+        </div>
+
+        <footer className="mt-3 shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+          <div className="flex items-center gap-2">
+            <img src="/logo.png" alt="FaidATech" className="h-8 w-14 shrink-0 rounded-lg bg-white object-contain p-1" />
+            <strong translate="no" className="notranslate text-xs text-faida-navy">FaidATech</strong>
+          </div>
+          <p className="mt-2 break-words text-[10px] leading-4 text-slate-700">
+            Phone support: {supportPhone
+              ? <a className="font-semibold underline" href={`tel:${supportPhone.replace(/[^+0-9]/g, "")}`}>{supportPhone}</a>
+              : <a className="font-semibold underline" href="https://faidatech.et">faidatech.et</a>}
+          </p>
+          <a href="https://faidatech.et" className="mt-1 inline-block text-[10px] font-semibold text-emerald-900 underline">faidatech.et</a>
+          <Link href="/" onClick={() => setMenuOpen(false)} className="mt-2 block rounded-lg bg-emerald-700 px-2 py-2 text-center text-[10px] font-bold text-white">Create your own QR</Link>
+        </footer>
+      </aside>
+    </> : null}
   </header>;
 }
