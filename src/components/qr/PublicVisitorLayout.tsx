@@ -13,16 +13,18 @@ export default function PublicVisitorLayout({
   localizedContent,
   branding,
   hidePromotionalFooter = false,
+  wide = false,
 }: {
   children: ReactNode;
   title: string;
   localizedContent?: LocalizedContent;
   branding?: BrandIdentity;
   hidePromotionalFooter?: boolean;
+  wide?: boolean;
 }) {
   const { direction, t } = useI18n();
   return (
-    <div dir={direction} className="mx-auto min-h-screen w-full max-w-3xl px-4 py-5 sm:px-7 sm:py-10">
+    <div dir={direction} className={`mx-auto min-h-screen w-full ${wide ? "max-w-6xl" : "max-w-3xl"} px-4 py-5 sm:px-7 sm:py-10`}>
       <GoogleAutoTranslate />
       <PublicVisitorHeader title={title} localizedContent={localizedContent} branding={branding} />
       {children}

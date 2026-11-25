@@ -38,7 +38,7 @@ export default async function PublicProfileShowcaseDetailPage({ params }: PagePr
   const profile = await getProfile(slug);
   if (!profile) notFound();
   const hidePromotionalFooter = await shouldHidePublicPromoFooter(profile.organizationId);
-  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter}>
+  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter} wide>
     <PublicSectorProfile slug={slug} displayName={profile.displayName} sector={profile.sector} profileKind={profile.profileKind} profileData={object(profile.profileData)} customFields={object(profile.customFields)} showcaseItemId={decodeURIComponent(itemId)} />
   </PublicVisitorLayout>;
 }

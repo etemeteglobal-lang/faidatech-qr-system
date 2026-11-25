@@ -42,7 +42,7 @@ export default async function PublicQrShowcaseDetailPage({ params }: PageProps) 
 
   scheduleQrScan(qrCode, new Headers(await headers()));
   const hidePromotionalFooter = await shouldHidePublicPromoFooter(qrCode.organizationId);
-  return <PublicVisitorLayout hidePromotionalFooter={hidePromotionalFooter} title={qrCode.title} branding={payload.branding}>
+  return <PublicVisitorLayout wide hidePromotionalFooter={hidePromotionalFooter} title={qrCode.title} branding={payload.branding}>
     <PublicQrExperience shortCode={qrCode.shortCode} title={qrCode.title} destinationType={qrCode.destinationType} payload={payload} showcaseItemId={decodeURIComponent(itemId)} />
   </PublicVisitorLayout>;
 }

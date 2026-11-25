@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type ChangeEvent, type FocusEvent, type FormEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
 
 export type ShowcaseCardItem = {
   id: string;
@@ -14,6 +14,7 @@ export type ShowcaseCardItem = {
   link?: string;
   linkLabel?: string;
   detailHref?: string;
+  parentId?: string;
   children?: ShowcaseCardItem[];
   childrenLabel?: string;
 };
@@ -241,7 +242,45 @@ function ShowcaseCard({ item, decorative, child }: { item: ShowcaseCardItem; dec
   </article>;
 }
 
-export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showcase" }: { item: ShowcaseCardItem; backHref: string; backLabel?: string }) {
+type ShowcaseUploadConfig = { accept: string; label: string; helperText: string };
+
+function ShowcaseUploadForm({ config }: { config: ShowcaseUploadConfig }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [message, setMessage] = useState("");
+
+  function selectFile(event: ChangeEvent<HTMLInputElement>) {
+    const selected = event.target.files?.[0] ?? null;
+    if (!selected) return;
+    if (selected.size > 10 * 1024 * 1024) {
+      setFile(null);
+      setMessage("Files must be 10 MB or smaller.");
+      event.target.value = "";
+      return;
+    }
+    setFile(selected);
+    setMessage("");
+  }
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(file ? "File selected and ready for submission." : "Choose a file before submitting.");
+  }
+
+  function clear() {
+    setFile(null);
+    setMessage("Selection cleared.");
+  }
+
+  return <form className="profile-showcase-upload" onSubmit={submit}>
+    <div><h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{config.label}</h2><p className="mt-1 text-sm leading-6 text-slate-600">{config.helperText}</p></div>
+    <label className="profile-showcase-upload-picker"><span>Select a file</span><input type="file" accept={config.accept} onChange={selectFile} /></label>
+    {file ? <p className="profile-showcase-upload-file"><strong>{file.name}</strong><span>{file.type || "Unknown type"} · {(file.size / 1024 / 1024).toFixed(2)} MB</span></p> : null}
+    <div className="flex flex-wrap gap-2"><button type="submit" className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white">Submit file</button>{file ? <button type="button" onClick={clear} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700">Clear</button> : null}</div>
+    {message ? <p role="status" className="text-sm font-semibold text-slate-700">{message}</p> : null}
+  </form>;
+}
+
+export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showcase", uploadConfig }: { item: ShowcaseCardItem; backHref: string; backLabel?: string; uploadConfig?: ShowcaseUploadConfig }) {
   return <article className="profile-showcase-detail-page">
     <a href={backHref} className="profile-showcase-back-link">← {backLabel}</a>
     {item.imageUrl ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} className="profile-showcase-detail-media" /> : null}
@@ -263,6 +302,7 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
           </article>)}
         </div>
       </section> : null}
+      {uploadConfig ? <ShowcaseUploadForm config={uploadConfig} /> : null}
     </div>
   </article>;
 }
@@ -270,8 +310,10 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
 export default function ShowcaseTicker({ items, ariaLabel = "Showcase", className = "" }: { items: ShowcaseCardItem[]; ariaLabel?: string; className?: string }) {
   const [activeIndex, setActiveIndex] = useState(0);
   useEffect(() => {
-    setActiveIndex((current) => Math.min(current, Math.max(items.length - 1, 0)));
-  }, [items.length]);
+    const parentId = new URLSearchParams(window.location.search).get("showcaseParent");
+    const restoredIndex = parentId ? items.findIndex((item) => item.id === parentId) : -1;
+    setActiveIndex(restoredIndex >= 0 ? restoredIndex : (current) => Math.min(current, Math.max(items.length - 1, 0)));
+  }, [items]);
   if (!items.length) return null;
   const activeItem = items[activeIndex] ?? items[0];
   return <>

@@ -120,6 +120,10 @@ function findShowcaseItem(items: ShowcaseCardItem[], id: string): ShowcaseCardIt
   return null;
 }
 
+function parentIdForShowcaseItem(item: ShowcaseCardItem): string {
+  return item.parentId ?? item.id.match(/^(?:project|product|service|catalog)-\d+/)?.[0] ?? item.id;
+}
+
 function safeSocialUrl(value: unknown, platformValue: unknown): string | null {
   const href = safeHttpUrl(value);
   const platform = text(platformValue)?.toLowerCase();
@@ -257,7 +261,17 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   if (showcaseItemId) {
     const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
     if (!detailItem) return null;
-    return <ShowcaseDetailView item={detailItem} backHref={`/p/${encodeURIComponent(slug)}`} />;
+    const parentId = parentIdForShowcaseItem(detailItem);
+    const uploadConfigured = Object.values(custom).some((value) => {
+      const record = object(value);
+      const kind = fieldKind(record);
+      return kind === "file" || kind === "document";
+    });
+    return <ShowcaseDetailView
+      item={detailItem}
+      backHref={`/p/${encodeURIComponent(slug)}?showcaseParent=${encodeURIComponent(parentId)}#showcase`}
+      uploadConfig={uploadConfigured ? { accept: "image/*,.pdf,.doc,.docx,.txt", label: "Submit a related file", helperText: "Images, PDFs, and common document files up to 10 MB are accepted." } : undefined}
+    />;
   }
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
@@ -308,7 +322,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const reviewsEnabled = showReviews && (ratingMode === "stars" || ratingMode === "stars-review");
 
   return <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10" style={{ backgroundColor: background }}>
-    <article className="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+    <article className="mx-auto max-w-6xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
       <AnnouncementTicker announcements={announcements} />
       {spotlight && !announcements.length ? <section id="spotlight" data-visitor-section data-visitor-label={t("profile.featured")} className="bg-gradient-to-br from-teal-800 to-cyan-900 px-6 py-5 text-center text-sm font-semibold text-white" aria-label={t("profile.featured")}><h2 className="text-base font-bold">{text(data._spotlightTitle) ?? t("profile.featured")}</h2>{text(data._spotlightText) && (spotlightType === "text" || !["image", "video", "banner"].includes(spotlightType)) ? <p className="mx-auto mt-1 max-w-xl whitespace-pre-wrap text-sm font-normal leading-6 text-teal-50">{text(data._spotlightText)}</p> : null}{spotlightType === "image" && spotlightImage ? <img src={spotlightImage} alt={text(data._spotlightTitle) ?? t("profile.featured")} className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl object-cover" /> : null}{spotlightType === "video" && spotlightVideo ? <video className="mx-auto mt-4 max-h-80 w-full max-w-2xl rounded-2xl" controls playsInline preload="metadata"><source src={spotlightVideo} /></video> : null}{spotlightType === "banner" && spotlightImage ? <img src={spotlightImage} alt="" className="mx-auto mt-4 max-h-56 w-full max-w-3xl rounded-2xl object-cover" /> : null}</section> : null}
       <header className="border-b border-slate-100 px-6 py-7 sm:px-10 sm:py-9">

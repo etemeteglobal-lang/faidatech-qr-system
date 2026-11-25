@@ -45,7 +45,7 @@ export default async function PublicProfilePage({ params }: PageProps) {
   if (!profile) notFound();
   const hidePromotionalFooter = await shouldHidePublicPromoFooter(profile.organizationId);
   const profileData = object(profile.profileData);
-  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter}><PublicSectorProfile
+  return <PublicVisitorLayout title={profile.displayName} hidePromotionalFooter={hidePromotionalFooter} wide><PublicSectorProfile
     slug={slug}
     displayName={profile.displayName}
     sector={profile.sector}

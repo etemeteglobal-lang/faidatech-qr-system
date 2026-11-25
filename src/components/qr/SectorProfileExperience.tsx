@@ -42,6 +42,10 @@ function findShowcaseItem(items: ShowcaseCardItem[], id: string): ShowcaseCardIt
   return null;
 }
 
+function parentIdForShowcaseItem(item: ShowcaseCardItem): string {
+  return item.parentId ?? item.id.match(/^(?:project|product|service|catalog)-\d+/)?.[0] ?? item.id;
+}
+
 export default function SectorProfileExperience({ payload, shortCode, showcaseItemId }: { payload: ProfilePayload; shortCode: string; showcaseItemId?: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
@@ -126,7 +130,13 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
   if (showcaseItemId) {
     const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
     if (!detailItem) return null;
-    return <ShowcaseDetailView item={detailItem} backHref={`/r/${encodeURIComponent(shortCode)}`} />;
+    const parentId = parentIdForShowcaseItem(detailItem);
+    const uploadConfigured = payload.customFields.some((field) => field.type === "file" || field.type === "document");
+    return <ShowcaseDetailView
+      item={detailItem}
+      backHref={`/r/${encodeURIComponent(shortCode)}?showcaseParent=${encodeURIComponent(parentId)}#showcase`}
+      uploadConfig={uploadConfigured ? { accept: "image/*,.pdf,.doc,.docx,.txt", label: "Submit a related file", helperText: "Images, PDFs, and common document files up to 10 MB are accepted." } : undefined}
+    />;
   }
 
   return <article className="overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
