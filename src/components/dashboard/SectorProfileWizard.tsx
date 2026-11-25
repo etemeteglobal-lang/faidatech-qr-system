@@ -24,7 +24,7 @@ type Envelope<T> = { data?: T; error?: { message?: string; code?: string } };
 const RESERVED_PROFILE_KEYS = new Set([
   "_pageBackground", "_qrForeground", "_qrShape", "_qrDots", "_logoPlacement", "_qrLogo", "_brandLogo",
   "_showDetails", "_showSocial", "_showDocuments", "_showReviews", "_showSpotlight", "_showQuickActions",
-  "_spotlightTitle", "_spotlightText", "_ratingMode", "_testimonialPrompt", "_review", "_action",
+  "_spotlightTitle", "_spotlightText", "_announcements", "_ratingMode", "_testimonialPrompt", "_review", "_action",
 ]);
 const CUSTOM_PRESETS = ["Phone", "Email", "Website", "Address", "WhatsApp", "Facebook", "Instagram", "LinkedIn", "YouTube", "Telegram", "TikTok", "X", "Testimonial", "Rating", "Map"];
 const SOCIAL_PLATFORMS: { value: SocialPlatform; label: string; host: string }[] = [
@@ -456,6 +456,59 @@ export default function SectorProfileWizard() {
             ] as const).map(([key, messageKey]) => <label key={key} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2.5 text-sm text-slate-700"><input type="checkbox" checked={sectionIsVisible(key)} onChange={(event) => updateProfileSetting(key, String(event.target.checked))} />{t(messageKey)}</label>)}
           </div>
           {sectionIsVisible("_showSpotlight") ? <div className="mt-3 grid gap-3 sm:grid-cols-2"><label className="text-xs font-semibold text-slate-700">{t("templates.sectionSpotlight")}<input maxLength={120} value={profileData._spotlightTitle ?? ""} onChange={(event) => updateProfileSetting("_spotlightTitle", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label><label className="text-xs font-semibold text-slate-700">{t("templates.previewHint")}<textarea rows={2} maxLength={500} value={profileData._spotlightText ?? ""} onChange={(event) => updateProfileSetting("_spotlightText", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label></div> : null}
+          {sectionIsVisible("_showSpotlight") ? (() => {
+            type AnnSlot = { text: string; badge?: string; link?: string };
+            let parsed: AnnSlot[] = [];
+            try {
+              const arr = JSON.parse(profileData._announcements || "[]");
+              if (Array.isArray(arr)) parsed = arr.map((x) => ({ text: String(x?.text ?? ""), badge: String(x?.badge ?? ""), link: String(x?.link ?? "") }));
+            } catch {}
+            const slots: AnnSlot[] = parsed.length >= 3
+              ? parsed.slice(0, 5)
+              : [...parsed, ...Array.from({ length: 3 - parsed.length }, () => ({ text: "", badge: "", link: "" }))];
+            const saveSlots = (next: AnnSlot[]) => {
+              const cleaned = next.slice(0, 5).filter((s) => s.text.trim() || s.badge?.trim() || s.link?.trim());
+              updateProfileSetting("_announcements", cleaned.length ? JSON.stringify(cleaned) : "");
+            };
+            const updateSlot = (idx: number, patch: Partial<AnnSlot>) => {
+              const next = slots.map((s, i) => (i === idx ? { ...s, ...patch } : s));
+              const keepDrafts = next.slice(0, Math.max(3, next.length));
+              updateProfileSetting("_announcements", JSON.stringify(keepDrafts));
+              if (patch.text?.trim()) updateProfileSetting("_showSpotlight", "true");
+            };
+            return (
+              <div className="mt-4 space-y-3 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-bold text-faida-navy">Scrolling announcements (3–5 slots)</p>
+                    <p className="text-[11px] text-faida-slate">Fill 3 to 5 items to test smooth horizontal scrolling & recycling on the public profile.</p>
+                  </div>
+                  {slots.length < 5 ? (
+                    <button type="button" onClick={() => updateProfileSetting("_announcements", JSON.stringify([...slots, { text: "", badge: "", link: "" }]))} className="rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-bold text-faida-navy">+ Add slot ({slots.length}/5)</button>
+                  ) : null}
+                </div>
+                <div className="space-y-2.5">
+                  {slots.map((slot, idx) => (
+                    <div key={idx} className="grid gap-2 rounded-lg border border-emerald-100 bg-white p-2.5 sm:grid-cols-[minmax(0,1.4fr)_minmax(7rem,.6fr)_minmax(0,1fr)_auto] sm:items-end">
+                      <label className="text-[11px] font-semibold text-slate-700">Announcement #{idx + 1}
+                        <input maxLength={500} value={slot.text} onChange={(e) => updateSlot(idx, { text: e.target.value })} placeholder="e.g. Grand opening discount 20% off" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
+                      </label>
+                      <label className="text-[11px] font-semibold text-slate-700">Badge
+                        <input maxLength={40} value={slot.badge ?? ""} onChange={(e) => updateSlot(idx, { badge: e.target.value })} placeholder="NEW" className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
+                      </label>
+                      <label className="text-[11px] font-semibold text-slate-700">Link (optional)
+                        <input value={slot.link ?? ""} onChange={(e) => updateSlot(idx, { link: e.target.value })} placeholder="https://..." className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2 text-xs font-normal" />
+                      </label>
+                      <button type="button" onClick={() => {
+                        const cleared = slots.map((s, i) => (i === idx ? { text: "", badge: "", link: "" } : s));
+                        updateProfileSetting("_announcements", JSON.stringify(cleared));
+                      }} className="rounded-lg px-2.5 py-2 text-xs font-semibold text-red-700 hover:bg-red-50">Clear</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })() : null}
           {sectionIsVisible("_showReviews") ? <label className="mt-3 block text-xs font-semibold text-slate-700">{t("templates.sectionReviews")}<input maxLength={500} value={profileData._testimonialPrompt ?? ""} onChange={(event) => updateProfileSetting("_testimonialPrompt", event.target.value)} className="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-sm font-normal" /></label> : null}
         </section>
 
