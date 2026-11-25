@@ -12,14 +12,21 @@ const INITIAL_SLOTS = 3;
 const MAX_SLOTS = 5;
 
 export default function AnnouncementItemsEditor({ form, setFormAction }: { form: WizardForm; setFormAction: (next: WizardForm) => void }) {
-  const rawItems: AnnouncementSlot[] = Array.isArray(form.profile.announcements) ? form.profile.announcements : [];
+  const profileRecord = form.profile as WizardForm["profile"] & { announcements?: AnnouncementSlot[] };
+  const rawItems: AnnouncementSlot[] = Array.isArray(profileRecord.announcements) ? profileRecord.announcements : [];
   const items: AnnouncementSlot[] = rawItems.length >= INITIAL_SLOTS
     ? rawItems.slice(0, MAX_SLOTS)
     : [...rawItems, ...Array.from({ length: INITIAL_SLOTS - rawItems.length }, (): AnnouncementSlot => ({ text: "", badge: "", link: "" }))];
 
   const update = (next: AnnouncementSlot[]) => {
-    const trimmed = next.slice(0, MAX_SLOTS) as WizardForm["profile"]["announcements"];
-    setFormAction({ ...form, profile: { ...form.profile, announcements: trimmed } });
+    const trimmed = next.slice(0, MAX_SLOTS);
+    setFormAction({
+      ...form,
+      profile: {
+        ...form.profile,
+        announcements: trimmed,
+      } as WizardForm["profile"],
+    });
   };
 
   return <section className="space-y-4 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4">
