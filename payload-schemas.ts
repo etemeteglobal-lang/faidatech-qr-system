@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { brandIdentitySchema } from "@/lib/qr/brand";
 import { isLocaleCode, uniqueLocaleCodes, type LocaleCode } from "@/i18n/registry";
+import { profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 
 const webUrl = z
   .string()
@@ -49,7 +50,136 @@ export const destinationTypeSchema = z.enum([
   "MENU",
   "TOURISM_AUDIO",
   "PDF",
+  "SECTOR_PROFILE",
 ]);
+
+const sectorIdSchema = z.enum(sectorOptions.map((sector) => sector.id) as [string, ...string[]]);
+const profileFieldTypeSchema = z.enum(profileFieldTypes.map((field) => field.id) as [string, ...string[]]);
+const profileUrl = webUrl.optional();
+
+const profileSocialLinkSchema = z.object({
+  platform: z.string().trim().min(1).max(40),
+  label: z.string().trim().min(1).max(100),
+  url: webUrl,
+  avatarUrl: webUrl.optional(),
+}).strict();
+
+const profileProjectStepSchema = z.object({
+  title: optionalText(180),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+}).strict();
+const profileProjectSchema = z.object({
+  title: z.string().trim().min(1).max(180),
+  description: optionalText(2000),
+  url: profileUrl,
+  imageUrl: profileUrl,
+  steps: z.array(profileProjectStepSchema).max(20).default([]),
+}).strict();
+
+const profileProductSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+  price: z.number().finite().nonnegative().optional(),
+  currency: z.string().trim().max(12).optional(),
+  availability: z.enum(["AVAILABLE", "OUT_OF_STOCK", "PREORDER", "BY_REQUEST"]).default("AVAILABLE"),
+}).strict();
+
+const profileServiceSchema = z.object({
+  name: z.string().trim().min(1).max(160),
+  description: optionalText(1200),
+  imageUrl: profileUrl,
+  price: z.number().finite().nonnegative().optional(),
+  currency: z.string().trim().max(12).optional(),
+  duration: optionalText(80),
+}).strict();
+
+const profileCredentialSchema = z.object({
+  title: z.string().trim().min(1).max(180),
+  issuer: optionalText(160),
+  year: z.string().trim().max(20).optional(),
+  fileUrl: webUrl,
+  fileName: z.string().trim().min(1).max(255),
+  mimeType: z.enum(["application/pdf", "image/png", "image/jpeg", "image/webp"]).default("application/pdf"),
+}).strict();
+
+const profileReviewSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  role: optionalText(160),
+  rating: z.number().int().min(1).max(5),
+  quote: z.string().trim().min(1).max(1200),
+}).strict();
+
+const profileCustomFieldSchema = z.object({
+  id: z.string().trim().min(1).max(60).regex(/^[A-Za-z0-9_-]+$/),
+  label: z.string().trim().min(1).max(120),
+  type: profileFieldTypeSchema,
+  value: z.string().trim().max(2000),
+}).strict();
+
+const profileAnnouncementSchema = z.object({
+  text: z.string().trim().min(1).max(500),
+  badge: optionalText(40),
+  link: profileUrl,
+}).strict();
+
+export const sectorProfilePayloadSchema = z.object({
+  profileVersion: z.literal(1).default(1),
+  sector: sectorIdSchema,
+  customSectorName: z.string().trim().max(120).optional(),
+  entityType: z.enum(["INDIVIDUAL", "ORGANIZATION", "GROUP", "GOVERNANCE"]).default("ORGANIZATION"),
+  firstName: optionalText(100),
+  lastName: optionalText(100),
+  role: optionalText(160),
+  mandate: optionalText(1200),
+  jurisdiction: optionalText(240),
+  leadership: optionalText(1200),
+  members: optionalText(1200),
+  organization: optionalText(160),
+  tagline: optionalText(240),
+  highlights: z.array(z.string().trim().min(1).max(80)).max(12).default([]),
+  bio: optionalText(5000),
+  aboutImageUrl: profileUrl,
+  spotlight: optionalText(500),
+  announcements: z.array(profileAnnouncementSchema).max(30).optional(),
+  spotlightType: z.enum(["banner", "image", "video"]).default("banner"),
+  spotlightMediaUrl: profileUrl,
+  phone: optionalText(60),
+  email: z.string().trim().email().optional(),
+  hours: optionalText(500),
+  website: profileUrl,
+  address: optionalText(400),
+  mapUrl: profileUrl,
+  socialLinks: z.array(profileSocialLinkSchema).max(20).default([]),
+  projects: z.array(profileProjectSchema).max(30).default([]),
+  showcaseMode: z.enum(["PRODUCT_CATALOG", "SERVICE_MENU", "PROJECT_PROCESS"]).default("PROJECT_PROCESS"),
+  products: z.array(profileProductSchema).max(100).default([]),
+  services: z.array(profileServiceSchema).max(100).default([]),
+  credentials: z.array(profileCredentialSchema).max(30).default([]),
+  reviews: z.array(profileReviewSchema).max(30).default([]),
+  customFields: z.array(profileCustomFieldSchema).max(30).default([]),
+  sectionVisibility: z.object({
+    projects: z.boolean().default(true),
+    credentials: z.boolean().default(true),
+    social: z.boolean().default(true),
+    reviews: z.boolean().default(true),
+    contact: z.boolean().default(true),
+  }).default({ projects: true, credentials: true, social: true, reviews: true, contact: true }),
+  qrPageBackground: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  qrFrame: z.enum(["square", "rounded", "badge", "none", "circle", "brand"]).default("rounded"),
+  qrDots: z.enum(["square", "round", "circle", "diamond", "heart", "line"]).default("square"),
+  qrLogoPlacement: z.enum(["none", "center", "above"]).default("center"),
+  localizedContent: localizedContentSchema,
+  branding: brandIdentitySchema.optional(),
+}).strict().superRefine((profile, context) => {
+  if (profile.entityType === "INDIVIDUAL" && (!profile.firstName || !profile.lastName || !profile.role)) context.addIssue({ code: "custom", path: ["firstName"], message: "Add the person’s name and profession." });
+  if (profile.entityType !== "INDIVIDUAL" && !profile.organization) context.addIssue({ code: "custom", path: ["organization"], message: "Add the organization or group name." });
+  if (profile.entityType === "GOVERNANCE" && !profile.mandate) context.addIssue({ code: "custom", path: ["mandate"], message: "Add the public mandate." });
+  if (profile.sector === "OTHER" && !profile.customSectorName?.trim()) {
+    context.addIssue({ code: "custom", path: ["customSectorName"], message: "A custom sector name is required." });
+  }
+});
 
 export const landingPagePayloadSchema = z
   .object({
@@ -259,7 +389,8 @@ export type DestinationPayload =
   | z.infer<typeof vCardPayloadSchema>
   | z.infer<typeof menuPayloadSchema>
   | z.infer<typeof tourismAudioPayloadSchema>
-  | z.infer<typeof pdfPayloadSchema>;
+  | z.infer<typeof pdfPayloadSchema>
+  | z.infer<typeof sectorProfilePayloadSchema>;
 
 export function parseDestinationPayload(
   destinationType: z.infer<typeof destinationTypeSchema>,
@@ -278,5 +409,7 @@ export function parseDestinationPayload(
       return tourismAudioPayloadSchema.parse(payload);
     case "PDF":
       return pdfPayloadSchema.parse(payload);
+    case "SECTOR_PROFILE":
+      return sectorProfilePayloadSchema.parse(payload);
   }
 }
