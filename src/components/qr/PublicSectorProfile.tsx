@@ -7,6 +7,7 @@ import type { MessageKey } from "@/i18n/messages";
 import { verticalTemplates } from "@/lib/templates/registry";
 import ProfileShareActions from "@/components/qr/ProfileShareActions";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
+import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseTicker";
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
 
 type JsonObject = Record<string, unknown>;
@@ -148,6 +149,54 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const showcaseMode = text(data.showcaseMode ?? custom.showcaseMode) ?? "PROJECT_PROCESS";
   const products = (Array.isArray(data.products ?? custom.products) ? (data.products ?? custom.products) as unknown[] : []).map(object);
   const services = (Array.isArray(data.services ?? custom.services) ? (data.services ?? custom.services) as unknown[] : []).map(object);
+  const projectShowcaseItems = projects.flatMap((project, index): ShowcaseCardItem[] => {
+    const title = text(project.title ?? project.name) ?? `${humanize("project")} ${index + 1}`;
+    const stepsValue = project.steps;
+    const steps = Array.isArray(stepsValue)
+      ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description)))
+      : [];
+    return [
+      {
+        id: `project-${index}`,
+        title,
+        kicker: humanize("project"),
+        imageUrl: safeHttpUrl(project.image ?? project.imageUrl ?? project.photo) ?? undefined,
+        description: text(project.description ?? project.text) ?? undefined,
+        link: safeHttpUrl(project.url) ?? undefined,
+        linkLabel: t("profile.viewProject"),
+      },
+      ...steps.map(({ raw, data }, stepIndex) => {
+        const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`;
+        const stepLabel = `${humanize("step")} ${stepIndex + 1}`;
+        return {
+          id: `project-${index}-step-${stepIndex}`,
+          title: stepTitle,
+          kicker: `${title} · ${stepLabel}`,
+          imageUrl: safeHttpUrl(data.imageUrl ?? data.image) ?? undefined,
+          imageAlt: `${title} — ${stepLabel}`,
+          description: text(data.description ?? data.text) ?? undefined,
+        };
+      }),
+    ];
+  });
+  const catalogShowcaseItems: ShowcaseCardItem[] = (showcaseMode === "PRODUCT_CATALOG" ? products : showcaseMode === "SERVICE_MENU" ? services : []).map((item, index) => {
+    const title = text(item.name ?? item.title) ?? `Item ${index + 1}`;
+    const price = typeof item.price === "number" || typeof item.price === "string" ? String(item.price) : "";
+    const meta = showcaseMode === "PRODUCT_CATALOG"
+      ? price ? `${text(item.currency) ?? "ETB"} ${price}` : undefined
+      : [price ? `${text(item.currency) ?? "ETB"} ${price}` : "", text(item.duration) ?? ""].filter(Boolean).join(" · ") || undefined;
+    return {
+      id: `catalog-${index}`,
+      title,
+      kicker: showcaseMode === "PRODUCT_CATALOG" ? "Product" : "Service",
+      imageUrl: safeHttpUrl(item.imageUrl ?? item.image) ?? undefined,
+      badge: showcaseMode === "PRODUCT_CATALOG" ? text(item.availability) ?? undefined : undefined,
+      meta,
+      description: text(item.description) ?? undefined,
+    };
+  });
+  const showcaseItems = showcaseMode === "PRODUCT_CATALOG" || showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
+  const showcaseTitle = showcaseMode === "PRODUCT_CATALOG" ? "Products" : showcaseMode === "SERVICE_MENU" ? "Services & menu" : t("profile.projectsTitle");
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
   const testimonial = fieldValue(custom.Testimonial) ?? text(review.text ?? review.content);
@@ -212,14 +261,7 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
         {highlights.length ? <section aria-label="Key highlights" className="flex flex-wrap gap-2">{highlights.map((item) => <span key={item} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-900">{item}</span>)}</section> : null}
       {hours ? <section aria-label="Opening hours" className="rounded-2xl border border-amber-200 bg-amber-50 p-4"><p className="text-xs font-bold uppercase tracking-wide text-amber-900">Open / Hours</p><p className="mt-1 whitespace-pre-wrap text-sm font-medium text-slate-800">{hours}</p></section> : null}
         {aboutText || aboutImage || mandate || jurisdiction || leadership || members ? <section id="about" data-visitor-section data-visitor-label={t("profile.aboutTitle")} aria-label={humanize("about")} className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">{aboutImage ? <img src={aboutImage} alt={displayName} className="max-h-80 w-full object-cover" /> : null}{aboutText || mandate || jurisdiction || leadership || members ? <div className="p-5"><h2 className="mb-2 text-lg font-bold text-slate-900">{humanize("about")}</h2>{aboutText ? <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">{aboutText}</p> : null}{mandate ? <p className="mt-3 text-sm text-slate-700"><strong>{t("profile.mandate")}: </strong>{mandate}</p> : null}{jurisdiction ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.jurisdiction")}: </strong>{jurisdiction}</p> : null}{leadership ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.leadership")}: </strong>{leadership}</p> : null}{members ? <p className="mt-2 text-sm text-slate-700"><strong>{t("profile.members")}: </strong>{members}</p> : null}</div> : null}</section> : null}
-        {(showcaseMode === "PRODUCT_CATALOG" && products.length || showcaseMode === "SERVICE_MENU" && services.length) ? <section id="showcase" data-visitor-section data-visitor-label={showcaseMode === "PRODUCT_CATALOG" ? "Products" : "Services & menu"}><h2 className="mb-3 text-lg font-bold text-slate-900">{showcaseMode === "PRODUCT_CATALOG" ? "Products" : "Services & menu"}</h2><div className="grid gap-4 sm:grid-cols-2">{(showcaseMode === "PRODUCT_CATALOG" ? products : services).map((item, index) => { const title = text(item.name ?? item.title) ?? `Item ${index + 1}`; const image = safeHttpUrl(item.imageUrl ?? item.image); const price = typeof item.price === "number" || typeof item.price === "string" ? String(item.price) : ""; return <article key={`${title}-${index}`} className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{image ? <img src={image} alt={title} className="h-40 w-full object-cover" /> : null}<div className="p-4"><div className="flex items-start justify-between gap-2"><h3 className="font-bold text-slate-900">{title}</h3>{showcaseMode === "PRODUCT_CATALOG" && text(item.availability) ? <span className="shrink-0 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-900">{text(item.availability)}</span> : null}</div>{price ? <p className="mt-2 font-semibold text-teal-800">{text(item.currency) ?? "ETB"} {price}</p> : null}{text(item.duration) ? <p className="mt-1 text-xs text-slate-500">{text(item.duration)}</p> : null}{text(item.description) ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{text(item.description)}</p> : null}</div></article>; })}</div></section> : null}
-        {showcaseMode === "PROJECT_PROCESS" && projects.length ? <section id="showcase" data-visitor-section data-visitor-label={t("profile.projectsTitle")} aria-label={humanize("projects")}><h2 className="mb-3 text-lg font-bold text-slate-900">{humanize("projects")}</h2><div className="-mx-6 flex snap-x snap-mandatory gap-4 overflow-x-auto px-6 pb-3 sm:-mx-10 sm:px-10">{projects.map((project, index) => {
-          const title = text(project.title ?? project.name) ?? `${humanize("project")} ${index + 1}`;
-          const image = safeHttpUrl(project.image ?? project.imageUrl ?? project.photo);
-          const stepsValue = project.steps;
-          const steps = Array.isArray(stepsValue) ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description))) : [];
-          return <article key={`${title}-${index}`} className="w-[min(82vw,22rem)] shrink-0 snap-start overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{image ? <img src={image} alt={title} className="h-40 w-full object-cover" /> : null}<div className="p-4"><h3 className="text-base font-bold text-slate-900">{title}</h3>{text(project.description ?? project.text) ? <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-600">{text(project.description ?? project.text)}</p> : null}{steps.length ? <ol className="mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">{steps.map(({ raw, data }, stepIndex) => { const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`; const stepDescription = text(data.description ?? data.text); const stepImage = safeHttpUrl(data.imageUrl ?? data.image); return <li key={`${stepIndex}-${stepTitle}`} className="w-52 shrink-0 snap-start rounded-xl bg-slate-50 p-3 text-sm leading-5 text-slate-700"><span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-teal-100 text-xs font-bold text-teal-900">{stepIndex + 1}</span>{stepImage ? <img src={stepImage} alt="" className="mt-2 h-24 w-full rounded-lg object-cover" /> : null}<strong className="mt-2 block">{stepTitle}</strong>{stepDescription ? <span className="mt-1 block text-xs leading-5 text-slate-600">{stepDescription}</span> : null}</li>; })}</ol> : null}</div></article>;
-        })}</div></section> : null}
+        {showcaseItems.length ? <section id="showcase" data-visitor-section data-visitor-label={showcaseTitle} aria-label={showcaseTitle}><h2 className="mb-3 text-lg font-bold text-slate-900">{showcaseTitle}</h2><ShowcaseTicker items={showcaseItems} ariaLabel={showcaseTitle} className="-mx-6 mt-3 sm:-mx-10" /></section> : null}
         {showSocial && socialEntries.length > 0 ? <section id="socials" data-visitor-section data-visitor-label={t("profile.socialTitle")} aria-label={t("profile.findUsOnline")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.findUsOnline")}</h2><div className="grid gap-3 sm:grid-cols-2">{socialEntries.map(([key, value]) => {
           const item = object(value);
           const platform = text(item.platform)?.toLowerCase() ?? "";

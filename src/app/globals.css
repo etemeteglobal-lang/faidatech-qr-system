@@ -191,3 +191,127 @@ body {
     flex-wrap: wrap;
   }
 }
+
+.profile-showcase-scroller {
+  overflow: hidden;
+}
+
+.profile-showcase-track {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: profile-showcase-scroll 68s linear infinite;
+}
+
+.profile-showcase-group,
+.profile-showcase-sequence {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+}
+
+.profile-showcase-sequence {
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.profile-showcase-scroller:hover .profile-showcase-track,
+.profile-showcase-scroller:focus-within .profile-showcase-track {
+  animation-play-state: paused;
+}
+
+.profile-showcase-card {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: min(82vw, 23rem);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.profile-showcase-media,
+.profile-showcase-placeholder {
+  display: block;
+  flex: none;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 15rem;
+}
+
+.profile-showcase-media {
+  object-fit: cover;
+  background: #f1f5f9;
+}
+
+.profile-showcase-placeholder {
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #ecfdf5, #e0f2fe);
+  color: #065f46;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.profile-showcase-card-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1rem;
+}
+
+.profile-showcase-kicker {
+  margin-bottom: 0.4rem;
+  color: #047857;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.profile-showcase-badge {
+  flex: 0 0 auto;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  padding: 0.25rem 0.55rem;
+  color: #065f46;
+  font-size: 0.65rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+@keyframes profile-showcase-scroll {
+  to { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-showcase-track {
+    display: block;
+    width: auto;
+    animation: none;
+    transform: none;
+    will-change: auto;
+  }
+
+  .profile-showcase-group:nth-child(2),
+  .profile-showcase-sequence:not(:first-child) {
+    display: none;
+  }
+
+  .profile-showcase-group:first-child {
+    display: block;
+    width: 100%;
+  }
+
+  .profile-showcase-sequence:first-child {
+    box-sizing: border-box;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
