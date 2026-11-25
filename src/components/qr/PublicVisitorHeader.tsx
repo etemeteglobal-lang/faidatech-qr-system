@@ -72,7 +72,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
       >
         <div className="flex shrink-0 items-center justify-between gap-2">
           <Link href="/" onClick={() => setMenuOpen(false)} className="flex min-w-0 items-center gap-2">
-            <img src="/logo.png" alt="FaidATech" className="h-11 w-24 shrink-0 rounded-lg bg-white object-contain p-1" />
+            <img src="/logo.png" alt="FaidATech" className="h-12 w-28 shrink-0 object-contain" />
           </Link>
           <button type="button" onClick={() => setMenuOpen(false)} aria-label="Close menu" className="shrink-0 rounded-lg px-2 py-1 text-2xl leading-none text-faida-navy">×</button>
         </div>
@@ -101,7 +101,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
 
         <footer className="mt-3 shrink-0 rounded-xl border border-emerald-100 bg-emerald-50 p-3">
           <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="FaidATech" className="h-11 w-24 shrink-0 rounded-lg bg-white object-contain p-1" />
+            <img src="/logo.png" alt="FaidATech" className="h-12 w-28 shrink-0 object-contain" />
           </div>
           <p className="mt-2 break-words text-[10px] leading-4 text-slate-700">
             Phone support: {supportPhone
