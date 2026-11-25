@@ -41,12 +41,12 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
     return () => { window.cancelAnimationFrame(frame); observer.disconnect(); window.removeEventListener("scroll", scroll); };
   }, [activeSection]);
 
-  return <header className="mb-6 flex w-full flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm">
+  return <header className="sticky top-0 z-30 mb-6 flex w-full flex-nowrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur sm:gap-3 sm:p-3">
     <button type="button" aria-expanded={menuOpen} aria-controls="visitor-side-menu" aria-label={menuOpen ? "Close menu" : "Open menu"} onClick={() => setMenuOpen((open) => !open)} className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-slate-200 text-2xl leading-none text-faida-navy" aria-haspopup="dialog"><span aria-hidden="true">☰</span></button>
     <div className="ml-auto flex min-w-0 items-center gap-2">
-      <Link href="/" aria-label={`${brandName} ${t("shell.publicHome")}`} className="flex min-w-0 items-center gap-2 text-right">
+      <Link href="/" aria-label={`${brandName} ${t("shell.publicHome")}`} className="flex min-w-0 shrink items-center gap-2 text-right">
         <span className="min-w-0"><strong translate="no" className="notranslate block truncate text-xs font-extrabold text-faida-navy">{brandName}</strong><span className="mt-0.5 block truncate text-[10px] text-faida-slate">{visitorTitle}</span></span>
-        <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-xl" style={{ backgroundColor: accent, color: accentText }}>
+        <span className="grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-xl sm:h-14 sm:w-14" style={{ backgroundColor: accent, color: accentText }}>
           {branding?.logoUrl ? <img src={branding.logoUrl} alt={t("branding.logoPreview")} className="h-full w-full bg-white object-contain p-1" /> : <img src="/logo.png" alt="FaidATech" className="h-full w-full bg-white object-contain p-1" />}
         </span>
       </Link>

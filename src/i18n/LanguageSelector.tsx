@@ -38,7 +38,7 @@ export default function LanguageSelector({ compact = false, autoTranslate = fals
           {localeTiers.map((tier) => (
             <optgroup key={tier.id} label={t(tier.labelKey)}>
               {tier.locales.map((code) => (
-                <option key={`${tier.id}-${code}`} value={code}>{localeMetadata[code].nativeName}</option>
+                <option key={`${tier.id}-${code}`} value={code}>{compact && code === "en" ? "Eng" : localeMetadata[code].nativeName}</option>
               ))}
             </optgroup>
           ))}
