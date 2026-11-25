@@ -5,26 +5,26 @@ import { normalizeAnnouncements, type ProfileAnnouncement } from "@/lib/qr/annou
 
 function AnnouncementItem({ item, decorative = false }: { item: ProfileAnnouncement; decorative?: boolean }) {
   const media = item.mediaUrl && item.type === "image"
-    ? <img src={item.mediaUrl} alt={item.text || item.badge || "Announcement image"} className="h-12 w-20 shrink-0 rounded-md object-cover" />
+    ? <img src={item.mediaUrl} alt={item.text || item.badge || "Announcement image"} className="announcement-ticker-media" />
     : item.mediaUrl && item.type === "video"
-      ? <video controls={!decorative} tabIndex={decorative ? -1 : 0} muted playsInline preload="metadata" aria-label={item.text || item.badge || "Announcement video"} className="h-12 w-20 shrink-0 rounded-md bg-slate-950 object-cover"><source src={item.mediaUrl} /></video>
+      ? <video controls={!decorative} tabIndex={decorative ? -1 : 0} muted playsInline preload="metadata" aria-label={item.text || item.badge || "Announcement video"} className="announcement-ticker-media bg-slate-950"><source src={item.mediaUrl} /></video>
       : null;
-  const content = <>
-    {item.badge ? <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">{item.badge}</span> : null}
-    {media}
-    {item.text ? <span>{item.text}</span> : null}
-    <span aria-hidden="true" className="text-emerald-200">·</span>
-  </>;
 
-  if (item.type === "video" && item.mediaUrl) return <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-1 py-1 text-sm text-white">
-    {item.badge ? <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide">{item.badge}</span> : null}
+  return <div className="announcement-ticker-card">
     {media}
-    {item.text ? <span>{item.text}</span> : null}
-    {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" tabIndex={decorative ? -1 : undefined} className="underline underline-offset-4">Open</a> : null}
-    <span aria-hidden="true" className="text-emerald-200">·</span>
-  </span>;
-  if (item.link) return <a href={item.link} target="_blank" rel="noopener noreferrer" tabIndex={decorative ? -1 : undefined} className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-1 py-1 text-sm text-white underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">{content}</a>;
-  return <span className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap px-1 py-1 text-sm text-white">{content}</span>;
+    <div className="announcement-ticker-details">
+      {item.badge ? <span className="announcement-ticker-badge">{item.badge}</span> : null}
+      {item.text ? <p className="announcement-ticker-caption">{item.text}</p> : null}
+      {item.link ? <a
+        href={item.link}
+        target="_blank"
+        rel="noopener noreferrer"
+        tabIndex={decorative ? -1 : undefined}
+        aria-label={`Open announcement${item.text ? `: ${item.text}` : ""}`}
+        className="announcement-ticker-link"
+      >Open announcement <span aria-hidden="true">↗</span></a> : null}
+    </div>
+  </div>;
 }
 
 export default function AnnouncementTicker({ announcements }: { announcements: ProfileAnnouncement[] }) {
