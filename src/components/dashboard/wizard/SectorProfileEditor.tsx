@@ -100,7 +100,7 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
   };
   const defaultMode = sectorDefault[profile.sector] || "SERVICE_MENU";
   const labels = getSectorShowcaseLabels(profile.sector, mode, profile.customSectorName);
-  const modes = ["PRODUCT_CATALOG", "SERVICE_MENU", "PROJECT_PROCESS"] as const;
+  type ProductVariant = WizardForm["profile"]["products"][number]["variants"][number];
   async function uploadImage(file: File, kind: "product" | "service", index: number) {
     const row = await uploadProfileFile(file);
     if (kind === "product") update({ products: profile.products.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
@@ -109,7 +109,7 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
   function addProductVariant(productIndex: number) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: [...item.variants, { title: "", description: "", imageUrl: "" }] } : item) });
   }
-  function updateProductVariant(productIndex: number, variantIndex: number, fields: Partial<WizardForm["profile"]["products"][number]["variants"][number]]) {
+  function updateProductVariant(productIndex: number, variantIndex: number, fields: Partial<ProductVariant>) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: item.variants.map((variant, childIndex) => childIndex === variantIndex ? { ...variant, ...fields } : variant) } : item) });
   }
   function removeProductVariant(productIndex: number, variantIndex: number) {

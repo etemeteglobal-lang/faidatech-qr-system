@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ProfileAnnouncement } from "@/lib/qr/announcements";
 import { uploadProfileFile } from "@/lib/profile/upload";
 
@@ -32,9 +32,12 @@ async function validateVideoDuration(file: File) {
 export default function AnnouncementItemsEditor({ announcements, onChange }: { announcements: ProfileAnnouncement[]; onChange: (next: ProfileAnnouncement[]) => void }) {
   const slots = withMinimumSlots(announcements);
   const latestItems = useRef(announcements);
-  latestItems.current = announcements;
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState("");
+
+  useEffect(() => {
+    latestItems.current = announcements;
+  }, [announcements]);
 
   function update(index: number, patch: Partial<ProfileAnnouncement>) {
     onChange(slots.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));

@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { z } from "zod";
 import { sectorProfilePayloadSchema } from "@/lib/qr/payload-schemas";
 import { getReadableTextColor } from "@/lib/qr/brand-presentation";
+import { getSectorShowcaseLabels } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
 import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseTicker";
@@ -21,54 +22,81 @@ export default function SectorProfileExperience({ payload, shortCode }: { payloa
   const defaultName = payload.entityType === "INDIVIDUAL" ? `${payload.firstName ?? ""} ${payload.lastName ?? ""}`.trim() : payload.organization || `${payload.firstName ?? ""} ${payload.lastName ?? ""}`.trim();
   const name = defaultName;
   const profileUrl = typeof window === "undefined" ? `/r/${shortCode}` : window.location.href;
+  const showcaseLabels = getSectorShowcaseLabels(payload.sector, payload.showcaseMode, payload.customSectorName);
+
   async function shareProfile() {
     try {
       if (navigator.share) await navigator.share({ title: name, text: payload.tagline || payload.role, url: profileUrl });
       else { await navigator.clipboard.writeText(profileUrl); setCopied(true); window.setTimeout(() => setCopied(false), 1800); }
     } catch { /* dismissed share sheet */ }
   }
+
   const projectShowcaseItems: ShowcaseCardItem[] = payload.projects.flatMap((project, index): ShowcaseCardItem[] => [
     {
       id: `project-${index}`,
       title: project.title,
-      kicker: "Project",
+      kicker: showcaseLabels.parentSingular,
       imageUrl: project.imageUrl,
+      imageAlt: project.title,
       description: project.description,
       link: project.url,
       linkLabel: t("profile.viewProject"),
     },
-    ...project.steps.map((step, stepIndex) => {
-      const stepLabel = `${t("profile.stepNumber", { number: stepIndex + 1 })}`;
-      return {
-        id: `project-${index}-step-${stepIndex}`,
-        title: step.title || stepLabel,
-        kicker: `${project.title} · ${stepLabel}`,
-        imageUrl: step.imageUrl,
-        imageAlt: `${project.title} — ${stepLabel}`,
-        description: step.description,
-      };
-    }),
+    ...project.steps
+      .filter((step) => step.title || step.description || step.imageUrl)
+      .map((step, stepIndex) => {
+        const stepLabel = `${showcaseLabels.childSingular} ${stepIndex + 1}`;
+        return {
+          id: `project-${index}-step-${stepIndex}`,
+          title: step.title || stepLabel,
+          kicker: `${project.title} · ${stepLabel}`,
+          imageUrl: step.imageUrl,
+          imageAlt: `${project.title} — ${stepLabel}`,
+          description: step.description,
+        };
+      }),
   ]);
+
   const catalogShowcaseItems: ShowcaseCardItem[] = payload.showcaseMode === "PRODUCT_CATALOG"
-    ? payload.products.map((item, index) => ({
-      id: `product-${index}`,
-      title: item.name,
-      kicker: "Product",
-      imageUrl: item.imageUrl,
-      badge: item.availability === "AVAILABLE" ? "Available" : item.availability === "OUT_OF_STOCK" ? "Out of stock" : item.availability === "PREORDER" ? "Pre-order" : "By request",
-      meta: item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : undefined,
-      description: item.description,
-    }))
+    ? payload.products.flatMap((item, index): ShowcaseCardItem[] => {
+      const parentTitle = item.name;
+      const parent = {
+        id: `product-${index}`,
+        title: parentTitle,
+        kicker: showcaseLabels.parentSingular,
+        imageUrl: item.imageUrl,
+        imageAlt: parentTitle,
+        badge: item.availability === "AVAILABLE" ? "Available" : item.availability === "OUT_OF_STOCK" ? "Out of stock" : item.availability === "PREORDER" ? "Pre-order" : "By request",
+        meta: item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : undefined,
+        description: item.description,
+      } satisfies ShowcaseCardItem;
+      const variants = (item.variants ?? [])
+        .filter((variant) => variant.title || variant.description || variant.imageUrl)
+        .map((variant, variantIndex) => {
+          const childLabel = `${showcaseLabels.childSingular} ${variantIndex + 1}`;
+          return {
+            id: `product-${index}-variant-${variantIndex}`,
+            title: variant.title || childLabel,
+            kicker: `${parentTitle} · ${childLabel}`,
+            imageUrl: variant.imageUrl,
+            imageAlt: `${parentTitle} — ${childLabel}`,
+            description: variant.description,
+          } satisfies ShowcaseCardItem;
+        });
+      return [parent, ...variants];
+    })
     : payload.services.map((item, index) => ({
       id: `service-${index}`,
       title: item.name,
-      kicker: "Service",
+      kicker: showcaseLabels.parentSingular,
       imageUrl: item.imageUrl,
+      imageAlt: item.name,
       meta: [item.price !== undefined ? `${item.currency || "ETB"} ${item.price.toLocaleString()}` : "", item.duration || ""].filter(Boolean).join(" · ") || undefined,
       description: item.description,
     }));
   const showcaseItems = payload.showcaseMode === "PROJECT_PROCESS" ? projectShowcaseItems : catalogShowcaseItems;
-  const showcaseTitle = payload.showcaseMode === "PRODUCT_CATALOG" ? "Products" : payload.showcaseMode === "SERVICE_MENU" ? "Services & menu" : t("profile.projectsTitle");
+  const showcaseTitle = showcaseLabels.sectionTitle;
+
   return <article className="overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
     <AnnouncementTicker announcements={announcements} />
     <header className="relative overflow-hidden bg-faida-navy p-6 text-white sm:p-9">

@@ -9,6 +9,7 @@ import ProfileShareActions from "@/components/qr/ProfileShareActions";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
 import ShowcaseTicker, { type ShowcaseCardItem } from "@/components/qr/ShowcaseTicker";
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
+import { getSectorShowcaseLabels, normalizeShowcaseMode } from "@/lib/profile/sectors";
 
 type JsonObject = Record<string, unknown>;
 type Props = {
@@ -146,28 +147,30 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const spotlightVideo = spotlightVideoUrl && new URL(spotlightVideoUrl).protocol === "https:" && /\.(mp4|webm|ogg)(?:$|[?#])/i.test(spotlightVideoUrl) ? spotlightVideoUrl : null;
   const projectSource = data.projects ?? custom.projects ?? data._projects ?? custom._projects;
   const projects = (Array.isArray(projectSource) ? projectSource : []).map((value) => object(value)).filter((project) => Object.keys(project).length > 0);
-  const showcaseMode = text(data.showcaseMode ?? custom.showcaseMode) ?? "PROJECT_PROCESS";
+  const showcaseMode = normalizeShowcaseMode(data.showcaseMode ?? custom.showcaseMode);
+  const showcaseLabels = getSectorShowcaseLabels(sector, showcaseMode, text(data.customSectorName ?? custom.customSectorName) ?? "");
   const products = (Array.isArray(data.products ?? custom.products) ? (data.products ?? custom.products) as unknown[] : []).map(object);
   const services = (Array.isArray(data.services ?? custom.services) ? (data.services ?? custom.services) as unknown[] : []).map(object);
   const projectShowcaseItems = projects.flatMap((project, index): ShowcaseCardItem[] => {
     const title = text(project.title ?? project.name) ?? `${humanize("project")} ${index + 1}`;
     const stepsValue = project.steps;
     const steps = Array.isArray(stepsValue)
-      ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description)))
+      ? stepsValue.map((step) => ({ raw: step, data: object(step) })).filter(({ raw, data }) => Boolean(text(raw) ?? text(data.text ?? data.title ?? data.description ?? data.imageUrl ?? data.image)))
       : [];
     return [
       {
         id: `project-${index}`,
         title,
-        kicker: humanize("project"),
+        kicker: showcaseLabels.parentSingular,
         imageUrl: safeHttpUrl(project.image ?? project.imageUrl ?? project.photo) ?? undefined,
+        imageAlt: title,
         description: text(project.description ?? project.text) ?? undefined,
         link: safeHttpUrl(project.url) ?? undefined,
         linkLabel: t("profile.viewProject"),
       },
       ...steps.map(({ raw, data }, stepIndex) => {
         const stepTitle = text(data.title) ?? text(raw) ?? `${humanize("step")} ${stepIndex + 1}`;
-        const stepLabel = `${humanize("step")} ${stepIndex + 1}`;
+        const stepLabel = `${showcaseLabels.childSingular} ${stepIndex + 1}`;
         return {
           id: `project-${index}-step-${stepIndex}`,
           title: stepTitle,
@@ -188,15 +191,33 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
     return {
       id: `catalog-${index}`,
       title,
-      kicker: showcaseMode === "PRODUCT_CATALOG" ? "Product" : "Service",
+      kicker: showcaseLabels.parentSingular,
+      imageAlt: title,
       imageUrl: safeHttpUrl(item.imageUrl ?? item.image) ?? undefined,
       badge: showcaseMode === "PRODUCT_CATALOG" ? text(item.availability) ?? undefined : undefined,
       meta,
       description: text(item.description) ?? undefined,
     };
   });
-  const showcaseItems = showcaseMode === "PRODUCT_CATALOG" || showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
-  const showcaseTitle = showcaseMode === "PRODUCT_CATALOG" ? "Products" : showcaseMode === "SERVICE_MENU" ? "Services & menu" : t("profile.projectsTitle");
+  const productVariantItems: ShowcaseCardItem[] = showcaseMode === "PRODUCT_CATALOG"
+    ? products.flatMap((item, index) => {
+      const parentTitle = text(item.name ?? item.title) ?? `Item ${index + 1}`;
+      const variants = Array.isArray(item.variants) ? item.variants.map(object).filter((variant) => Boolean(text(variant.title ?? variant.name ?? variant.description ?? variant.imageUrl ?? variant.image))) : [];
+      return variants.map((variant, variantIndex) => {
+        const childLabel = `${showcaseLabels.childSingular} ${variantIndex + 1}`;
+        return {
+          id: `catalog-${index}-variant-${variantIndex}`,
+          title: text(variant.title ?? variant.name) ?? childLabel,
+          kicker: `${parentTitle} · ${childLabel}`,
+          imageAlt: `${parentTitle} — ${childLabel}`,
+          imageUrl: safeHttpUrl(variant.imageUrl ?? variant.image) ?? undefined,
+          description: text(variant.description ?? variant.text) ?? undefined,
+        };
+      });
+    })
+    : [];
+  const showcaseItems = showcaseMode === "PRODUCT_CATALOG" ? [...catalogShowcaseItems, ...productVariantItems] : showcaseMode === "SERVICE_MENU" ? catalogShowcaseItems : projectShowcaseItems;
+  const showcaseTitle = showcaseLabels.sectionTitle;
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";
   const reviewPrompt = text(data._testimonialPrompt ?? custom._testimonialPrompt);
   const testimonial = fieldValue(custom.Testimonial) ?? text(review.text ?? review.content);

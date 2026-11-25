@@ -33,6 +33,11 @@ export const sectorOptions = [
 
 export type SectorId = (typeof sectorOptions)[number]["id"];
 export type ShowcaseMode = "PRODUCT_CATALOG" | "SERVICE_MENU" | "PROJECT_PROCESS";
+export function normalizeShowcaseMode(value: unknown): ShowcaseMode {
+  return value === "PRODUCT_CATALOG" || value === "SERVICE_MENU" || value === "PROJECT_PROCESS"
+    ? value
+    : "PROJECT_PROCESS";
+}
 export type SectorShowcaseLabels = {
   sectionTitle: string;
   parentSingular: string;

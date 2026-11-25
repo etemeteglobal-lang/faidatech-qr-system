@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 
 export type ShowcaseCardItem = {
   id: string;
@@ -18,7 +18,7 @@ export type ShowcaseCardItem = {
 function ShowcaseCard({ item, decorative }: { item: ShowcaseCardItem; decorative: boolean }) {
   return <article className="profile-showcase-card">
     {item.imageUrl
-      ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} className="profile-showcase-media" />
+      ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} loading="lazy" decoding="async" className="profile-showcase-media" />
       : <div aria-hidden="true" className="profile-showcase-placeholder"><span>{item.kicker ?? "Showcase"}</span></div>}
     <div className="profile-showcase-card-body">
       {item.kicker ? <p className="profile-showcase-kicker">{item.kicker}</p> : null}
@@ -50,7 +50,18 @@ export default function ShowcaseTicker({
 }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const sequenceRef = useRef<HTMLDivElement>(null);
-  const [copies, setCopies] = useState(1);
+  const sequenceWidthRef = useRef(0);
+  const animationFrameRef = useRef<number | null>(null);
+  const resumeTimeoutRef = useRef<number | null>(null);
+  const lastFrameRef = useRef(0);
+  const autoScrollingRef = useRef(false);
+  const reducedMotionRef = useRef(false);
+  const hoveredRef = useRef(false);
+  const focusedRef = useRef(false);
+  const interactionUntilRef = useRef(0);
+  const suppressClickRef = useRef(false);
+  const dragRef = useRef({ active: false, pointerId: null as number | null, startX: 0, startScrollLeft: 0, moved: false });
+  const [copies, setCopies] = useState(2);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -60,7 +71,8 @@ export default function ShowcaseTicker({
     const measure = () => {
       const sequenceWidth = sequence.getBoundingClientRect().width;
       if (sequenceWidth <= 0) return;
-      const nextCopies = Math.max(1, Math.ceil(viewport.clientWidth / sequenceWidth));
+      sequenceWidthRef.current = sequenceWidth;
+      const nextCopies = Math.max(2, Math.ceil(viewport.clientWidth / sequenceWidth) + 1);
       setCopies((current) => current === nextCopies ? current : nextCopies);
     };
 
@@ -75,18 +87,127 @@ export default function ShowcaseTicker({
     };
   }, [items.length]);
 
+  useEffect(() => {
+    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updatePreference = () => { reducedMotionRef.current = preference.matches; };
+    updatePreference();
+    preference.addEventListener?.("change", updatePreference);
+
+    const tick = (now: number) => {
+      const viewport = viewportRef.current;
+      const elapsed = lastFrameRef.current ? Math.min(50, now - lastFrameRef.current) : 16;
+      lastFrameRef.current = now;
+      if (viewport && !reducedMotionRef.current && !hoveredRef.current && !focusedRef.current && !dragRef.current.active && now >= interactionUntilRef.current && sequenceWidthRef.current > 0) {
+        autoScrollingRef.current = true;
+        viewport.scrollLeft += elapsed * 0.014;
+        while (viewport.scrollLeft >= sequenceWidthRef.current) viewport.scrollLeft -= sequenceWidthRef.current;
+        autoScrollingRef.current = false;
+      }
+      animationFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    animationFrameRef.current = window.requestAnimationFrame(tick);
+    return () => {
+      preference.removeEventListener?.("change", updatePreference);
+      if (animationFrameRef.current !== null) window.cancelAnimationFrame(animationFrameRef.current);
+      if (resumeTimeoutRef.current !== null) window.clearTimeout(resumeTimeoutRef.current);
+    };
+  }, []);
+
   if (!items.length) return null;
 
-  return <div ref={viewportRef} role="region" aria-label={ariaLabel} className={`profile-showcase-scroller ${className}`.trim()}>
+  function pauseAfterInteraction() {
+    interactionUntilRef.current = performance.now() + 850;
+    if (resumeTimeoutRef.current !== null) window.clearTimeout(resumeTimeoutRef.current);
+    resumeTimeoutRef.current = window.setTimeout(() => {
+      interactionUntilRef.current = 0;
+    }, 900);
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    dragRef.current = {
+      active: true,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startScrollLeft: viewport.scrollLeft,
+      moved: false,
+    };
+    pauseAfterInteraction();
+    viewport.setPointerCapture?.(event.pointerId);
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    const viewport = viewportRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId || !viewport) return;
+    const distance = event.clientX - drag.startX;
+    if (Math.abs(distance) > 5) drag.moved = true;
+    if (!drag.moved) return;
+    event.preventDefault();
+    viewport.scrollLeft = drag.startScrollLeft - distance;
+  }
+
+  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    const viewport = viewportRef.current;
+    if (!drag.active || drag.pointerId !== event.pointerId) return;
+    if (viewport?.hasPointerCapture?.(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+    if (drag.moved) suppressClickRef.current = true;
+    dragRef.current = { active: false, pointerId: null, startX: 0, startScrollLeft: 0, moved: false };
+    pauseAfterInteraction();
+  }
+
+  function handleClickCapture(event: React.MouseEvent<HTMLDivElement>) {
+    if (!suppressClickRef.current) return;
+    event.preventDefault();
+    event.stopPropagation();
+    suppressClickRef.current = false;
+  }
+
+  function handleScroll() {
+    if (!autoScrollingRef.current) pauseAfterInteraction();
+  }
+
+  function handleFocus() {
+    focusedRef.current = true;
+    pauseAfterInteraction();
+  }
+
+  function handleBlur(event: React.FocusEvent<HTMLDivElement>) {
+    const next = event.relatedTarget;
+    if (!next || !(next instanceof Node) || !event.currentTarget.contains(next)) {
+      focusedRef.current = false;
+      pauseAfterInteraction();
+    }
+  }
+
+  return <div
+    ref={viewportRef}
+    role="region"
+    aria-label={ariaLabel}
+    tabIndex={0}
+    onMouseEnter={() => { hoveredRef.current = true; }}
+    onMouseLeave={() => { hoveredRef.current = false; pauseAfterInteraction(); }}
+    onFocusCapture={handleFocus}
+    onBlurCapture={handleBlur}
+    onPointerDown={handlePointerDown}
+    onPointerMove={handlePointerMove}
+    onPointerUp={handlePointerEnd}
+    onPointerCancel={handlePointerEnd}
+    onClickCapture={handleClickCapture}
+    onScroll={handleScroll}
+    className={`profile-showcase-scroller ${className}`.trim()}
+  >
     <div className="profile-showcase-track">
-      {[0, 1].map((trackIndex) => <div key={trackIndex} aria-hidden={trackIndex === 1} className="profile-showcase-group">
-        {Array.from({ length: copies }, (_, copyIndex) => <div
-          key={copyIndex}
-          ref={trackIndex === 0 && copyIndex === 0 ? sequenceRef : undefined}
-          aria-hidden={trackIndex === 1 || copyIndex > 0 ? true : undefined}
-          className="profile-showcase-sequence"
-        >{items.map((item) => <ShowcaseCard key={`${copyIndex}-${item.id}`} item={item} decorative={trackIndex === 1 || copyIndex > 0} />)}</div>)}
-      </div>)}
+      {Array.from({ length: copies }, (_, copyIndex) => <div
+        key={copyIndex}
+        ref={copyIndex === 0 ? sequenceRef : undefined}
+        aria-hidden={copyIndex > 0 ? true : undefined}
+        className="profile-showcase-sequence"
+      >{items.map((item) => <ShowcaseCard key={`${copyIndex}-${item.id}`} item={item} decorative={copyIndex > 0} />)}</div>)}
     </div>
   </div>;
 }

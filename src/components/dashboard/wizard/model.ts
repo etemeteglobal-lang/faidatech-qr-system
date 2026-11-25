@@ -435,7 +435,7 @@ export function validateWizardForm(form: WizardForm): WizardValidationError | nu
     if (form.profile.announcements.some((item) => item.type && item.type !== "text" && (item.text.trim() || item.badge?.trim() || item.link?.trim()) && !item.mediaUrl?.trim())) return { key: "validation.profileFileUrl" };
     if (form.profile.projects.some((project) => [project.url, project.imageUrl].some((url) => url.trim() && !/^https?:\/\//i.test(url.trim())))) return { key: "validation.profileProjectUrl" };
     if (form.profile.projects.some((project) => project.steps.some((step) => step.imageUrl.trim() && !/^https?:\/\//i.test(step.imageUrl.trim())))) return { key: "validation.profileProjectUrl" };
-    if (form.profile.products.some((item) => (item.imageUrl.trim() && !/^https?:\/\//i.test(item.imageUrl.trim())) || (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)))) return { key: "validation.profileProjectUrl" };
+    if (form.profile.products.some((item) => (item.imageUrl.trim() && !/^https?:\/\//i.test(item.imageUrl.trim())) || (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)) || item.variants.some((variant) => variant.imageUrl.trim() && !/^https?:\/\//i.test(variant.imageUrl.trim())))) return { key: "validation.profileProjectUrl" };
     if (form.profile.services.some((item) => (item.imageUrl.trim() && !/^https?:\/\//i.test(item.imageUrl.trim())) || (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)))) return { key: "validation.profileProjectUrl" };
     if (form.profile.credentials.some((credential) => !/^https?:\/\//i.test(credential.fileUrl.trim()))) return { key: "validation.profileFileUrl" };
   }
