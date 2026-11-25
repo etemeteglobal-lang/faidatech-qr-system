@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import LanguageSelector from "@/i18n/LanguageSelector";
 import { localizedOverride, localizedText, type LocalizedContent } from "@/i18n/localized-content";
@@ -52,13 +53,13 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
       </Link>
       <LanguageSelector compact autoTranslate />
     </div>
-    {menuOpen ? <>
+    {menuOpen && typeof document !== "undefined" ? createPortal(<>
       <style jsx global>{`@keyframes visitor-drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } } @keyframes visitor-backdrop-in { from { opacity: 0; } to { opacity: 1; } } @media (prefers-reduced-motion: reduce) { .visitor-drawer-motion, .visitor-backdrop-motion { animation-duration: 1ms !important; } }`}</style>
       <button
         type="button"
         aria-label="Close menu"
         onClick={() => setMenuOpen(false)}
-        className="visitor-backdrop-motion fixed inset-0 z-40 cursor-default bg-slate-950/30"
+        className="visitor-backdrop-motion fixed inset-0 h-dvh w-screen z-40 cursor-default bg-slate-950/30"
         style={{ animation: "visitor-backdrop-in 180ms ease-out both" }}
       />
       <aside
@@ -66,7 +67,7 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
         role="dialog"
         aria-modal="true"
         aria-label="FaidATech menu"
-        className="visitor-drawer-motion fixed inset-y-0 left-0 z-50 flex h-full max-h-dvh w-[min(22rem,88vw)] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:w-[min(24rem,50vw)] sm:p-5"
+        className="visitor-drawer-motion fixed inset-y-0 left-0 z-50 flex h-dvh w-80 max-w-[85vw] flex-col border-r border-slate-200 bg-white p-3 shadow-2xl sm:p-5"
         style={{ animation: "visitor-drawer-in 220ms ease-out both" }}
       >
         <div className="flex shrink-0 items-center justify-between gap-2">
@@ -113,6 +114,6 @@ export default function PublicVisitorHeader({ title, localizedContent, branding 
           <Link href="/" onClick={() => setMenuOpen(false)} className="mt-2 block rounded-lg bg-emerald-700 px-2 py-2 text-center text-[10px] font-bold text-white">Create your own QR</Link>
         </footer>
       </aside>
-    </> : null}
+    </>, document.body) : null}
   </header>;
 }
