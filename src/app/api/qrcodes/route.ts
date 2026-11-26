@@ -154,7 +154,9 @@ export async function POST(request: NextRequest): Promise<Response> {
       const profileBranding = rawPayload.branding && typeof rawPayload.branding === "object" ? rawPayload.branding as Record<string, unknown> : {};
       const profileLogoUrl = input.destinationType === "SECTOR_PROFILE" && typeof profileBranding.logoUrl === "string" ? profileBranding.logoUrl : undefined;
       const profileLogoPlacement = input.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
-      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground, typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined, profileLogoUrl, profileLogoPlacement);
+      const profileQrDots = input.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrDots === "string" ? rawPayload.qrDots : undefined;
+      const profileQrFrame = input.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrFrame === "string" ? rawPayload.qrFrame : undefined;
+      const qrImageDataUrl = await generateQrImageDataUrl(shortCode, readBrandIdentity(payload)?.qrForeground, typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined, profileLogoUrl, profileLogoPlacement, profileQrDots, profileQrFrame);
 
       try {
         const qrCode = await prisma.qRCode.create({

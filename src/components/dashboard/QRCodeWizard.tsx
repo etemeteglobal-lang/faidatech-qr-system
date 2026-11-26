@@ -66,7 +66,7 @@ function MobilePreview({ form }: { form: WizardForm }) {
   const accentText = getReadableTextColor(accent);
 
   return (
-    <aside className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm lg:sticky lg:top-24">
+    <aside className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
       <div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("preview.live")}</p><p className="mt-1 text-xs text-faida-slate">{t("preview.updates")}</p></div><span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-100 text-xs font-bold text-faida-slate">↗</span></div>
       <div className="mx-auto mt-5 w-full max-w-[292px] rounded-[34px] border-[7px] border-faida-navy bg-faida-navy p-1.5 shadow-xl">
         <div className="overflow-hidden rounded-[25px] bg-[#f7faf9]">

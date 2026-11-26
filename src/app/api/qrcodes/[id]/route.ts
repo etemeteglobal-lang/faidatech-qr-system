@@ -147,12 +147,16 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     const profileBranding = rawPayload.branding && typeof rawPayload.branding === "object" ? rawPayload.branding as Record<string, unknown> : {};
     const profileLogoUrl = updated.destinationType === "SECTOR_PROFILE" && typeof profileBranding.logoUrl === "string" ? profileBranding.logoUrl : undefined;
     const profileLogoPlacement = updated.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
+    const profileQrDots = updated.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrDots === "string" ? rawPayload.qrDots : undefined;
+    const profileQrFrame = updated.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrFrame === "string" ? rawPayload.qrFrame : undefined;
     const qrImageDataUrl = await generateQrImageDataUrl(
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
       typeof rawPayload.qrPageBackground === "string" ? rawPayload.qrPageBackground : undefined,
       profileLogoUrl,
       profileLogoPlacement,
+      profileQrDots,
+      profileQrFrame,
     );
 
     return Response.json(

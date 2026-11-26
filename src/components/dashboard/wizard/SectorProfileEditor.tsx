@@ -36,13 +36,18 @@ function LiveProfileQr({ form }: Props) {
       if (!context) throw new Error("Canvas unavailable");
       context.fillStyle = form.profile.qrPageBackground;
       context.fillRect(0, 0, size, size);
+      context.fillStyle = "#FFFFFF";
+      context.fillRect(quiet * unit, quiet * unit, matrix.size * unit, matrix.size * unit);
       context.fillStyle = form.branding.qrForeground;
       for (let row = 0; row < matrix.size; row += 1) {
         for (let col = 0; col < matrix.size; col += 1) {
           if (!matrix.get(row, col)) continue;
           const x = (col + quiet) * unit;
           const y = (row + quiet) * unit;
-          if (["round", "circle"].includes(form.profile.qrDots)) {
+          const finder = (col < 8 && row < 8) || (col >= matrix.size - 8 && row < 8) || (col < 8 && row >= matrix.size - 8);
+          if (finder) {
+            context.fillRect(x, y, unit + 0.1, unit + 0.1);
+          } else if (["round", "circle"].includes(form.profile.qrDots)) {
             context.beginPath();
             context.arc(x + unit / 2, y + unit / 2, unit * 0.46, 0, Math.PI * 2);
             context.fill();
