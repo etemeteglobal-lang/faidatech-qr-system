@@ -929,6 +929,19 @@ html[data-public-visitor-theme="dark"] {
   background-color: #115e59;
 }
 
+.public-visitor-theme[data-public-theme="dark"] .public-social-card {
+  border-color: #334155 !important;
+  background-color: #172337 !important;
+  background-image: none !important;
+  color: #e2e8f0;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .public-social-card:hover,
+.public-visitor-theme[data-public-theme="dark"] .public-social-card:focus-visible {
+  border-color: #34d399 !important;
+  background-color: #1b2b40 !important;
+}
+
 .public-visitor-theme[data-public-theme="dark"] .profile-showcase-children,
 .public-visitor-theme[data-public-theme="dark"] .profile-showcase-detail-children,
 .public-visitor-theme[data-public-theme="dark"] .profile-showcase-upload,

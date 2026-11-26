@@ -74,7 +74,7 @@ export default function LoginExperience({ signInFailed }: { signInFailed: boolea
       <section className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-7 shadow-soft sm:p-9">
         <div className="mb-7 flex justify-end"><LanguageSelector compact /></div>
         <Link href="/" className="flex items-center" aria-label={`FaidATech ${t("common.home")}`}>
-          <Image src="/logo.png" alt="FaidATech" width={661} height={354} priority className="h-auto w-[176px] object-contain" />
+          <Image src="/logo.webp" alt="FaidATech" width={661} height={354} priority className="h-auto w-[176px] rounded-lg bg-white p-1 object-contain" />
         </Link>
         <p className="mt-8 text-xs font-bold uppercase tracking-[0.2em] text-faida-teal">{t("login.eyebrow")}</p>
         <h1 className="mt-2 text-3xl font-semibold tracking-tight text-faida-navy">{mode === "signup" ? "Create your account" : t("login.title")}</h1>

@@ -85,7 +85,7 @@ export default function BrandingEditor({ form, setFormAction }: { form: WizardFo
 
           <label className="block text-sm font-semibold text-slate-700">
             <span>{t("branding.hostedLogo")}</span>
-            <input type="url" value={brand.logoUrl.startsWith("/manus-storage/") ? "" : brand.logoUrl} onChange={(event) => setFormAction({ ...form, branding: { ...brand, logoUrl: event.target.value } })} placeholder="https://your-site.com/logo.png" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none transition placeholder:text-slate-400 focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
+            <input type="url" value={brand.logoUrl.startsWith("/manus-storage/") ? "" : brand.logoUrl} onChange={(event) => setFormAction({ ...form, branding: { ...brand, logoUrl: event.target.value } })} placeholder="https://your-site.com/logo.webp" className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none transition placeholder:text-slate-400 focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
