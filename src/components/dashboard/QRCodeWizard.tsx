@@ -6,7 +6,6 @@ import PayloadEditor from "@/components/dashboard/wizard/PayloadEditor";
 import BrandingEditor from "@/components/dashboard/wizard/BrandingEditor";
 import SectorProfileExperience from "@/components/qr/SectorProfileExperience";
 import StorageAllowanceIndicator from "@/components/dashboard/wizard/StorageAllowanceIndicator";
-import LocalizedContentEditor from "@/components/dashboard/wizard/LocalizedContentEditor";
 import DashboardPageHeading from "@/components/dashboard/DashboardPageHeading";
 import {
   buildDestinationPayload,
@@ -21,7 +20,7 @@ import type { ApiErrorEnvelope } from "@/lib/qr/client-types";
 import { getReadableTextColor } from "@/lib/qr/brand-presentation";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { localeMetadata } from "@/i18n/registry";
-import { localizedField, localizedOverride, localizedText } from "@/i18n/localized-content";
+import { localizedOverride, localizedText } from "@/i18n/localized-content";
 import { localizedApiError } from "@/i18n/api-errors";
 
 const purposeCards: { id: WizardPurpose; titleKey: "purpose.profile" | "purpose.landing" | "purpose.vcard" | "purpose.menu" | "purpose.tourism" | "purpose.pdf" | "purpose.payments"; summaryKey: "wizard.purposeProfileSummary" | "wizard.purposeLandingSummary" | "wizard.purposeVcardSummary" | "wizard.purposeMenuSummary" | "wizard.purposeTourismSummary" | "wizard.purposePdfSummary" | "wizard.purposePaymentsSummary"; mark: string }[] = [
@@ -288,7 +287,6 @@ export default function QRCodeWizard() {
               <StorageAllowanceIndicator />
               <BrandingEditor form={form} setFormAction={setForm} />
               <PayloadEditor form={form} setFormAction={setForm} />
-              <LocalizedContentEditor form={form} setFormAction={setForm} />
             </div>
           ) : null}
 
