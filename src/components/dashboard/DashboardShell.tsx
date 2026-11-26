@@ -130,6 +130,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   }
 
   const activeHref = pathname === "/dashboard/create" ? "/dashboard/qrcodes" : pathname;
+  const isCreatePage = pathname === "/dashboard/create";
   const displayName = session?.user.name || session?.user.email || t("shell.workspaceMember");
   const crumbs = getBreadcrumbs(pathname);
   const backTarget = getBackTarget(pathname);
@@ -213,7 +214,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </div>
         ) : null}
         <main className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 md:px-8 md:py-7">
-          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80 pb-4">
+          <div className={`${isCreatePage ? "mb-3 pb-3" : "mb-6 pb-4"} flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/80`}>
             <nav aria-label={t("shell.mainNavigation")} className="min-w-0">
               <ol className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                 {crumbs.map((crumb, index) => (
@@ -224,9 +225,9 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 ))}
               </ol>
             </nav>
-            <Link href={backTarget.href} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
+            {!isCreatePage ? <Link href={backTarget.href} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
               <span aria-hidden="true">{direction === "rtl" ? "→" : "←"}</span> {t("shell.backTo", { destination: t(backTarget.labelKey) })}
-            </Link>
+            </Link> : null}
           </div>
           {children}
         </main>

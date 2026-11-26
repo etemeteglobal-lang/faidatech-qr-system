@@ -234,14 +234,21 @@ export default function QRCodeWizard() {
   const publicPath = qrCode?.shortCode ? `/r/${encodeURIComponent(qrCode.shortCode)}` : "";
 
   return (
-    <div className="space-y-6">
-      <DashboardPageHeading eyebrow={t("wizard.builderEyebrow")} title={t(editId ? "wizard.editHeader" : "wizard.createHeader")} description={t("wizard.headingDescription")} />
-
-      <div className="flex justify-end">
-        <button type="button" aria-expanded={showPublicPreview} aria-controls="public-visitor-preview" onClick={() => setShowPublicPreview((visible) => !visible)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-faida-navy hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-faida-teal">
-          {showPublicPreview ? "Hide Public Visitor Preview" : "Show Public Visitor Preview"}
-        </button>
-      </div>
+    <div className="space-y-4">
+      <DashboardPageHeading
+        eyebrow={t("wizard.builderEyebrow")}
+        title={t(editId ? "wizard.editHeader" : "wizard.createHeader")}
+        description={t("wizard.headingDescription")}
+        action={<div className="flex flex-wrap items-center gap-2">
+          <Link href="/dashboard/qrcodes" className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100">
+            <span aria-hidden="true">{direction === "rtl" ? "→" : "←"}</span>{t("shell.backTo", { destination: t("shell.qrLibrary") })}
+          </Link>
+          <button type="button" aria-label="Toggle Public Visitor Preview" aria-pressed={showPublicPreview} aria-controls="public-visitor-preview" onClick={() => setShowPublicPreview((visible) => !visible)} className={`inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-semibold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-faida-teal ${showPublicPreview ? "border-emerald-300 bg-emerald-50 text-emerald-900" : "border-slate-300 bg-white text-faida-navy hover:bg-slate-50"}`}>
+            <svg aria-hidden="true" viewBox="0 0 20 20" className="h-4 w-4 fill-current"><path d="M10 3.5c-4.35 0-7.8 3.92-9 6.5 1.2 2.58 4.65 6.5 9 6.5s7.8-3.92 9-6.5c-1.2-2.58-4.65-6.5-9-6.5Zm0 10.5a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm0-2a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z" /></svg>
+            Preview
+          </button>
+        </div>}
+      />
 
       <div className={`grid items-start gap-5 xl:gap-7 ${showPublicPreview ? "lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_280px]" : "grid-cols-1"}`}>
         <section className="min-w-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
