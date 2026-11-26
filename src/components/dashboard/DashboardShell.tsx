@@ -59,6 +59,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const [sessionNeedsSignIn, setSessionNeedsSignIn] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
   const wasMobileNavOpen = useRef(false);
@@ -136,13 +137,24 @@ export default function DashboardShell({ children }: { children: React.ReactNode
 
   return (
     <div className="min-h-screen bg-[#f7faf9] text-faida-navy md:flex">
-      <aside className="relative z-40 border-b border-slate-200 bg-white md:sticky md:top-0 md:flex md:h-screen md:w-[248px] md:shrink-0 md:flex-col md:border-b-0 md:border-r">
-        <div className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:px-5 md:py-6">
+      <aside className={`relative z-40 border-b border-slate-200 bg-white md:sticky md:top-0 md:flex md:h-screen ${sidebarCollapsed ? "md:w-[88px]" : "md:w-[248px]"} md:shrink-0 md:flex-col md:border-b-0 md:border-r md:transition-[width] md:duration-200 md:ease-in-out motion-reduce:md:transition-none`}>
+        <div className={`flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:py-6 ${sidebarCollapsed ? "md:justify-center md:px-2" : "md:px-5"}`}>
           <Link href="/dashboard" className="flex min-w-0 items-center" aria-label={`FaidATech ${t("nav.dashboard")}`}>
-            <Image src="/logo.png" alt="FaidATech" width={661} height={354} priority className="h-auto w-[144px] object-contain" />
+            <Image src="/logo.png" alt="FaidATech" width={661} height={354} priority className={`h-auto w-[144px] object-contain ${sidebarCollapsed ? "md:w-6" : ""}`} />
           </Link>
           <div className="flex items-center gap-2">
             <Link href="/dashboard/create" className="rounded-xl bg-faida-green px-3 py-2 text-xs font-bold text-faida-navy transition hover:bg-emerald-300 md:hidden">＋ {t("shell.create")}</Link>
+            <button
+              type="button"
+              aria-label={sidebarCollapsed ? "Expand dashboard sidebar" : "Collapse dashboard sidebar"}
+              aria-expanded={!sidebarCollapsed}
+              aria-controls="dashboard-primary-navigation"
+              title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+              onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+              className="hidden h-8 w-8 shrink-0 place-items-center rounded-lg border border-slate-200 bg-white text-sm font-bold text-faida-slate transition hover:border-faida-teal hover:bg-teal-50 hover:text-faida-navy focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-teal-100 md:grid"
+            >
+              <span aria-hidden="true">{sidebarCollapsed ? (direction === "rtl" ? "←" : "→") : (direction === "rtl" ? "→" : "←")}</span>
+            </button>
             <button
               type="button"
               ref={mobileMenuButtonRef}
@@ -161,10 +173,10 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           ref={mobileNavRef}
           id="dashboard-primary-navigation"
           aria-label={t("shell.mainNavigation")}
-          className={`${mobileNavOpen ? "absolute inset-x-3 top-full z-50 block rounded-2xl border border-slate-200 bg-white p-3 shadow-xl" : "hidden"} md:relative md:inset-auto md:z-auto md:block md:flex-1 md:space-y-1 md:overflow-y-auto md:rounded-none md:border-0 md:bg-transparent md:p-3 md:shadow-none`}
+          className={`${mobileNavOpen ? "absolute inset-x-3 top-full z-50 block rounded-2xl border border-slate-200 bg-white p-3 shadow-xl" : "hidden"} md:relative md:inset-auto md:z-auto md:block md:min-h-0 md:flex-1 md:space-y-1 md:overflow-y-auto md:rounded-none md:border-0 md:bg-transparent md:p-3 md:shadow-none`}
         >
           <div className="mb-3 px-2 pt-1 md:hidden"><LanguageSelector compact /></div>
-          <p className="mb-2 px-3 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 md:px-2">{t("shell.workspaceSection")}</p>
+          <p className={`mb-2 px-3 pt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400 md:px-2 ${sidebarCollapsed ? "md:sr-only" : ""}`}>{t("shell.workspaceSection")}</p>
           {navigation.map((item) => {
             const active = activeHref === item.href || (item.href !== "/dashboard" && activeHref.startsWith(`${item.href}/`));
             return (
@@ -172,13 +184,15 @@ export default function DashboardShell({ children }: { children: React.ReactNode
                 key={item.href}
                 href={item.href}
                 aria-current={active ? "page" : undefined}
+                aria-label={sidebarCollapsed ? t(item.labelKey) : undefined}
+                title={t(item.labelKey)}
                 onClick={() => setMobileNavOpen(false)}
-                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${sidebarCollapsed ? "md:justify-center md:gap-0 md:px-2" : ""} ${
                   active ? "bg-emerald-50 text-emerald-900" : "text-slate-500 hover:bg-slate-50 hover:text-faida-navy"
                 }`}
               >
                 <span className={`grid h-7 w-7 place-items-center rounded-lg text-[11px] font-black ${active ? "bg-faida-green text-faida-navy" : "bg-slate-100 text-slate-500"}`} aria-hidden="true">{item.mark}</span>
-                <span>{t(item.labelKey)}</span>
+                <span className={sidebarCollapsed ? "md:sr-only" : ""}>{t(item.labelKey)}</span>
               </Link>
             );
           })}
@@ -191,12 +205,12 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           </div>
         </nav>
 
-        <div className="hidden border-t border-slate-100 p-4 md:block">
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-50 p-3">
+        <div className={`hidden shrink-0 border-t border-slate-100 md:block ${sidebarCollapsed ? "md:p-2" : "md:p-4"}`}>
+          <div className={`flex items-center gap-3 rounded-2xl bg-slate-50 p-3 ${sidebarCollapsed ? "md:flex-col md:gap-2 md:p-2" : ""}`}>
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-teal-100 text-xs font-extrabold text-teal-900">{displayName.slice(0, 1).toUpperCase()}</span>
-            <span className="min-w-0"><strong className="block truncate text-xs text-faida-navy">{displayName}</strong><span className="block truncate text-[10px] text-faida-slate">{session?.organization.name || t("shell.loadingWorkspace")}</span></span>
+            <span className={`min-w-0 ${sidebarCollapsed ? "md:sr-only" : ""}`}><strong className="block truncate text-xs text-faida-navy">{displayName}</strong><span className="block truncate text-[10px] text-faida-slate">{session?.organization.name || t("shell.loadingWorkspace")}</span></span>
           </div>
-          <button type="button" onClick={signOut} disabled={loggingOut} className="mt-3 w-full rounded-xl px-3 py-2 text-start text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-faida-navy disabled:opacity-50">{loggingOut ? t("shell.signingOut") : t("common.signOut")}</button>
+          <button type="button" aria-label={loggingOut ? t("shell.signingOut") : t("common.signOut")} onClick={signOut} disabled={loggingOut} className={`mt-3 w-full rounded-xl px-3 py-2 text-start text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-faida-navy disabled:opacity-50 ${sidebarCollapsed ? "md:mt-2 md:flex md:justify-center md:px-2" : ""}`}><span aria-hidden="true" className={sidebarCollapsed ? "md:inline" : "md:hidden"}>↪</span><span className={sidebarCollapsed ? "md:sr-only" : ""}>{loggingOut ? t("shell.signingOut") : t("common.signOut")}</span></button>
         </div>
       </aside>
 
