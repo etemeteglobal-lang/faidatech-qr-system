@@ -956,3 +956,57 @@ html[data-public-visitor-theme="dark"] {
 .public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-teal-50"]:hover {
   background-color: #12343a !important;
 }
+
+.public-visitor-theme,
+.public-visitor-theme [class~="bg-white"],
+.public-visitor-theme [class~="bg-white/95"],
+.public-visitor-theme [class~="bg-slate-50"],
+.public-visitor-theme [class~="bg-slate-100"],
+.public-visitor-theme [class~="bg-amber-50"],
+.public-visitor-theme [class~="bg-amber-100"],
+.public-visitor-theme [class~="bg-green-50"],
+.public-visitor-theme [class~="bg-emerald-50"],
+.public-visitor-theme [class~="bg-teal-50"],
+.public-visitor-theme [class~="bg-blue-50"],
+.public-visitor-theme [class~="bg-sky-50"],
+.public-visitor-theme [class~="bg-violet-50"],
+.public-visitor-theme [class~="bg-violet-100"],
+.public-visitor-theme [class~="bg-rose-50"],
+.public-visitor-theme [class~="bg-red-50"],
+.public-visitor-theme [class~="border-slate-100"],
+.public-visitor-theme [class~="border-slate-200"],
+.public-visitor-theme [class~="border-slate-300"],
+.public-visitor-theme .profile-showcase-card,
+.public-visitor-theme .profile-showcase-child-card,
+.public-visitor-theme .profile-showcase-detail-page,
+.public-visitor-theme .profile-showcase-upload-file {
+  transition: background-color 180ms ease, border-color 180ms ease, color 180ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-visitor-theme,
+  .public-visitor-theme [class~="bg-white"],
+  .public-visitor-theme [class~="bg-white/95"],
+  .public-visitor-theme [class~="bg-slate-50"],
+  .public-visitor-theme [class~="bg-slate-100"],
+  .public-visitor-theme [class~="bg-amber-50"],
+  .public-visitor-theme [class~="bg-amber-100"],
+  .public-visitor-theme [class~="bg-green-50"],
+  .public-visitor-theme [class~="bg-emerald-50"],
+  .public-visitor-theme [class~="bg-teal-50"],
+  .public-visitor-theme [class~="bg-blue-50"],
+  .public-visitor-theme [class~="bg-sky-50"],
+  .public-visitor-theme [class~="bg-violet-50"],
+  .public-visitor-theme [class~="bg-violet-100"],
+  .public-visitor-theme [class~="bg-rose-50"],
+  .public-visitor-theme [class~="bg-red-50"],
+  .public-visitor-theme [class~="border-slate-100"],
+  .public-visitor-theme [class~="border-slate-200"],
+  .public-visitor-theme [class~="border-slate-300"],
+  .public-visitor-theme .profile-showcase-card,
+  .public-visitor-theme .profile-showcase-child-card,
+  .public-visitor-theme .profile-showcase-detail-page,
+  .public-visitor-theme .profile-showcase-upload-file {
+    transition-duration: 0.01ms !important;
+  }
+}
