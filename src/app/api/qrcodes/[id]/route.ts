@@ -149,6 +149,7 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     const profileLogoPlacement = updated.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
     const profileQrDots = updated.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrDots === "string" ? rawPayload.qrDots : undefined;
     const profileQrFrame = updated.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrFrame === "string" ? rawPayload.qrFrame : undefined;
+    const profileQrEyeColor = updated.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrEyeColor === "string" ? rawPayload.qrEyeColor : undefined;
     const qrImageDataUrl = await generateQrImageDataUrl(
       updated.shortCode,
       readBrandIdentity(updated.payload)?.qrForeground,
@@ -157,6 +158,7 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
       profileLogoPlacement,
       profileQrDots,
       profileQrFrame,
+      profileQrEyeColor,
     );
 
     return Response.json(

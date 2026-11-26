@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { brandIdentitySchema } from "@/lib/qr/brand";
+import { brandIdentitySchema, isQrForegroundContrastSafe } from "@/lib/qr/brand";
 import { isLocaleCode, uniqueLocaleCodes, type LocaleCode } from "@/i18n/registry";
 import { profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 
@@ -205,6 +205,7 @@ export const sectorProfilePayloadSchema = z.object({
     contact: z.boolean().default(true),
   }).default({ projects: true, credentials: true, social: true, reviews: true, contact: true }),
   qrPageBackground: z.string().regex(/^#[0-9A-Fa-f]{6}$/).default("#FFFFFF"),
+  qrEyeColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).refine(isQrForegroundContrastSafe, "QR eye and frame color must have at least 4.5:1 contrast against white.").default("#0F172A"),
   qrFrame: z.enum(["square", "rounded", "badge", "none", "circle", "brand"]).default("rounded"),
   qrDots: z.enum(["square", "round", "circle", "diamond", "heart", "line"]).default("square"),
   qrLogoPlacement: z.enum(["none", "center", "above"]).default("center"),

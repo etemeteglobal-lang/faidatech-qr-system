@@ -8,14 +8,18 @@ type LogoPlacement = "none" | "center" | "above";
 type DotStyle = "square" | "round" | "small" | "large" | "styled" | "circle" | "diamond" | "heart" | "line";
 type FrameStyle = "none" | "square" | "rounded" | "badge" | "circle" | "brand";
 
-function optionsFor(qrForeground?: string, qrBackground?: string) {
+function optionsFor(qrForeground?: string, qrBackground?: string, qrEyeColor?: string) {
   const page = qrBackground ?? "#FFFFFF";
   if (!/^#[0-9A-Fa-f]{6}$/.test(page)) throw new Error("QR background color must be a #RRGGBB value.");
   const foreground = qrForeground ?? "#0F172A";
   if (!/^#[0-9A-Fa-f]{6}$/.test(foreground) || !isQrForegroundContrastSafe(foreground)) {
     throw new Error("QR foreground color must be a #RRGGBB value with at least 4.5:1 contrast against white.");
   }
-  return { foreground, page };
+  const eyes = qrEyeColor ?? foreground;
+  if (!/^#[0-9A-Fa-f]{6}$/.test(eyes) || !isQrForegroundContrastSafe(eyes)) {
+    throw new Error("QR eye and frame color must be a #RRGGBB value with at least 4.5:1 contrast against white.");
+  }
+  return { foreground, eyes, page };
 }
 
 function allowedLogoHost(url: URL): boolean {
@@ -64,8 +68,8 @@ function renderModule(x: number, y: number, scale: number, dots: DotStyle, color
   return `<rect x="${px}" y="${py}" width="${scale}" height="${scale}" rx="${radius}" fill="${color}"/>`;
 }
 
-async function makeQrSvg(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string): Promise<string> {
-  const { foreground, page } = optionsFor(qrForeground, qrBackground);
+async function makeQrSvg(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string, qrEyeColor?: string): Promise<string> {
+  const { foreground, eyes, page } = optionsFor(qrForeground, qrBackground, qrEyeColor);
   const dots = validDotStyle(dotStyle);
   const frame = validFrameStyle(frameStyle);
   const qr = QRCode.create(getPublicQrUrl(shortCode), { errorCorrectionLevel: "H" });
@@ -82,7 +86,7 @@ async function makeQrSvg(shortCode: string, qrForeground?: string, qrBackground?
   const qrY = framePad + logoBand;
   const background = `<rect width="${viewWidth}" height="${viewHeight}" fill="${page}"/>`;
   const frameRadius = frame === "circle" ? Math.min(viewWidth, viewHeight) / 2 : frame === "rounded" ? 3 : frame === "badge" ? 5 : frame === "brand" ? 4 : 0;
-  const frameMarkup = frame === "none" ? "" : `<rect x="0.5" y="0.5" width="${viewWidth - 1}" height="${viewHeight - 1}" rx="${frameRadius}" fill="none" stroke="${foreground}" stroke-width="${frame === "brand" || frame === "badge" ? 1.2 : 0.7}"/>`;
+  const frameMarkup = frame === "none" ? "" : `<rect x="0.5" y="0.5" width="${viewWidth - 1}" height="${viewHeight - 1}" rx="${frameRadius}" fill="none" stroke="${eyes}" stroke-width="${frame === "brand" || frame === "badge" ? 1.2 : 0.7}"/>`;
   const quietZone = `<rect x="${qrX}" y="${qrY}" width="${qrSize}" height="${qrSize}" fill="#FFFFFF"/>`;
   const cells: string[] = [];
   const smallScale = dots === "small" ? 0.62 : dots === "round" || dots === "circle" ? 0.78 : dots === "styled" ? 0.86 : 1;
@@ -91,7 +95,7 @@ async function makeQrSvg(shortCode: string, qrForeground?: string, qrBackground?
       if (!matrix.get(x, y)) continue;
       const finder = isFinderModule(x, y, matrix.size);
       const scale = finder || dots === "large" || dots === "square" ? 1 : smallScale;
-      cells.push(renderModule(qrX + quiet + x, qrY + quiet + y, scale, finder ? "square" : dots, foreground));
+      cells.push(renderModule(qrX + quiet + x, qrY + quiet + y, scale, finder ? "square" : dots, finder ? eyes : foreground));
     }
   }
   let logoMarkup = "";
@@ -111,14 +115,14 @@ async function makeQrSvg(shortCode: string, qrForeground?: string, qrBackground?
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 ${viewWidth} ${viewHeight}" width="${outputWidth}" height="${outputHeight}" role="img" aria-label="Scannable QR code"><title>Scannable QR code</title>${background}${frameMarkup}${quietZone}${cells.join("")}${logoMarkup}</svg>`;
 }
 
-export async function generateQrImageDataUrl(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string): Promise<string> {
-  const svg = await makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle);
+export async function generateQrImageDataUrl(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string, qrEyeColor?: string): Promise<string> {
+  const svg = await makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle, qrEyeColor);
   const png = await sharp(Buffer.from(svg)).png().toBuffer();
   return `data:image/png;base64,${png.toString("base64")}`;
 }
-export async function generateQrPng(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string): Promise<Buffer> {
-  return sharp(Buffer.from(await makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle))).png().toBuffer();
+export async function generateQrPng(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string, qrEyeColor?: string): Promise<Buffer> {
+  return sharp(Buffer.from(await makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle, qrEyeColor))).png().toBuffer();
 }
-export async function generateQrSvg(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string): Promise<string> {
-  return makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle);
+export async function generateQrSvg(shortCode: string, qrForeground?: string, qrBackground?: string, logoUrl?: string, placement: LogoPlacement = "none", dotStyle?: string, frameStyle?: string, qrEyeColor?: string): Promise<string> {
+  return makeQrSvg(shortCode, qrForeground, qrBackground, logoUrl, placement, dotStyle, frameStyle, qrEyeColor);
 }

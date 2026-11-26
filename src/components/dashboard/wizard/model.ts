@@ -70,6 +70,7 @@ export type WizardForm = {
     customFields: { id: string; label: string; type: ProfileFieldType; value: string }[];
     sectionVisibility: { projects: boolean; credentials: boolean; social: boolean; reviews: boolean; contact: boolean };
     qrPageBackground: string;
+    qrEyeColor: string;
     qrFrame: "none" | "square" | "rounded" | "badge" | "circle" | "brand";
     qrDots: "square" | "round" | "circle" | "diamond" | "heart" | "line";
     qrLogoPlacement: "none" | "center" | "above";
@@ -141,6 +142,7 @@ export function emptyWizardForm(): WizardForm {
       customFields: [],
       sectionVisibility: { projects: true, credentials: true, social: true, reviews: true, contact: true },
       qrPageBackground: "#FFFFFF",
+      qrEyeColor: DEFAULT_QR_FOREGROUND,
       qrFrame: "rounded",
       qrDots: "square",
       qrLogoPlacement: "center",
@@ -278,6 +280,7 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       customFields: rows("customFields").map((item) => { const row = asRecord(item); return { id: stringAt(row, "id"), label: stringAt(row, "label"), type: stringAt(row, "type") as WizardForm["profile"]["customFields"][number]["type"], value: stringAt(row, "value") }; }),
       sectionVisibility: { projects: visibility.projects !== false, credentials: visibility.credentials !== false, social: visibility.social !== false, reviews: visibility.reviews !== false, contact: visibility.contact !== false },
       qrPageBackground: stringAt(profile, "qrPageBackground") || "#FFFFFF",
+      qrEyeColor: stringAt(profile, "qrEyeColor") || DEFAULT_QR_FOREGROUND,
       qrFrame: (stringAt(profile, "qrFrame") || "rounded") as WizardForm["profile"]["qrFrame"],
       qrDots: (stringAt(profile, "qrDots") || "square") as WizardForm["profile"]["qrDots"],
       qrLogoPlacement: (stringAt(profile, "qrLogoPlacement") || "center") as WizardForm["profile"]["qrLogoPlacement"],
@@ -420,6 +423,7 @@ function findWizardValidationError(form: WizardForm): { key: MessageKey } | null
   if (form.branding.brandName.trim().length > 120) return { key: "validation.brandNameTooLong" };
   if (!/^#[\da-f]{6}$/i.test(form.branding.accentColor)) return { key: "validation.invalidAccent" };
   if (!isScanSafeQrForeground(form.branding.qrForeground)) return { key: "validation.qrContrast" };
+  if (!isScanSafeQrForeground(form.profile.qrEyeColor)) return { key: "validation.qrContrast" };
   if (!isSafeLogoUrl(form.branding.logoUrl.trim())) return { key: "validation.logoUrl" };
 
   if (form.purpose === "SECTOR_PROFILE") {
@@ -510,7 +514,7 @@ function describeInvalidField(form: WizardForm, key: MessageKey): string {
   if (key === "validation.choosePurpose") return "QR details > Destination type";
   if (key === "validation.brandNameTooLong") return "Branding > Brand name (maximum 120 characters)";
   if (key === "validation.invalidAccent") return "Branding > Accent color";
-  if (key === "validation.qrContrast") return "Branding > QR foreground color";
+  if (key === "validation.qrContrast") return !isScanSafeQrForeground(form.branding.qrForeground) ? "QR styling > Body/modules color (at least 4.5:1 contrast against white)" : "QR styling > Eyes/frame accent color (at least 4.5:1 contrast against white)";
   if (key === "validation.logoUrl") return "Branding > Logo URL";
   if (key === "validation.imageUrl") return "Landing page > Hero image URL";
   if (key === "validation.buttonUrl") return "Landing page > Button URL";
@@ -610,6 +614,7 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       customFields: form.profile.customFields.filter((item) => item.label.trim() && item.value.trim()).map((item) => ({ id: item.id.trim() || `field-${Math.random().toString(36).slice(2, 8)}`, label: item.label.trim(), type: item.type, value: item.value.trim() })),
       sectionVisibility: form.profile.sectionVisibility,
       qrPageBackground: form.profile.qrPageBackground,
+      qrEyeColor: form.profile.qrEyeColor,
       qrFrame: form.profile.qrFrame,
       qrDots: form.profile.qrDots,
       qrLogoPlacement: form.profile.qrLogoPlacement,

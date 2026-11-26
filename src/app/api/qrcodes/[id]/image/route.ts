@@ -38,9 +38,10 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     const profileLogoPlacement = qrCode.destinationType === "SECTOR_PROFILE" && ["none", "center", "above"].includes(String(rawPayload.qrLogoPlacement)) ? rawPayload.qrLogoPlacement as "none" | "center" | "above" : "none";
     const profileQrDots = qrCode.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrDots === "string" ? rawPayload.qrDots : undefined;
     const profileQrFrame = qrCode.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrFrame === "string" ? rawPayload.qrFrame : undefined;
+    const profileQrEyeColor = qrCode.destinationType === "SECTOR_PROFILE" && typeof rawPayload.qrEyeColor === "string" ? rawPayload.qrEyeColor : undefined;
     const body = format === "svg"
-      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement, profileQrDots, profileQrFrame)
-      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement, profileQrDots, profileQrFrame));
+      ? await generateQrSvg(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement, profileQrDots, profileQrFrame, profileQrEyeColor)
+      : new Uint8Array(await generateQrPng(qrCode.shortCode, qrForeground, qrBackground, profileLogoUrl, profileLogoPlacement, profileQrDots, profileQrFrame, profileQrEyeColor));
     const contentType = format === "svg" ? "image/svg+xml; charset=utf-8" : "image/png";
     return new Response(body, {
       headers: {

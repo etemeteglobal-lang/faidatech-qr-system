@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { isQrForegroundContrastSafe } from "@/lib/qr/brand";
 import type { WizardForm } from "@/components/dashboard/wizard/model";
 import { getSectorShowcaseLabels, profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
@@ -19,6 +20,13 @@ function TextArea({ label, value, onChange, placeholder }: { label: string; valu
   return <label className="block text-sm font-semibold text-slate-700"><span>{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={4} className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-6 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>;
 }
 
+function QrColorControl({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
+  return <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-end gap-2">
+    <TextInput label={label} value={value} onChange={onChange} type="color" />
+    <TextInput label="Hex value" value={value} onChange={(next) => /^#[0-9a-fA-F]{6}$/.test(next) && onChange(next.toUpperCase())} placeholder="#0F172A" />
+  </div>;
+}
+
 function LiveProfileQr({ form }: Props) {
   const { t } = useI18n();
   const [dataUrl, setDataUrl] = useState("");
@@ -34,11 +42,13 @@ function LiveProfileQr({ form }: Props) {
       canvas.height = size;
       const context = canvas.getContext("2d");
       if (!context) throw new Error("Canvas unavailable");
+      const bodyColor = isQrForegroundContrastSafe(form.branding.qrForeground) ? form.branding.qrForeground : "#0F172A";
+      const eyeColor = isQrForegroundContrastSafe(form.profile.qrEyeColor) ? form.profile.qrEyeColor : "#0F172A";
       context.fillStyle = form.profile.qrPageBackground;
       context.fillRect(0, 0, size, size);
       context.fillStyle = "#FFFFFF";
       context.fillRect(quiet * unit, quiet * unit, matrix.size * unit, matrix.size * unit);
-      context.fillStyle = form.branding.qrForeground;
+      context.fillStyle = bodyColor;
       for (let row = 0; row < matrix.size; row += 1) {
         for (let col = 0; col < matrix.size; col += 1) {
           if (!matrix.get(row, col)) continue;
@@ -46,7 +56,9 @@ function LiveProfileQr({ form }: Props) {
           const y = (row + quiet) * unit;
           const finder = (col < 8 && row < 8) || (col >= matrix.size - 8 && row < 8) || (col < 8 && row >= matrix.size - 8);
           if (finder) {
+            context.fillStyle = eyeColor;
             context.fillRect(x, y, unit + 0.1, unit + 0.1);
+            context.fillStyle = bodyColor;
           } else if (["round", "circle"].includes(form.profile.qrDots)) {
             context.beginPath();
             context.arc(x + unit / 2, y + unit / 2, unit * 0.46, 0, Math.PI * 2);
@@ -80,7 +92,7 @@ function LiveProfileQr({ form }: Props) {
       if (active) setDataUrl("");
     }
     return () => { active = false; };
-  }, [form.branding.qrForeground, form.profile.qrPageBackground, form.profile.qrDots]);
+  }, [form.branding.qrForeground, form.profile.qrEyeColor, form.profile.qrPageBackground, form.profile.qrDots]);
 
   const frameClass = {
     none: "border border-transparent",
@@ -93,20 +105,25 @@ function LiveProfileQr({ form }: Props) {
   const logoAbove = form.profile.qrLogoPlacement === "above" && form.branding.logoUrl;
   const logoCenter = form.profile.qrLogoPlacement === "center" && form.branding.logoUrl;
 
+  const safeEyeColor = isQrForegroundContrastSafe(form.profile.qrEyeColor) ? form.profile.qrEyeColor : "#0F172A";
+  const bodyColorSafe = isQrForegroundContrastSafe(form.branding.qrForeground);
+  const eyeColorSafe = isQrForegroundContrastSafe(form.profile.qrEyeColor);
+
   return <section className="rounded-2xl border border-slate-200 p-4" aria-label={t("profile.qrPreview")}>
     <h3 className="text-sm font-semibold text-faida-navy">{t("profile.qrPreview")}</h3>
     <p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p>
     <div className="mx-auto mt-4 flex w-fit max-w-full flex-col items-center p-5" style={{ backgroundColor: form.profile.qrPageBackground }}>
-      <div className={`flex flex-col items-center p-4 ${frameClass}`} style={{ backgroundColor: form.profile.qrPageBackground }}>
+      <div className={`flex flex-col items-center p-4 ${frameClass}`} style={{ backgroundColor: form.profile.qrPageBackground, borderColor: safeEyeColor }}>
         {logoAbove ? <img src={form.branding.logoUrl} alt="" className="mb-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}
         <div className="relative h-48 w-48 overflow-hidden bg-white p-2 shadow-sm">
           {dataUrl ? <img src={dataUrl} alt={t("profile.qrPreview")} className="h-full w-full object-contain" /> : <span className="grid h-full place-items-center text-xs text-slate-500">QR preview</span>}
           {logoCenter ? <span className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-white p-1.5 shadow"><img src={form.branding.logoUrl} alt="" className="max-h-full max-w-full object-contain" /></span> : null}
         </div>
-        {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
+        {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold" style={{ color: safeEyeColor }}>Scan to view profile</p> : null}
       </div>
-      <p className="mt-3 max-w-[17rem] break-all text-center text-[11px] font-medium text-slate-700">Page color {form.profile.qrPageBackground} · {form.profile.qrDots} modules · {form.profile.qrFrame} frame · logo {form.profile.qrLogoPlacement}</p>
+      <p className="mt-3 max-w-[17rem] break-all text-center text-[11px] font-medium text-slate-700">Page {form.profile.qrPageBackground} · modules {form.branding.qrForeground} · eyes/frame {form.profile.qrEyeColor} · {form.profile.qrDots} · {form.profile.qrFrame} · logo {form.profile.qrLogoPlacement}</p>
     </div>
+    {!bodyColorSafe || !eyeColorSafe ? <p role="alert" className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">QR body and eye/frame colors must have at least 4.5:1 contrast against white.</p> : null}
   </section>;
 }
 
@@ -342,7 +359,17 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
 
     <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.visibilityTitle")}</h3><div className="grid gap-2 sm:grid-cols-2">{(Object.keys(profile.sectionVisibility) as (keyof typeof profile.sectionVisibility)[]).map((key) => <label key={key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={profile.sectionVisibility[key]} onChange={(event) => update({ sectionVisibility: { ...profile.sectionVisibility, [key]: event.target.checked } })} className="h-4 w-4 accent-emerald-700" />{t(`profile.visibility.${key}` as never)}</label>)}</div></section>
 
-    <section id="profile-qr-style" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.qrStyleTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><div className="grid grid-cols-[3rem_1fr] items-end gap-2"><TextInput label={t("profile.qrBackground")} value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value.toUpperCase() })} type="color" /><TextInput label={t("profile.qrHexValue")} value={profile.qrPageBackground} onChange={(value) => /^#[0-9a-fA-F]{6}$/.test(value) && update({ qrPageBackground: value.toUpperCase() })} placeholder="#FFFFFF" /></div><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrFrame")}</span><select value={profile.qrFrame} onChange={(event) => update({ qrFrame: event.target.value as typeof profile.qrFrame })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrFrameNone")}</option><option value="square">{t("profile.qrFrameSquare")}</option><option value="rounded">{t("profile.qrFrameRounded")}</option><option value="badge">{t("profile.qrFrameBadge")}</option><option value="circle">Circle</option><option value="brand">Brand frame</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrDots")}</span><select value={profile.qrDots} onChange={(event) => update({ qrDots: event.target.value as typeof profile.qrDots })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrDotsSquare")}</option><option value="round">{t("profile.qrDotsRound")}</option><option value="circle">Circle</option><option value="diamond">Diamond</option><option value="heart">Heart</option><option value="line">Line / Bars</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrLogoPlacement")}</span><select value={profile.qrLogoPlacement} onChange={(event) => update({ qrLogoPlacement: event.target.value as typeof profile.qrLogoPlacement })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrLogoNone")}</option><option value="center">{t("profile.qrLogoCenter")}</option><option value="above">{t("profile.qrLogoAbove")}</option></select></label></div></section>
+    <section id="profile-qr-style" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
+      <h3 className="font-semibold text-faida-navy">{t("profile.qrStyleTitle")}</h3>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <QrColorControl label={t("profile.qrBackground")} value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value.toUpperCase() })} />
+        <QrColorControl label="QR body / modules color" value={form.branding.qrForeground} onChange={(value) => setFormAction({ ...form, branding: { ...form.branding, qrForeground: value.toUpperCase() } })} />
+        <QrColorControl label="QR eyes / frame accent color" value={profile.qrEyeColor} onChange={(value) => update({ qrEyeColor: value.toUpperCase() })} />
+        <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrFrame")}</span><select value={profile.qrFrame} onChange={(event) => update({ qrFrame: event.target.value as typeof profile.qrFrame })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrFrameNone")}</option><option value="square">{t("profile.qrFrameSquare")}</option><option value="rounded">{t("profile.qrFrameRounded")}</option><option value="badge">{t("profile.qrFrameBadge")}</option><option value="circle">Circle</option><option value="brand">Brand frame</option></select></label>
+        <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrDots")}</span><select value={profile.qrDots} onChange={(event) => update({ qrDots: event.target.value as typeof profile.qrDots })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrDotsSquare")}</option><option value="round">{t("profile.qrDotsRound")}</option><option value="circle">Circle</option><option value="diamond">Diamond</option><option value="heart">Heart</option><option value="line">Line / Bars</option></select></label>
+        <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrLogoPlacement")}</span><select value={profile.qrLogoPlacement} onChange={(event) => update({ qrLogoPlacement: event.target.value as typeof profile.qrLogoPlacement })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrLogoNone")}</option><option value="center">{t("profile.qrLogoCenter")}</option><option value="above">{t("profile.qrLogoAbove")}</option></select></label>
+      </div>
+    </section>
     <LiveProfileQr form={form} setFormAction={setFormAction} />
   </div>;
 }
