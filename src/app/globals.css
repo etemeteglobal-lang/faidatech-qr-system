@@ -699,3 +699,59 @@ html[data-theme="dark"] .dashboard-root input:not(#public-visitor-preview *):not
 html[data-theme="dark"] .dashboard-root textarea:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *)::placeholder {
   color: #94a3b8 !important;
 }
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview > aside {
+  border-color: var(--dashboard-border) !important;
+  background-color: var(--dashboard-surface) !important;
+  color: var(--dashboard-text);
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-white"] {
+  background-color: var(--dashboard-surface-raised) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-slate-50"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-slate-50/70"] {
+  background-color: #0b1220 !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .dashboard-preview-visitor-canvas {
+  background-color: #0b1220 !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="border-slate-100"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="border-slate-200"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="border-slate-300"] {
+  border-color: var(--dashboard-border) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-faida-navy"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-900"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-800"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-700"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-600"] {
+  color: var(--dashboard-text) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-faida-slate"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-500"],
+html[data-theme="dark"] .dashboard-root #public-visitor-preview :not(.qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="text-slate-400"] {
+  color: var(--dashboard-text-muted) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-card,
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-child-card,
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-detail-page {
+  border-color: var(--dashboard-border) !important;
+  background-color: var(--dashboard-surface-raised) !important;
+  color: var(--dashboard-text);
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-children-title,
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-parent-indicator {
+  color: var(--dashboard-text-muted) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview [class~="divide-slate-100"] > :not(:first-child) {
+  border-color: var(--dashboard-border) !important;
+}

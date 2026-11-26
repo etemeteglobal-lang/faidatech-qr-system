@@ -148,7 +148,7 @@ export default function QRCodeManagement() {
                   const status = statusOf(record);
                   const destinationKey = qrDestinationMessageKey(record.destinationType);
                   return (
-                    <tr key={record.id} className="align-middle transition hover:bg-slate-50/70">
+                    <tr key={record.id} className="align-middle bg-white transition hover:bg-slate-50/70">
                       <td className="max-w-[260px] px-5 py-4"><p className="truncate font-semibold text-faida-navy">{record.title}</p><p className="mt-1 truncate text-xs text-faida-slate">{record.campaign?.name || (destinationKey ? t(destinationKey) : record.destinationType)}</p></td>
                       <td className="px-4 py-4"><StatusPill status={status} t={t} /></td>
                       <td className="px-4 py-4 tabular-nums text-faida-navy">{formatNumber(record._count?.scanEvents ?? 0, locale)}</td>
