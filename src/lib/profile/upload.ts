@@ -90,11 +90,12 @@ export type UploadedProfileFile = {
 export async function uploadProfileFile(
   file: File,
   onProgress?: (progress: UploadTransferProgress) => void,
+  replaceUrl?: string,
 ): Promise<UploadedProfileFile> {
   const result = await uploadMultipartFile<{
     data?: UploadedProfileFile;
     error?: { message?: string };
-  }>("/api/assets/profile", file, { onProgress });
+  }>("/api/assets/profile", file, { onProgress, fields: replaceUrl ? { replaceUrl } : undefined });
   if (!result.ok || !result.data.data) {
     throw new Error(result.data.error?.message || "The profile file could not be uploaded.");
   }

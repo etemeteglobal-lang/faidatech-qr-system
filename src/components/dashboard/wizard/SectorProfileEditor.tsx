@@ -91,7 +91,7 @@ function LiveProfileQr({ form }: Props) {
     {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
   </aside>;
 }
-type ProfileUploadRunner = (key: string, file: File, onComplete: (result: UploadedProfileFile) => void) => Promise<void>;
+type ProfileUploadRunner = (key: string, file: File, replaceUrl: string | undefined, onComplete: (result: UploadedProfileFile) => void) => Promise<void>;
 
 function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectImage }: { form: WizardForm; update: (next: Partial<WizardForm["profile"]>) => void; uploadStates: Record<string, UploadProgressState>; runUpload: ProfileUploadRunner; uploadProjectImage: (index: number, file: File, stepIndex?: number) => void }) {
   const { t } = useI18n();
@@ -106,7 +106,8 @@ function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectIm
   const modes = ["PRODUCT_CATALOG", "SERVICE_MENU", "PROJECT_PROCESS"] as const;
   function uploadImage(file: File, kind: "product" | "service", index: number) {
     const key = `${kind}-${index}`;
-    void runUpload(key, file, (row) => {
+    const replaceUrl = kind === "product" ? profile.products[index]?.imageUrl : profile.services[index]?.imageUrl;
+    void runUpload(key, file, replaceUrl, (row) => {
       if (kind === "product") update({ products: profile.products.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
       else update({ services: profile.services.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
     });
@@ -121,7 +122,8 @@ function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectIm
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: item.variants.filter((_, childIndex) => childIndex !== variantIndex) } : item) });
   }
   function uploadVariantImage(file: File, productIndex: number, variantIndex: number) {
-    void runUpload(`product-${productIndex}-variant-${variantIndex}`, file, (row) => updateProductVariant(productIndex, variantIndex, { imageUrl: row.url }));
+    const replaceUrl = profile.products[productIndex]?.variants[variantIndex]?.imageUrl;
+    void runUpload(`product-${productIndex}-variant-${variantIndex}`, file, replaceUrl, (row) => updateProductVariant(productIndex, variantIndex, { imageUrl: row.url }));
   }
   return <section id="profile-projects" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
     <div><h3 className="font-semibold text-faida-navy">{labels.sectionTitle}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.projectsNote")}</p></div>
@@ -178,14 +180,14 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
   const update = (next: Partial<WizardForm["profile"]>) => setFormAction({ ...form, profile: { ...profile, ...next } });
   const [uploadStates, setUploadStates] = useState<Record<string, UploadProgressState>>({});
 
-  async function runProfileUpload(key: string, file: File, onComplete: (result: UploadedProfileFile) => void) {
+  async function runProfileUpload(key: string, file: File, replaceUrl: string | undefined, onComplete: (result: UploadedProfileFile) => void) {
     let progress = createUploadProgress(file, "uploading");
     setUploadStates((current) => ({ ...current, [key]: progress }));
     try {
       const result = await uploadProfileFile(file, (transfer) => {
         progress = { ...progress, ...transfer, status: "uploading" };
         setUploadStates((current) => ({ ...current, [key]: progress }));
-      });
+      }, replaceUrl);
       onComplete(result);
       progress = { ...progress, status: "completed", percentage: 100, uploadedBytes: file.size, totalBytes: file.size };
     } catch (error) {
@@ -195,22 +197,23 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
   }
 
   function uploadLogo(file: File) {
-    void runProfileUpload("logo", file, (result) => setFormAction({ ...form, branding: { ...form.branding, logoUrl: result.url } }));
+    void runProfileUpload("logo", file, form.branding.logoUrl, (result) => setFormAction({ ...form, branding: { ...form.branding, logoUrl: result.url } }));
   }
 
   function uploadAboutImage(file: File) {
-    void runProfileUpload("about", file, (result) => update({ aboutImageUrl: result.url }));
+    void runProfileUpload("about", file, profile.aboutImageUrl, (result) => update({ aboutImageUrl: result.url }));
   }
 
   function uploadProjectImage(index: number, file: File, stepIndex?: number) {
     const key = stepIndex === undefined ? `project-${index}-cover` : `project-${index}-step-${stepIndex}`;
-    void runProfileUpload(key, file, (result) => {
+    const replaceUrl = stepIndex === undefined ? profile.projects[index]?.imageUrl : profile.projects[index]?.steps[stepIndex]?.imageUrl;
+    void runProfileUpload(key, file, replaceUrl, (result) => {
       update({ projects: profile.projects.map((project, i) => i !== index ? project : stepIndex === undefined ? { ...project, imageUrl: result.url } : { ...project, steps: project.steps.map((step, j) => j === stepIndex ? { ...step, imageUrl: result.url } : step) }) });
     });
   }
 
   function uploadCredential(index: number, file: File) {
-    void runProfileUpload(`credential-${index}`, file, (result) => update({ credentials: profile.credentials.map((item, row) => row === index ? { ...item, fileUrl: result.url, fileName: result.fileName, mimeType: result.mimeType } : item) }));
+    void runProfileUpload(`credential-${index}`, file, profile.credentials[index]?.fileUrl, (result) => update({ credentials: profile.credentials.map((item, row) => row === index ? { ...item, fileUrl: result.url, fileName: result.fileName, mimeType: result.mimeType } : item) }));
   }
 
   const sections = [

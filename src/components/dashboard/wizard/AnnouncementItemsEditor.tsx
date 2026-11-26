@@ -99,11 +99,12 @@ export default function AnnouncementItemsEditor({ announcements, onChange }: { a
         const file = files[fileIndex];
         let progress = states[fileIndex];
         try {
+          const replaceUrl = currentSlots[destinations[fileIndex]]?.mediaUrl;
           const uploaded = await uploadProfileFile(file, (transfer) => {
             progress = { ...progress, ...transfer, status: "uploading" };
             states[fileIndex] = progress;
             setUploadProgress((current) => ({ ...current, [index]: [...states] }));
-          });
+          }, replaceUrl);
           uploadedFiles.push(uploaded);
           progress = { ...progress, status: "completed", percentage: 100, uploadedBytes: file.size, totalBytes: file.size };
           states[fileIndex] = progress;

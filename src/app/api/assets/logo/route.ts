@@ -4,6 +4,8 @@ import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { rateLimit } from "@/lib/api/rate-limit";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
 import { createClient } from "@supabase/supabase-js";
+import { assertStorageQuota, getBillingSnapshot, incrementStorageUsage } from "@/lib/billing/entitlements";
+import { cleanupUnreferencedTenantAssets, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 export const runtime = "nodejs";
 
@@ -52,6 +54,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const file = form.get("file");
+    const replaceUrl = form.get("replaceUrl");
     if (!(file instanceof File)) {
       throw new ApiError(400, "file_required", "Choose a PNG, JPEG, or WebP logo file.");
     }
@@ -67,8 +70,9 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     const fileBuffer = Buffer.from(await file.arrayBuffer());
     if (!hasExpectedSignature(fileBuffer, type)) {
-      throw new ApiError(400, "invalid_file_signature", "The uploaded file content does not match its declared image type.");
+      throw new ApiError(400, "invalid_file_signature", "The uploaded file content does not match the declared image type.");
     }
+    await assertStorageQuota(tenant.organizationId, fileBuffer.byteLength, typeof replaceUrl === "string" ? replaceUrl : undefined);
     const key = `faidatech/${tenantStorageSegment(tenant.organizationId)}/logos/${randomUUID()}.${spec.extension}`;
 
     // ፋይሉን በቀጥታ ወደ Supabase Storage (assets bucket) መስቀል
@@ -83,12 +87,24 @@ export async function POST(request: NextRequest): Promise<Response> {
       console.error("Supabase storage upload error:", uploadError);
       throw new ApiError(502, "storage_upload_failed", "The logo could not be saved. Please try again.");
     }
+    await incrementStorageUsage(tenant.organizationId, fileBuffer.byteLength);
 
     // የሕዝብ (Public) ዩአርኤል ማግኘት
     const { data: publicUrlData } = supabase.storage.from("assets").getPublicUrl(key);
+    if (typeof replaceUrl === "string" && replaceUrl) {
+      try {
+        await cleanupUnreferencedTenantAssets(tenant.organizationId, [replaceUrl]);
+      } catch (cleanupError) {
+        console.error("Replaced logo cleanup failed:", cleanupError);
+      }
+    }
+    const snapshot = await getBillingSnapshot(tenant.organizationId);
+    const storageBytesUsed = snapshot?.quota
+      ? await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id)
+      : null;
 
     return Response.json(
-      { data: { url: publicUrlData.publicUrl, key } },
+      { data: { url: publicUrlData.publicUrl, key, ...(storageBytesUsed === null ? {} : { storageUsedBytes: storageBytesUsed.toString() }) } },
       { status: 201, headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error) {

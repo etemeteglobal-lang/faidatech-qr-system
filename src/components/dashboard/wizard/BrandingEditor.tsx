@@ -32,7 +32,7 @@ export default function BrandingEditor({ form, setFormAction }: { form: WizardFo
     let latestProgress = createUploadProgress(file, "uploading");
     setUploadProgress(latestProgress);
     try {
-      const response = await uploadMultipartFile<UploadResponse>("/api/assets", file, { onProgress: (progress) => {
+      const response = await uploadMultipartFile<UploadResponse>("/api/assets", file, { fields: brand.logoUrl ? { replaceUrl: brand.logoUrl } : undefined, onProgress: (progress) => {
         latestProgress = { ...latestProgress, ...progress, status: "uploading" };
         setUploadProgress(latestProgress);
       } });

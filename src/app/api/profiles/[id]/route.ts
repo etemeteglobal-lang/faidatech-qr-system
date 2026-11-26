@@ -4,6 +4,8 @@ import { apiErrorResponse, ApiError, readJsonBody } from "@/lib/api/errors";
 import { requireOrganizationAdmin, requireTenantContext } from "@/lib/auth/tenant-context";
 import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { validateProfileSubmission } from "@/lib/templates/registry";
+import { getBillingSnapshot } from "@/lib/billing/entitlements";
+import { cleanupUnreferencedTenantAssets, collectTenantAssetUrls, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 export const runtime = "nodejs";
 
@@ -14,7 +16,7 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
     const validation = validateProfileSubmission(await readJsonBody(request));
     if (!validation.success) return Response.json({ error: { code: "validation_error", issues: validation.error } }, { status: 400 });
     ensurePostgresConfigured();
-    const current = await prisma.businessProfile.findFirst({ where: { id, organizationId: tenant.organizationId }, select: { id: true, createdByUserId: true, approvalStatus: true } });
+    const current = await prisma.businessProfile.findFirst({ where: { id, organizationId: tenant.organizationId }, select: { id: true, createdByUserId: true, approvalStatus: true, profileData: true, customFields: true } });
     if (!current) throw new ApiError(404, "not_found", "Profile not found in this organization.");
     const isAdmin = tenant.role === "OWNER" || tenant.role === "ADMIN";
     if (!isAdmin && current.createdByUserId !== tenant.userId) throw new ApiError(403, "forbidden", "Members may edit only profiles they created.");
@@ -27,6 +29,18 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ i
       await tx.ecosystemAuditLog.create({ data: { organizationId: tenant.organizationId, actorUserId: tenant.userId, action: "PROFILE_UPDATED", entityType: "BusinessProfile", entityId: id, details: { sector: data.sector } } });
       return profile;
     });
+    const previousAssets = collectTenantAssetUrls([current.profileData, current.customFields], tenant.organizationId);
+    const nextAssets = collectTenantAssetUrls([updated.profileData, updated.customFields], tenant.organizationId);
+    const replacedAssets = [...previousAssets].filter((url) => !nextAssets.has(url));
+    if (replacedAssets.length) {
+      try {
+        await cleanupUnreferencedTenantAssets(tenant.organizationId, replacedAssets);
+        const snapshot = await getBillingSnapshot(tenant.organizationId);
+        if (snapshot?.quota) await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+      } catch (cleanupError) {
+        console.error("Replaced profile asset cleanup or storage synchronization failed:", cleanupError);
+      }
+    }
     return Response.json({ data: updated }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     if (typeof error === "object" && error !== null && "code" in error && (error.code === "P2021" || error.code === "P2022")) {

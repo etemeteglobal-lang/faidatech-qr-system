@@ -4,7 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import { ApiError, apiErrorResponse } from "@/lib/api/errors";
 import { rateLimit } from "@/lib/api/rate-limit";
 import { requireTenantContext } from "@/lib/auth/tenant-context";
-import { assertStorageQuota, incrementStorageUsage } from "@/lib/billing/entitlements";
+import { assertStorageQuota, getBillingSnapshot, incrementStorageUsage } from "@/lib/billing/entitlements";
+import { cleanupUnreferencedTenantAssets, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 export const runtime = "nodejs";
 
@@ -52,13 +53,14 @@ export async function POST(request: NextRequest): Promise<Response> {
       throw new ApiError(400, "invalid_multipart", "Provide a profile file to upload.");
     }
     const file = form.get("file");
+    const replaceUrl = form.get("replaceUrl");
     if (!(file instanceof File)) throw new ApiError(400, "file_required", "Choose an image, document, or short video file.");
     if (file.size <= 0 || file.size > MAX_FILE_SIZE) throw new ApiError(400, "invalid_file_size", "Profile files and videos must be no larger than 10 MiB.");
     const type = file.type.toLowerCase() as AllowedType;
     if (!allowedTypes[type]) throw new ApiError(400, "unsupported_file_type", "Profile files must be PNG, JPEG, WebP, PDF, MP4, WebM, or OGG video.");
     const buffer = Buffer.from(await file.arrayBuffer());
     if (!hasExpectedSignature(buffer, type)) throw new ApiError(400, "invalid_file_signature", "The uploaded file content does not match its declared type.");
-    await assertStorageQuota(tenant.organizationId, buffer.byteLength);
+    await assertStorageQuota(tenant.organizationId, buffer.byteLength, typeof replaceUrl === "string" ? replaceUrl : undefined);
 
     const supabase = createClient(supabaseUrl, serviceRoleKey);
     const key = `faidatech/${safeTenantSegment(tenant.organizationId)}/profiles/${randomUUID()}.${allowedTypes[type]}`;
@@ -66,6 +68,15 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (error) throw new ApiError(502, "storage_upload_failed", "The profile file could not be saved. Please try again.");
     await incrementStorageUsage(tenant.organizationId, buffer.byteLength);
     const { data } = supabase.storage.from("assets").getPublicUrl(key);
+    if (typeof replaceUrl === "string" && replaceUrl) {
+      try {
+        await cleanupUnreferencedTenantAssets(tenant.organizationId, [replaceUrl]);
+      } catch (cleanupError) {
+        console.error("Replaced profile asset cleanup failed:", cleanupError);
+      }
+    }
+    const snapshot = await getBillingSnapshot(tenant.organizationId);
+    if (snapshot?.quota) await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
     return Response.json({ data: { url: data.publicUrl, key, fileName: file.name.slice(0, 255), mimeType: type, fileSizeBytes: buffer.byteLength } }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return apiErrorResponse(error);

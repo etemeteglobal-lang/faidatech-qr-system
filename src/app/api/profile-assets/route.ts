@@ -6,6 +6,7 @@ import { requireTenantContext } from "@/lib/auth/tenant-context";
 import { getBillingSnapshot } from "@/lib/billing/entitlements";
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@supabase/supabase-js";
+import { cleanupUnreferencedTenantAssets, getUnreferencedTenantAssetBytes, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 export const runtime = "nodejs";
 
@@ -45,7 +46,8 @@ export async function GET(request: NextRequest): Promise<Response> {
     const tenant = await requireTenantContext(request);
     const snapshot = await getBillingSnapshot(tenant.organizationId);
     if (!snapshot?.quota) throw new ApiError(503, "storage_quota_unavailable", "Storage quota information is temporarily unavailable.");
-    return Response.json({ data: { planName: snapshot.plan.name, storageBytesUsed: snapshot.quota.storageBytesUsed.toString(), storageBytesLimit: snapshot.quota.storageBytesLimit.toString() } }, { headers: { "Cache-Control": "private, no-store" } });
+    const storageBytesUsed = await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+    return Response.json({ data: { planName: snapshot.plan.name, storageBytesUsed: storageBytesUsed.toString(), storageBytesLimit: snapshot.quota.storageBytesLimit.toString() } }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) { return apiErrorResponse(error); }
 }
 
@@ -70,6 +72,7 @@ export async function POST(request: NextRequest): Promise<Response> {
 
     const purpose = form.get("purpose");
     const file = form.get("file");
+    const replaceUrl = form.get("replaceUrl");
     if (!(file instanceof File)) {
       throw new ApiError(400, "file_required", "Choose a PDF, PNG, JPEG, or WebP file.");
     }
@@ -100,6 +103,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (!snapshot?.quota) {
       throw new ApiError(503, "storage_quota_unavailable", "Storage quota information is unavailable; upload cannot proceed.");
     }
+    await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
 
     const organizationSegment = safeOrganizationSegment(tenant.organizationId);
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -112,6 +116,7 @@ export async function POST(request: NextRequest): Promise<Response> {
     const { quota } = snapshot;
     const sizeBytes = BigInt(fileBuffer.byteLength);
     const storageLimitBytes = quota.storageBytesLimit;
+    const replacementCredit = await getUnreferencedTenantAssetBytes(tenant.organizationId, typeof replaceUrl === "string" ? replaceUrl : undefined);
     if (sizeBytes > storageLimitBytes) {
       throw new ApiError(402, "storage_quota_exceeded", "This file exceeds the available organization storage quota.");
     }
@@ -120,7 +125,7 @@ export async function POST(request: NextRequest): Promise<Response> {
       where: {
         organizationId: tenant.organizationId,
         planId: snapshot.plan.id,
-        storageBytesUsed: { lte: storageLimitBytes - sizeBytes },
+        storageBytesUsed: { lte: storageLimitBytes - sizeBytes + replacementCredit },
       },
       data: { storageBytesUsed: { increment: sizeBytes } },
     });
@@ -163,6 +168,14 @@ export async function POST(request: NextRequest): Promise<Response> {
     }
 
     const { data: publicUrlData } = supabase.storage.from("assets").getPublicUrl(key);
+    if (typeof replaceUrl === "string" && replaceUrl) {
+      try {
+        await cleanupUnreferencedTenantAssets(tenant.organizationId, [replaceUrl]);
+      } catch (cleanupError) {
+        console.error("Replaced profile asset cleanup failed:", cleanupError);
+      }
+    }
+    const actualStorageBytes = await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
     const updatedQuota = await prisma.planQuota.findUnique({
       where: { organizationId_planId: { organizationId: tenant.organizationId, planId: snapshot.plan.id } },
       select: { storageBytesUsed: true, storageBytesLimit: true },
@@ -174,7 +187,7 @@ export async function POST(request: NextRequest): Promise<Response> {
         key,
         sizeBytes: fileBuffer.byteLength,
         contentType,
-        storageUsedBytes: (updatedQuota?.storageBytesUsed ?? quota.storageBytesUsed + sizeBytes).toString(),
+        storageUsedBytes: (updatedQuota?.storageBytesUsed ?? actualStorageBytes).toString(),
         storageLimitBytes: (updatedQuota?.storageBytesLimit ?? storageLimitBytes).toString(),
       },
     }, { status: 201, headers: { "Cache-Control": "private, no-store" } });

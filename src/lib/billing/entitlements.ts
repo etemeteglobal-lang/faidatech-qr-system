@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { ApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/prisma";
+import { getUnreferencedTenantAssetBytes, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 // Larger non-production allowance for upload testing; production Starter remains 50 MiB.
 export const STARTER_STORAGE_BYTES_LIMIT = BigInt(process.env.NODE_ENV === "production" ? 50 * 1024 * 1024 : 5 * 1024 * 1024 * 1024);
@@ -100,10 +101,13 @@ export async function incrementDynamicQrUsage(organizationId: string): Promise<v
   }
 }
 
-export async function assertStorageQuota(organizationId: string, bytes: number): Promise<void> {
+export async function assertStorageQuota(organizationId: string, bytes: number, replaceUrl?: string | null): Promise<void> {
   const snapshot = await getBillingSnapshot(organizationId);
   if (!snapshot?.quota || snapshot.quota.storageBytesLimit < BigInt(0)) return;
-  if (snapshot.quota.storageBytesUsed + BigInt(bytes) > snapshot.quota.storageBytesLimit) {
+  const storageBytesUsed = await reconcileTenantStorageUsage(organizationId, snapshot.plan.id);
+  const replacementCredit = await getUnreferencedTenantAssetBytes(organizationId, replaceUrl);
+  const effectiveStorageBytesUsed = storageBytesUsed > replacementCredit ? storageBytesUsed - replacementCredit : BigInt(0);
+  if (effectiveStorageBytesUsed + BigInt(bytes) > snapshot.quota.storageBytesLimit) {
     throw new ApiError(402, "storage_quota_exceeded", "Your workspace storage allowance has been reached. Upgrade your plan to add more profile files.");
   }
 }

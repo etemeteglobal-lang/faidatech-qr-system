@@ -8,6 +8,8 @@ import { ensurePostgresConfigured, prisma } from "@/lib/prisma";
 import { readBrandIdentity } from "@/lib/qr/brand";
 import { destinationTypeSchema, parseDestinationPayload } from "@/lib/qr/payload-schemas";
 import { generateQrImageDataUrl } from "@/lib/qr/qr-image";
+import { getBillingSnapshot } from "@/lib/billing/entitlements";
+import { cleanupUnreferencedTenantAssets, collectTenantAssetUrls, reconcileTenantStorageUsage } from "@/lib/storage/tenant-assets";
 
 const idSchema = z.string().cuid();
 
@@ -122,6 +124,20 @@ export async function PATCH(request: NextRequest, context: RouteContext): Promis
     });
     if (!updated) {
       throw new ApiError(404, "qr_not_found", "QR code not found.");
+    }
+    if (hasPayload) {
+      const previousAssets = collectTenantAssetUrls([existing.payload], tenant.organizationId);
+      const nextAssets = collectTenantAssetUrls([updated.payload], tenant.organizationId);
+      const replacedAssets = [...previousAssets].filter((url) => !nextAssets.has(url));
+      if (replacedAssets.length) {
+        try {
+          await cleanupUnreferencedTenantAssets(tenant.organizationId, replacedAssets);
+          const snapshot = await getBillingSnapshot(tenant.organizationId);
+          if (snapshot?.quota) await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+        } catch (cleanupError) {
+          console.error("Replaced QR asset cleanup or storage synchronization failed:", cleanupError);
+        }
+      }
     }
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/qrcodes");
