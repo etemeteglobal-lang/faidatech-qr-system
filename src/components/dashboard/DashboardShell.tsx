@@ -19,7 +19,6 @@ type Crumb = { labelKey: MessageKey; href?: string };
 const navigation = [
   { labelKey: "nav.dashboard", href: "/dashboard", mark: "D" },
   { labelKey: "nav.qrcodes", href: "/dashboard/qrcodes", mark: "Q" },
-  { labelKey: "nav.profiles", href: "/dashboard/create?pillar=profiles", mark: "P" },
   { labelKey: "nav.analytics", href: "/dashboard/analytics", mark: "A" },
   { labelKey: "nav.campaigns", href: "/dashboard/campaigns", mark: "C" },
   { labelKey: "nav.integrations", href: "/dashboard/integrations", mark: "I" },
