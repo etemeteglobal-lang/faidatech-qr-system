@@ -28,7 +28,7 @@ function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: strin
     description: child.description,
     link: child.link,
     detailHref: `${detailBase}/${encodeURIComponent(id)}`,
-    children: [...(child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label, `${id}-child`, detailBase)), ...(child.attachments ?? []).map((file, fileIndex) => ({ id: `${id}-file-${fileIndex}`, title: file.fileName, link: file.url, linkLabel: "Open attachment" }))],
+    children: [...(child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label, `${id}-child`, detailBase)), ...(child.attachments ?? []).map((file, fileIndex) => ({ id: `${id}-file-${fileIndex}`, title: file.fileName, link: file.url, attachmentFileName: file.fileName, attachmentMimeType: file.mimeType, linkLabel: `Open ${file.mimeType.startsWith("image/") ? "image" : file.mimeType === "application/pdf" ? "PDF" : "file"} attachment` }))],
     childrenLabel: child.attachments?.length ? "Attachments and options" : label,
   };
 }

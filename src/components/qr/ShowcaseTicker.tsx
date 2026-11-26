@@ -18,7 +18,27 @@ export type ShowcaseCardItem = {
   parentId?: string;
   children?: ShowcaseCardItem[];
   childrenLabel?: string;
+  attachmentMimeType?: string;
+  attachmentFileName?: string;
+  attachmentAssetType?: string;
+  attachmentPreviewUrl?: string;
 };
+
+function isImageAttachment(item: ShowcaseCardItem) {
+  if (item.attachmentMimeType?.toLowerCase().startsWith("image/")) return true;
+  if ([item.attachmentAssetType, item.attachmentMimeType].some((value) => value?.toLowerCase() === "image")) return true;
+  return [item.attachmentFileName, item.link, item.attachmentPreviewUrl].some((value) => Boolean(value && /\.(?:avif|bmp|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(value)));
+}
+
+function attachmentTypeLabel(item: ShowcaseCardItem) {
+  const mime = item.attachmentMimeType?.toLowerCase();
+  if (mime?.startsWith("image/")) return "image";
+  if (mime === "application/pdf") return "PDF";
+  if (mime?.includes("word") || mime?.includes("document")) return "document";
+  const file = item.attachmentFileName ?? item.link ?? "";
+  const extension = file.match(/\.([a-z0-9]+)(?:$|[?#])/i)?.[1]?.toUpperCase();
+  return extension || (isImageAttachment(item) ? "image" : "file");
+}
 
 type ShowcaseRailProps = {
   items: ShowcaseCardItem[];
@@ -260,10 +280,12 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{item.childrenLabel ?? "More details"}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {item.children.map((child) => <article key={child.id} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            {(child.attachmentPreviewUrl || (isImageAttachment(child) ? child.link : undefined)) ? <img src={child.attachmentPreviewUrl ?? child.link} alt={child.title} loading="lazy" decoding="async" onError={(event) => { event.currentTarget.hidden = true; }} className="mb-3 max-h-80 w-full rounded-lg border border-slate-200 bg-white object-contain" /> : null}
             {child.imageUrl ? <img src={child.imageUrl} alt={child.imageAlt ?? child.title} className="mb-3 aspect-[4/3] w-full rounded-lg object-cover" /> : null}
             <div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{child.title}</h3>{child.badge ? <span className="profile-showcase-badge">{child.badge}</span> : null}</div>
             {child.meta ? <p className="mt-1 text-sm font-bold text-emerald-800">{child.meta}</p> : null}
             {child.description ? <p className="mt-2 text-sm leading-6 text-slate-600">{child.description}</p> : null}
+            {child.link ? <a href={child.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex text-sm font-semibold text-emerald-800 underline">{child.linkLabel ?? `Open ${attachmentTypeLabel(child)} attachment`} ↗</a> : null}
             {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-2">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700">{nested.link ? <a href={nested.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">{nested.linkLabel ?? nested.title} ↗</a> : <strong>{nested.title}</strong>}{nested.meta ? ` · ${nested.meta}` : ""}{nested.description ? ` — ${nested.description}` : ""}</li>)}</ul></div> : null}
           </article>)}
         </div>

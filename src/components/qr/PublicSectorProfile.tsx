@@ -109,7 +109,13 @@ function normalizeLegacyShowcaseChild(value: unknown, parentTitle: string, index
     children: [...nested, ...(Array.isArray(data.attachments) ? data.attachments.map((value, fileIndex) => {
       const file = object(value);
       const url = safeHttpUrl(file.url);
-      return url ? { id: `${id}-file-${fileIndex}`, title: text(file.fileName) ?? `Attachment ${fileIndex + 1}`, link: url, linkLabel: "Open attachment" } : null;
+      const fileName = text(file.fileName) ?? `Attachment ${fileIndex + 1}`;
+      const mimeType = text(file.mimeType ?? file.contentType) ?? undefined;
+      const assetType = text(file.assetType ?? file.type ?? file.kind ?? file.mediaType) ?? undefined;
+      const previewUrl = safeHttpUrl(file.imageUrl ?? file.previewUrl ?? file.thumbnailUrl) ?? undefined;
+      const imageAttachment = Boolean(mimeType?.toLowerCase().startsWith("image/") || assetType?.toLowerCase() === "image" || /\.(?:avif|bmp|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(fileName) || /\.(?:avif|bmp|gif|jpe?g|png|svg|webp)(?:$|[?#])/i.test(url ?? ""));
+      const typeLabel = mimeType?.toLowerCase() === "application/pdf" ? "PDF" : imageAttachment ? "image" : assetType?.toLowerCase() === "document" ? "document" : "file";
+      return url ? { id: `${id}-file-${fileIndex}`, title: fileName, link: url, linkLabel: `Open ${typeLabel} attachment`, attachmentFileName: fileName, attachmentMimeType: mimeType, attachmentAssetType: assetType, attachmentPreviewUrl: previewUrl } : null;
     }).filter((file): file is NonNullable<typeof file> => file !== null) : [])],
     childrenLabel: Array.isArray(data.attachments) && data.attachments.length ? "Attachments and details" : label,
   };
