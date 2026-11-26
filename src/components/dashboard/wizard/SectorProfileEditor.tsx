@@ -20,10 +20,16 @@ function TextArea({ label, value, onChange, placeholder }: { label: string; valu
   return <label className="block text-sm font-semibold text-slate-700"><span>{label}</span><textarea value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} rows={4} className="mt-1.5 w-full resize-y rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal leading-6 text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>;
 }
 
-function QrColorControl({ label, value, onChange }: { label: string; value: string; onChange: (value: string) => void }) {
-  return <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-end gap-2">
-    <TextInput label={label} value={value} onChange={onChange} type="color" />
-    <TextInput label="Hex value" value={value} onChange={(next) => /^#[0-9a-fA-F]{6}$/.test(next) && onChange(next.toUpperCase())} placeholder="#0F172A" />
+function QrColorControl({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
+  return <div className="min-w-0">
+    <p className="mb-1 whitespace-nowrap text-xs font-semibold text-slate-700">{label}</p>
+    <div className="grid grid-cols-[3rem_minmax(0,1fr)] items-end gap-2">
+      <input type="color" aria-label={`${label} color picker`} value={value} onChange={(event) => onChange(event.target.value.toUpperCase())} className="h-10 w-12 cursor-pointer rounded-lg border border-slate-200 bg-white p-1" />
+      <div className="min-w-0">
+        <label htmlFor={`${id}-hex`} className="mb-1 block whitespace-nowrap text-[11px] font-medium text-slate-500">Hex</label>
+        <input id={`${id}-hex`} type="text" inputMode="text" aria-label={`${label} hex color`} value={value} onChange={(event) => /^#[0-9a-fA-F]{6}$/.test(event.target.value) && onChange(event.target.value.toUpperCase())} placeholder="#0F172A" className="w-full min-w-0 rounded-xl border border-slate-200 bg-white px-2.5 py-2.5 font-mono text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" />
+      </div>
+    </div>
   </div>;
 }
 
@@ -362,9 +368,9 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
     <section id="profile-qr-style" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
       <h3 className="font-semibold text-faida-navy">{t("profile.qrStyleTitle")}</h3>
       <div className="grid gap-4 sm:grid-cols-2">
-        <QrColorControl label={t("profile.qrBackground")} value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value.toUpperCase() })} />
-        <QrColorControl label="QR body / modules color" value={form.branding.qrForeground} onChange={(value) => setFormAction({ ...form, branding: { ...form.branding, qrForeground: value.toUpperCase() } })} />
-        <QrColorControl label="QR eyes / frame accent color" value={profile.qrEyeColor} onChange={(value) => update({ qrEyeColor: value.toUpperCase() })} />
+        <QrColorControl id="qr-page-background" label="Page background" value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value.toUpperCase() })} />
+        <QrColorControl id="qr-body-modules" label="QR body / modules color" value={form.branding.qrForeground} onChange={(value) => setFormAction({ ...form, branding: { ...form.branding, qrForeground: value.toUpperCase() } })} />
+        <QrColorControl id="qr-eyes-frame" label="QR eyes / frame accent color" value={profile.qrEyeColor} onChange={(value) => update({ qrEyeColor: value.toUpperCase() })} />
         <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrFrame")}</span><select value={profile.qrFrame} onChange={(event) => update({ qrFrame: event.target.value as typeof profile.qrFrame })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrFrameNone")}</option><option value="square">{t("profile.qrFrameSquare")}</option><option value="rounded">{t("profile.qrFrameRounded")}</option><option value="badge">{t("profile.qrFrameBadge")}</option><option value="circle">Circle</option><option value="brand">Brand frame</option></select></label>
         <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrDots")}</span><select value={profile.qrDots} onChange={(event) => update({ qrDots: event.target.value as typeof profile.qrDots })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrDotsSquare")}</option><option value="round">{t("profile.qrDotsRound")}</option><option value="circle">Circle</option><option value="diamond">Diamond</option><option value="heart">Heart</option><option value="line">Line / Bars</option></select></label>
         <label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrLogoPlacement")}</span><select value={profile.qrLogoPlacement} onChange={(event) => update({ qrLogoPlacement: event.target.value as typeof profile.qrLogoPlacement })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrLogoNone")}</option><option value="center">{t("profile.qrLogoCenter")}</option><option value="above">{t("profile.qrLogoAbove")}</option></select></label>
