@@ -200,7 +200,7 @@ export default function ProfileQrPreview({ path, foreground, dots, frame, logoUr
   }
 
   return <div className="profile-qr-print mt-4 rounded-2xl border border-slate-200 bg-white p-3 text-center">
-    <div className="mx-auto max-w-[208px] bg-white p-2">{content}</div>
+    <div className="qr-artwork-preserve mx-auto max-w-[208px] bg-white p-2">{content}</div>
     <p className="mt-2 break-all text-[10px] text-slate-500">{target}</p>
     <div className="mt-3 flex flex-wrap justify-center gap-2">
       <button type="button" disabled={!imageHref} onClick={downloadSvg} className="rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold disabled:opacity-50">{downloadLabel} · SVG</button>

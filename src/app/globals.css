@@ -520,16 +520,22 @@ body {
 }
 
 html[data-theme="dark"] .dashboard-root {
-  background-color: #0f172a;
-  color: #e2e8f0;
+  --dashboard-canvas: #0b1220;
+  --dashboard-surface: #111c2e;
+  --dashboard-surface-raised: #172337;
+  --dashboard-border: #334155;
+  --dashboard-text: #e2e8f0;
+  --dashboard-text-muted: #a7b4c6;
+  background-color: var(--dashboard-canvas);
+  color: var(--dashboard-text);
 }
 
 html[data-theme="dark"] .dashboard-root main {
-  background-color: #0f172a;
+  background-color: var(--dashboard-canvas);
 }
 
 html[data-theme="dark"] .dashboard-root .dashboard-page-heading {
-  border-bottom-color: #334155;
+  border-bottom-color: var(--dashboard-border);
 }
 
 html[data-theme="dark"] .dashboard-root .dashboard-page-heading h1 {
@@ -538,4 +544,149 @@ html[data-theme="dark"] .dashboard-root .dashboard-page-heading h1 {
 
 html[data-theme="dark"] .dashboard-root .dashboard-page-heading div > p:last-child {
   color: #cbd5e1;
+}
+
+/* Keep rendered visitor and QR artwork true to their exported/public colors. */
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *) {
+  scrollbar-color: #475569 #111c2e;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-white {
+  background-color: var(--dashboard-surface) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-50,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).hover\:bg-slate-50:hover {
+  background-color: var(--dashboard-surface-raised) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="hover:bg-slate-100"]:hover {
+  background-color: #243247 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="hover:bg-teal-50"]:hover {
+  background-color: #12343a !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="hover:bg-emerald-50"]:hover {
+  background-color: #12352f !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="hover:bg-rose-50"]:hover,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="hover:bg-red-50"]:hover {
+  background-color: #3a2029 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-100,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-200,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-300,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-400 {
+  background-color: #243247 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-emerald-50,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-green-50 {
+  background-color: #12352f !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-teal-50 {
+  background-color: #12343a !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-emerald-100 {
+  background-color: #1b4338 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-teal-100 {
+  background-color: #173b43 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-rose-50,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-red-50 {
+  background-color: #3a2029 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-amber-50 {
+  background-color: #3b2e17 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-violet-50 {
+  background-color: #292347 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-slate-50/70"] {
+  background-color: var(--dashboard-surface-raised) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-teal-50/40"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-teal-50/50"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-teal-50/60"] {
+  background-color: #12343a !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-emerald-50/30"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-emerald-50/40"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-emerald-50/50"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-emerald-50/60"] {
+  background-color: #12352f !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-100,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-200,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-300,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-400 {
+  border-color: var(--dashboard-border) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-faida-navy,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-900,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-800,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-700,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-600 {
+  color: var(--dashboard-text) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-faida-slate,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-500,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-slate-400 {
+  color: var(--dashboard-text-muted) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-emerald-900,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-emerald-800,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-emerald-950,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-teal-900,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-teal-800,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-teal-950,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-faida-teal,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-faida-green {
+  color: #6ee7c8 !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-rose-900,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-rose-800,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-rose-700,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-rose-600,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-red-700 {
+  color: #fda4af !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-amber-900,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-amber-950,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-amber-800,
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).text-amber-600 {
+  color: #fcd34d !important;
+}
+
+html[data-theme="dark"] .dashboard-root input:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *):not([type="color"]):not([type="checkbox"]):not([type="radio"]),
+html[data-theme="dark"] .dashboard-root textarea:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *),
+html[data-theme="dark"] .dashboard-root select:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *) {
+  border-color: #475569 !important;
+  background-color: #0b1220 !important;
+  color: #e2e8f0 !important;
+}
+
+html[data-theme="dark"] .dashboard-root input:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *)::placeholder,
+html[data-theme="dark"] .dashboard-root textarea:not(#public-visitor-preview *):not(.qr-artwork-preserve *):not(.profile-qr-compact *)::placeholder {
+  color: #94a3b8 !important;
 }

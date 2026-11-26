@@ -118,7 +118,7 @@ function LiveProfileQr({ form }: Props) {
   return <section className="rounded-2xl border border-slate-200 p-4" aria-label={t("profile.qrPreview")}>
     <h3 className="text-sm font-semibold text-faida-navy">{t("profile.qrPreview")}</h3>
     <p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p>
-    <div className="mx-auto mt-4 flex w-fit max-w-full flex-col items-center p-5" style={{ backgroundColor: form.profile.qrPageBackground }}>
+    <div className="qr-artwork-preserve mx-auto mt-4 flex w-fit max-w-full flex-col items-center p-5" style={{ backgroundColor: form.profile.qrPageBackground }}>
       <div className={`flex flex-col items-center p-4 ${frameClass}`} style={{ backgroundColor: form.profile.qrPageBackground, borderColor: safeEyeColor }}>
         {logoAbove ? <img src={form.branding.logoUrl} alt="" className="mb-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}
         <div className="relative h-48 w-48 overflow-hidden bg-white p-2 shadow-sm">
