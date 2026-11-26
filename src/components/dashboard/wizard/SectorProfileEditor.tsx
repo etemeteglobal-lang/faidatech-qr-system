@@ -6,7 +6,6 @@ import type { WizardForm } from "@/components/dashboard/wizard/model";
 import { getSectorShowcaseLabels, profileFieldTypes, sectorOptions } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementItemsEditor from "@/components/dashboard/wizard/AnnouncementItemsEditor";
-import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
 import { createUploadProgress, uploadProfileFile, type UploadedProfileFile, type UploadProgressState } from "@/lib/profile/upload";
 import UploadProgressFeedback from "@/components/dashboard/wizard/UploadProgressFeedback";
 
@@ -43,10 +42,30 @@ function LiveProfileQr({ form }: Props) {
           if (!matrix.get(row, col)) continue;
           const x = (col + quiet) * unit;
           const y = (row + quiet) * unit;
-          if (form.profile.qrDots === "round") {
+          if (["round", "circle"].includes(form.profile.qrDots)) {
             context.beginPath();
             context.arc(x + unit / 2, y + unit / 2, unit * 0.46, 0, Math.PI * 2);
             context.fill();
+          } else if (form.profile.qrDots === "diamond") {
+            context.save();
+            context.translate(x + unit / 2, y + unit / 2);
+            context.rotate(Math.PI / 4);
+            context.fillRect(-unit * 0.32, -unit * 0.32, unit * 0.64, unit * 0.64);
+            context.restore();
+          } else if (form.profile.qrDots === "heart") {
+            context.save();
+            context.translate(x + unit / 2, y + unit / 2);
+            context.scale(unit * 0.45, unit * 0.45);
+            context.beginPath();
+            context.moveTo(0, 0.8);
+            context.bezierCurveTo(-0.15, 0.62, -1, 0.05, -1, -0.45);
+            context.bezierCurveTo(-1, -1.05, -0.2, -1.1, 0, -0.55);
+            context.bezierCurveTo(0.2, -1.1, 1, -1.05, 1, -0.45);
+            context.bezierCurveTo(1, 0.05, 0.15, 0.62, 0, 0.8);
+            context.fill();
+            context.restore();
+          } else if (form.profile.qrDots === "line") {
+            context.fillRect(x, y + unit * 0.34, unit + 0.1, unit * 0.32);
           } else context.fillRect(x, y, unit + 0.1, unit + 0.1);
         }
       }
@@ -58,39 +77,34 @@ function LiveProfileQr({ form }: Props) {
     return () => { active = false; };
   }, [form.branding.qrForeground, form.profile.qrPageBackground, form.profile.qrDots]);
 
+  const frameClass = {
+    none: "border border-transparent",
+    square: "border-2 border-slate-700",
+    rounded: "rounded-2xl border border-slate-300",
+    badge: "rounded-[30px] border-2 border-emerald-700 shadow-md",
+    circle: "rounded-full border-2 border-emerald-700",
+    brand: "rounded-[2rem] border-4 border-faida-navy shadow-lg",
+  }[form.profile.qrFrame] ?? "border border-transparent";
   const logoAbove = form.profile.qrLogoPlacement === "above" && form.branding.logoUrl;
   const logoCenter = form.profile.qrLogoPlacement === "center" && form.branding.logoUrl;
-  const frame = form.profile.qrFrame === "badge" ? "rounded-[30px] border-2 border-emerald-700 p-4 shadow-md" : form.profile.qrFrame === "rounded" ? "rounded-2xl border border-slate-200 p-4" : "border-0 p-0";
-  return <aside className={`rounded-2xl ${frame}`} style={{ backgroundColor: form.profile.qrPageBackground }}>
-    <p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("profile.qrPreview")}</p>
+
+  return <section className="rounded-2xl border border-slate-200 p-4" aria-label={t("profile.qrPreview")}>
+    <h3 className="text-sm font-semibold text-faida-navy">{t("profile.qrPreview")}</h3>
     <p className="mt-1 text-xs text-slate-600">{t("profile.qrPreviewNote")}</p>
-    <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 bg-white">
-      <AnnouncementTicker announcements={form.profile.announcements} />
-      <div className="flex items-center gap-3 p-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-emerald-50 text-sm font-black text-emerald-900">
-          {form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-full w-full object-contain" /> : (form.profile.organization || `${form.profile.firstName} ${form.profile.lastName}`).slice(0, 1).toUpperCase()}
-        </span>
-        <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-slate-900">{form.profile.entityType === "INDIVIDUAL" ? `${form.profile.firstName} ${form.profile.lastName}`.trim() || t("profile.firstName") : form.profile.organization || t("profile.organization")}</p>
-          <p className="truncate text-xs text-slate-500">{form.profile.role || form.profile.sector.replaceAll("_", " ")}</p>
+    <div className="mx-auto mt-4 flex w-fit max-w-full flex-col items-center p-5" style={{ backgroundColor: form.profile.qrPageBackground }}>
+      <div className={`flex flex-col items-center p-4 ${frameClass}`} style={{ backgroundColor: form.profile.qrPageBackground }}>
+        {logoAbove ? <img src={form.branding.logoUrl} alt="" className="mb-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}
+        <div className="relative h-48 w-48 overflow-hidden bg-white p-2 shadow-sm">
+          {dataUrl ? <img src={dataUrl} alt={t("profile.qrPreview")} className="h-full w-full object-contain" /> : <span className="grid h-full place-items-center text-xs text-slate-500">QR preview</span>}
+          {logoCenter ? <span className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-white p-1.5 shadow"><img src={form.branding.logoUrl} alt="" className="max-h-full max-w-full object-contain" /></span> : null}
         </div>
+        {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
       </div>
-      {form.profile.aboutImageUrl ? <img src={form.profile.aboutImageUrl} alt="" className="h-24 w-full object-cover" /> : null}
-      {!form.profile.announcements.length && form.profile.spotlight ? <div className="mx-3 mt-2 rounded-lg bg-emerald-50 p-2 text-xs text-emerald-950">{form.profile.spotlight}{form.profile.spotlightType === "image" && form.profile.spotlightMediaUrl ? <img src={form.profile.spotlightMediaUrl} alt="" className="mt-2 max-h-24 w-full rounded object-cover" /> : null}{form.profile.spotlightType === "video" && form.profile.spotlightMediaUrl ? <video controls playsInline preload="metadata" className="mt-2 max-h-24 w-full rounded bg-black"><source src={form.profile.spotlightMediaUrl} /></video> : null}</div> : null}
-      <p className="px-3 py-2 text-xs leading-5 text-slate-600">{form.profile.bio || form.profile.tagline || t("profile.guidedNote")}</p>
-      <div className="flex gap-2 px-3 pb-3">
-        {form.profile.phone ? <span className="rounded-lg bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-900">☎ {t("profile.callAction")}</span> : null}
-        {form.profile.email ? <span className="rounded-lg bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-900">✉ {t("profile.emailAction")}</span> : null}
-      </div>
+      <p className="mt-3 max-w-[17rem] break-all text-center text-[11px] font-medium text-slate-700">Page color {form.profile.qrPageBackground} · {form.profile.qrDots} modules · {form.profile.qrFrame} frame · logo {form.profile.qrLogoPlacement}</p>
     </div>
-    {logoAbove ? <img src={form.branding.logoUrl} alt="" className="mx-auto mt-3 h-9 w-9 rounded-lg bg-white object-contain p-1" /> : null}
-    <div className="relative mx-auto mt-4 h-48 w-48 overflow-hidden bg-white p-2 shadow-sm">
-      <img src={dataUrl} alt={t("profile.qrPreview")} className="h-full w-full object-contain" />
-      {logoCenter ? <span className="absolute left-1/2 top-1/2 grid h-12 w-12 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-xl bg-white p-1.5 shadow"><img src={form.branding.logoUrl} alt="" className="max-h-full max-w-full object-contain" /></span> : null}
-    </div>
-    {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
-  </aside>;
+  </section>;
 }
+
 type ProfileUploadRunner = (key: string, file: File, replaceUrl: string | undefined, onComplete: (result: UploadedProfileFile) => void) => Promise<void>;
 type StepAttachment = { url: string; fileName: string; mimeType: string; fileSizeBytes?: number };
 function StepSubItemFiles({ projectIndex, stepIndex, childIndex, attachments, uploadStates, onUpload, onRemove }: { projectIndex: number; stepIndex: number; childIndex: number; attachments: StepAttachment[]; uploadStates: Record<string, UploadProgressState>; onUpload: (files: File[], replaceIndex?: number) => void; onRemove: (index: number) => void }) {

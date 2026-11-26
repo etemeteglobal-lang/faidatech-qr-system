@@ -110,6 +110,7 @@ export default function QRCodeWizard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SaveResponse | null>(null);
+  const [showPublicPreview, setShowPublicPreview] = useState(true);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -199,7 +200,13 @@ export default function QRCodeWizard() {
     <div className="space-y-6">
       <DashboardPageHeading eyebrow={t("wizard.builderEyebrow")} title={t(editId ? "wizard.editHeader" : "wizard.createHeader")} description={t("wizard.headingDescription")} />
 
-      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px] xl:gap-7">
+      <div className="flex justify-end">
+        <button type="button" aria-expanded={showPublicPreview} aria-controls="public-visitor-preview" onClick={() => setShowPublicPreview((visible) => !visible)} className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-faida-navy hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-faida-teal">
+          {showPublicPreview ? "Hide Public Visitor Preview" : "Show Public Visitor Preview"}
+        </button>
+      </div>
+
+      <div className={`grid items-start gap-5 xl:gap-7 ${showPublicPreview ? "lg:grid-cols-[minmax(0,1fr)_340px]" : "grid-cols-1"}`}>
         <section className="min-w-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           {step < 3 ? (
             <div className="mb-6 flex items-center gap-2" aria-label={t("wizard.progress")}>
@@ -279,7 +286,9 @@ export default function QRCodeWizard() {
           ) : null}
         </section>
 
-        <MobilePreview form={form} />
+        <div id="public-visitor-preview" hidden={!showPublicPreview} className="min-w-0">
+          <MobilePreview form={form} />
+        </div>
       </div>
     </div>
   );
