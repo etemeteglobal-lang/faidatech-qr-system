@@ -104,8 +104,18 @@ export async function incrementDynamicQrUsage(organizationId: string): Promise<v
 export async function assertStorageQuota(organizationId: string, bytes: number, replaceUrl?: string | null): Promise<void> {
   const snapshot = await getBillingSnapshot(organizationId);
   if (!snapshot?.quota || snapshot.quota.storageBytesLimit < BigInt(0)) return;
-  const storageBytesUsed = await reconcileTenantStorageUsage(organizationId, snapshot.plan.id);
-  const replacementCredit = await getUnreferencedTenantAssetBytes(organizationId, replaceUrl);
+  let storageBytesUsed = snapshot.quota.storageBytesUsed;
+  try {
+    storageBytesUsed = await reconcileTenantStorageUsage(organizationId, snapshot.plan.id);
+  } catch (error) {
+    console.error("Workspace storage quota reconciliation failed before upload; using recorded usage.", error);
+  }
+  let replacementCredit = BigInt(0);
+  try {
+    replacementCredit = await getUnreferencedTenantAssetBytes(organizationId, replaceUrl);
+  } catch (error) {
+    console.error("Workspace storage replacement lookup failed; checking quota without replacement credit.", error);
+  }
   const effectiveStorageBytesUsed = storageBytesUsed > replacementCredit ? storageBytesUsed - replacementCredit : BigInt(0);
   if (effectiveStorageBytesUsed + BigInt(bytes) > snapshot.quota.storageBytesLimit) {
     throw new ApiError(402, "storage_quota_exceeded", "Your workspace storage allowance has been reached. Upgrade your plan to add more profile files.");

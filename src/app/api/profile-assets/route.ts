@@ -103,7 +103,12 @@ export async function POST(request: NextRequest): Promise<Response> {
     if (!snapshot?.quota) {
       throw new ApiError(503, "storage_quota_unavailable", "Storage quota information is unavailable; upload cannot proceed.");
     }
-    await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+    let storageBytesBeforeUpload = snapshot.quota.storageBytesUsed;
+    try {
+      storageBytesBeforeUpload = await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+    } catch (reconciliationError) {
+      console.error("Workspace storage reconciliation failed before legacy asset upload; using recorded usage.", reconciliationError);
+    }
 
     const organizationSegment = safeOrganizationSegment(tenant.organizationId);
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -116,7 +121,12 @@ export async function POST(request: NextRequest): Promise<Response> {
     const { quota } = snapshot;
     const sizeBytes = BigInt(fileBuffer.byteLength);
     const storageLimitBytes = quota.storageBytesLimit;
-    const replacementCredit = await getUnreferencedTenantAssetBytes(tenant.organizationId, typeof replaceUrl === "string" ? replaceUrl : undefined);
+    let replacementCredit = BigInt(0);
+    try {
+      replacementCredit = await getUnreferencedTenantAssetBytes(tenant.organizationId, typeof replaceUrl === "string" ? replaceUrl : undefined);
+    } catch (lookupError) {
+      console.error("Workspace storage replacement lookup failed; checking legacy upload quota without replacement credit.", lookupError);
+    }
     if (sizeBytes > storageLimitBytes) {
       throw new ApiError(402, "storage_quota_exceeded", "This file exceeds the available organization storage quota.");
     }
@@ -175,11 +185,17 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.error("Replaced profile asset cleanup failed:", cleanupError);
       }
     }
-    const actualStorageBytes = await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
-    const updatedQuota = await prisma.planQuota.findUnique({
-      where: { organizationId_planId: { organizationId: tenant.organizationId, planId: snapshot.plan.id } },
-      select: { storageBytesUsed: true, storageBytesLimit: true },
-    });
+    let actualStorageBytes = storageBytesBeforeUpload + sizeBytes;
+    let updatedQuota: { storageBytesUsed: bigint; storageBytesLimit: bigint } | null = null;
+    try {
+      actualStorageBytes = await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+      updatedQuota = await prisma.planQuota.findUnique({
+        where: { organizationId_planId: { organizationId: tenant.organizationId, planId: snapshot.plan.id } },
+        select: { storageBytesUsed: true, storageBytesLimit: true },
+      });
+    } catch (reconciliationError) {
+      console.error("Legacy profile asset upload succeeded, but immediate workspace storage reconciliation failed.", reconciliationError);
+    }
 
     return Response.json({
       data: {

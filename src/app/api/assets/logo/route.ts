@@ -87,7 +87,11 @@ export async function POST(request: NextRequest): Promise<Response> {
       console.error("Supabase storage upload error:", uploadError);
       throw new ApiError(502, "storage_upload_failed", "The logo could not be saved. Please try again.");
     }
-    await incrementStorageUsage(tenant.organizationId, fileBuffer.byteLength);
+    try {
+      await incrementStorageUsage(tenant.organizationId, fileBuffer.byteLength);
+    } catch (accountingError) {
+      console.error("Logo upload succeeded, but the immediate storage usage increment failed.", accountingError);
+    }
 
     // የሕዝብ (Public) ዩአርኤል ማግኘት
     const { data: publicUrlData } = supabase.storage.from("assets").getPublicUrl(key);
@@ -98,10 +102,15 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.error("Replaced logo cleanup failed:", cleanupError);
       }
     }
-    const snapshot = await getBillingSnapshot(tenant.organizationId);
-    const storageBytesUsed = snapshot?.quota
-      ? await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id)
-      : null;
+    let storageBytesUsed: bigint | null = null;
+    try {
+      const snapshot = await getBillingSnapshot(tenant.organizationId);
+      storageBytesUsed = snapshot?.quota
+        ? await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id)
+        : null;
+    } catch (reconciliationError) {
+      console.error("Logo upload succeeded, but immediate workspace storage reconciliation failed.", reconciliationError);
+    }
 
     return Response.json(
       { data: { url: publicUrlData.publicUrl, key, ...(storageBytesUsed === null ? {} : { storageUsedBytes: storageBytesUsed.toString() }) } },

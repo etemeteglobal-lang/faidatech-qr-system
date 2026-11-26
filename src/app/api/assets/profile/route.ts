@@ -66,7 +66,11 @@ export async function POST(request: NextRequest): Promise<Response> {
     const key = `faidatech/${safeTenantSegment(tenant.organizationId)}/profiles/${randomUUID()}.${allowedTypes[type]}`;
     const { error } = await supabase.storage.from("assets").upload(key, buffer, { contentType: type, upsert: false });
     if (error) throw new ApiError(502, "storage_upload_failed", "The profile file could not be saved. Please try again.");
-    await incrementStorageUsage(tenant.organizationId, buffer.byteLength);
+    try {
+      await incrementStorageUsage(tenant.organizationId, buffer.byteLength);
+    } catch (accountingError) {
+      console.error("Profile asset upload succeeded, but the immediate storage usage increment failed.", accountingError);
+    }
     const { data } = supabase.storage.from("assets").getPublicUrl(key);
     if (typeof replaceUrl === "string" && replaceUrl) {
       try {
@@ -75,8 +79,12 @@ export async function POST(request: NextRequest): Promise<Response> {
         console.error("Replaced profile asset cleanup failed:", cleanupError);
       }
     }
-    const snapshot = await getBillingSnapshot(tenant.organizationId);
-    if (snapshot?.quota) await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+    try {
+      const snapshot = await getBillingSnapshot(tenant.organizationId);
+      if (snapshot?.quota) await reconcileTenantStorageUsage(tenant.organizationId, snapshot.plan.id);
+    } catch (reconciliationError) {
+      console.error("Profile asset upload succeeded, but immediate workspace storage reconciliation failed.", reconciliationError);
+    }
     return Response.json({ data: { url: data.publicUrl, key, fileName: file.name.slice(0, 255), mimeType: type, fileSizeBytes: buffer.byteLength } }, { status: 201, headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     return apiErrorResponse(error);
