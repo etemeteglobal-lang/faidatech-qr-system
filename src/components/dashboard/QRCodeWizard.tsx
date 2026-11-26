@@ -65,7 +65,7 @@ function SectorVisitorPreview({ form, title, description, brandName }: { form: W
   });
   const previewPayload = buildDestinationPayload(form) as Parameters<typeof SectorProfileExperience>[0]["payload"];
 
-  return <div className="space-y-3">
+  return <div className="w-full space-y-3 lg:w-[111.111111%] lg:[zoom:0.9]">
     <header className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
       <div className="flex min-w-0 items-center gap-3">
         {form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-slate-100 bg-white object-contain p-1" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xs font-black" style={{ backgroundColor: form.branding.accentColor, color: getReadableTextColor(form.branding.accentColor) }}>{brandName.slice(0, 1).toUpperCase()}</span>}
@@ -244,7 +244,7 @@ export default function QRCodeWizard() {
         </button>
       </div>
 
-      <div className={`grid items-start gap-5 xl:gap-7 ${showPublicPreview ? "lg:grid-cols-[minmax(0,1fr)_370px] xl:grid-cols-[minmax(0,1fr)_410px]" : "grid-cols-1"}`}>
+      <div className={`grid items-start gap-5 xl:gap-7 ${showPublicPreview ? "lg:grid-cols-[minmax(0,1fr)_330px] xl:grid-cols-[minmax(0,1fr)_350px]" : "grid-cols-1"}`}>
         <section className="min-w-0 rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
           {step < 3 ? (
             <div className="mb-6 flex items-center gap-2" aria-label={t("wizard.progress")}>
