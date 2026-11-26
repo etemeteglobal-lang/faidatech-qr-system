@@ -755,3 +755,204 @@ html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcas
 html[data-theme="dark"] .dashboard-root #public-visitor-preview [class~="divide-slate-100"] > :not(:first-child) {
   border-color: var(--dashboard-border) !important;
 }
+
+html[data-public-visitor-theme="dark"] body {
+  background: #0b1220 !important;
+  color: #e2e8f0;
+}
+
+html[data-public-visitor-theme="dark"] {
+  background: #0b1220;
+  color-scheme: dark;
+}
+
+.public-visitor-theme {
+  color: #0f172a;
+}
+
+.public-visitor-theme[data-public-theme="dark"] {
+  color-scheme: dark;
+  color: #e2e8f0;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-white"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-white/90"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-white/95"] {
+  background-color: #111c2e !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-slate-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-slate-50/70"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-slate-100"] {
+  background-color: #172337 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-emerald-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-green-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-teal-50"] {
+  background-color: #12352f !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-amber-50"] {
+  background-color: #3b2e17 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-amber-100"] {
+  background-color: #3b2e17 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-blue-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-sky-50"] {
+  background-color: #172945 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-violet-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-violet-100"] {
+  background-color: #292347 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-rose-50"],
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-red-50"] {
+  background-color: #3a2029 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="bg-violet-50/60"] {
+  background-color: #292347 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="border-slate-100"],
+.public-visitor-theme[data-public-theme="dark"] [class~="border-slate-200"],
+.public-visitor-theme[data-public-theme="dark"] [class~="border-slate-300"],
+.public-visitor-theme[data-public-theme="dark"] [class~="border-teal-100"] {
+  border-color: #334155 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-faida-navy"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-900"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-800"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-600"] {
+  color: #e2e8f0 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-faida-slate"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-500"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-slate-400"] {
+  color: #a7b4c6 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-emerald-800"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-emerald-900"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-emerald-950"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-green-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-green-950"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-teal-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-teal-800"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-teal-900"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-teal-950"] {
+  color: #6ee7c8 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-amber-900"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-amber-950"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-amber-800"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-amber-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-amber-600"] {
+  color: #fcd34d !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-blue-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-blue-950"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-sky-950"] {
+  color: #bfdbfe !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-violet-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-violet-950"] {
+  color: #ddd6fe !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="text-rose-700"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-rose-800"],
+.public-visitor-theme[data-public-theme="dark"] [class~="text-rose-900"] {
+  color: #fda4af !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-card,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-child-card,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-detail-page,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-upload-file {
+  border-color: #334155 !important;
+  background-color: #172337 !important;
+  color: #e2e8f0 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-children,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-detail-children,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-upload {
+  border-color: #334155 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-kicker,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-child-kicker,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-back-link {
+  color: #6ee7c8 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-badge {
+  background-color: #12352f !important;
+  color: #6ee7c8 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-children-title,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-parent-indicator {
+  color: #a7b4c6 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-child-placeholder {
+  background: linear-gradient(135deg, #12352f, #12343a) !important;
+  color: #a7f3d0 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-placeholder {
+  background: linear-gradient(135deg, #12352f, #12343a) !important;
+  color: #a7f3d0 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-parent-control {
+  background-color: #0f766e;
+  color: #fff;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-parent-control:hover,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-parent-control:focus-visible {
+  background-color: #115e59;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-children,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-detail-children,
+.public-visitor-theme[data-public-theme="dark"] .profile-showcase-upload,
+.public-visitor-theme[data-public-theme="dark"] [class~="divide-slate-100"] > :not(:first-child) {
+  border-color: #334155 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] .public-theme-toggle {
+  border-color: #475569;
+  background-color: #172337;
+  color: #f8fafc;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-slate-50"]:hover,
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-slate-100"]:hover {
+  background-color: #243247 !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-emerald-50"]:hover,
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-green-100"]:hover,
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-amber-100"]:hover {
+  background-color: #12352f !important;
+}
+
+.public-visitor-theme[data-public-theme="dark"] [class~="hover:bg-teal-50"]:hover {
+  background-color: #12343a !important;
+}
