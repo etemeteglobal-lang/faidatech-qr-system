@@ -61,9 +61,9 @@ export type WizardForm = {
     mapUrl: string;
     socialLinks: { platform: string; label: string; url: string; avatarUrl?: string }[];
     highlights: string[];
-    projects: { title: string; description: string; url: string; imageUrl: string; steps: { title: string; description: string; imageUrl: string; children: { title: string; description: string; attachments: { url: string; fileName: string; mimeType: string }[] }[] }[] }[];
+    projects: { title: string; description: string; url: string; imageUrl: string; steps: { title: string; description: string; imageUrl: string; children: { title: string; description: string; attachments: { url: string; fileName: string; mimeType: string; fileSizeBytes?: number }[] }[] }[] }[];
     showcaseMode: "PRODUCT_CATALOG" | "SERVICE_MENU" | "PROJECT_PROCESS";
-    products: { name: string; description: string; imageUrl: string; price: string; currency: string; availability: "AVAILABLE" | "OUT_OF_STOCK" | "PREORDER" | "BY_REQUEST"; variants: { title: string; description: string; imageUrl: string; link: string; attachments: { url: string; fileName: string; mimeType: string }[] }[] }[];
+    products: { name: string; description: string; imageUrl: string; price: string; currency: string; availability: "AVAILABLE" | "OUT_OF_STOCK" | "PREORDER" | "BY_REQUEST"; variants: { title: string; description: string; imageUrl: string; link: string; attachments: { url: string; fileName: string; mimeType: string; fileSizeBytes?: number }[] }[] }[];
     services: { name: string; description: string; imageUrl: string; price: string; currency: string; duration: string }[];
     credentials: { title: string; issuer: string; year: string; fileUrl: string; fileName: string; mimeType: string }[];
     reviews: { name: string; role: string; rating: number; quote: string }[];
@@ -269,7 +269,7 @@ export function formFromRecord(destinationType: string, payloadValue: unknown, t
       mapUrl: stringAt(profile, "mapUrl"),
       socialLinks: rows("socialLinks").map((item) => { const row = asRecord(item); return { platform: stringAt(row, "platform"), label: stringAt(row, "label"), url: stringAt(row, "url"), avatarUrl: stringAt(row, "avatarUrl") }; }),
       highlights: rows("highlights").filter((item): item is string => typeof item === "string"),
-      projects: rows("projects").map((item) => { const row = asRecord(item); const steps = Array.isArray(row.steps) ? row.steps.map((step) => asRecord(step)) : []; return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl"), steps: steps.map((step) => ({ title: stringAt(step, "title"), description: stringAt(step, "description"), imageUrl: stringAt(step, "imageUrl"), children: Array.isArray(step.children) ? step.children.map((value) => { const child = asRecord(value); return { title: stringAt(child, "title"), description: stringAt(child, "description"), attachments: Array.isArray(child.attachments) ? child.attachments.map((entry) => { const file = asRecord(entry); return { url: stringAt(file, "url"), fileName: stringAt(file, "fileName"), mimeType: stringAt(file, "mimeType") }; }) : [] }; }) : [] })) }; }),
+      projects: rows("projects").map((item) => { const row = asRecord(item); const steps = Array.isArray(row.steps) ? row.steps.map((step) => asRecord(step)) : []; return { title: stringAt(row, "title"), description: stringAt(row, "description"), url: stringAt(row, "url"), imageUrl: stringAt(row, "imageUrl"), steps: steps.map((step) => ({ title: stringAt(step, "title"), description: stringAt(step, "description"), imageUrl: stringAt(step, "imageUrl"), children: Array.isArray(step.children) ? step.children.map((value) => { const child = asRecord(value); return { title: stringAt(child, "title"), description: stringAt(child, "description"), attachments: Array.isArray(child.attachments) ? child.attachments.map((entry) => { const file = asRecord(entry); return { url: stringAt(file, "url"), fileName: stringAt(file, "fileName"), mimeType: stringAt(file, "mimeType"), fileSizeBytes: typeof file.fileSizeBytes === "number" ? file.fileSizeBytes : undefined }; }) : [] }; }) : [] })) }; }),
       showcaseMode: (stringAt(profile, "showcaseMode") || defaultShowcaseMode(stringAt(profile, "sector"))) as WizardForm["profile"]["showcaseMode"],
       products: rows("products").map((item) => { const row = asRecord(item); const variants = Array.isArray(row.variants) ? row.variants.map(asRecord) : []; return { name: stringAt(row, "name"), description: stringAt(row, "description"), imageUrl: stringAt(row, "imageUrl"), price: typeof row.price === "number" ? String(row.price) : "", currency: stringAt(row, "currency") || "ETB", availability: (stringAt(row, "availability") || "AVAILABLE") as WizardForm["profile"]["products"][number]["availability"], variants: variants.map((variant) => ({ title: stringAt(variant, "title"), description: stringAt(variant, "description"), imageUrl: stringAt(variant, "imageUrl"), link: stringAt(variant, "link"), attachments: Array.isArray(variant.attachments) ? variant.attachments.map((entry) => { const attachment = asRecord(entry); return { url: stringAt(attachment, "url"), fileName: stringAt(attachment, "fileName"), mimeType: stringAt(attachment, "mimeType") }; }) : [] })) }; }),
       services: rows("services").map((item) => { const row = asRecord(item); return { name: stringAt(row, "name"), description: stringAt(row, "description"), imageUrl: stringAt(row, "imageUrl"), price: typeof row.price === "number" ? String(row.price) : "", currency: stringAt(row, "currency") || "ETB", duration: stringAt(row, "duration") }; }),
@@ -412,9 +412,9 @@ function pairsToRecord(pairs: KeyValue[]): Record<string, string> | undefined {
   return entries.length ? Object.fromEntries(entries) : undefined;
 }
 
-export type WizardValidationError = { key: MessageKey };
+export type WizardValidationError = { key: MessageKey; field: string };
 
-export function validateWizardForm(form: WizardForm): WizardValidationError | null {
+function findWizardValidationError(form: WizardForm): { key: MessageKey } | null {
   if (!form.purpose) return { key: "validation.choosePurpose" };
   if (!form.title.trim()) return { key: "validation.titleRequired" };
   if (form.branding.brandName.trim().length > 120) return { key: "validation.brandNameTooLong" };
@@ -472,6 +472,68 @@ export function validateWizardForm(form: WizardForm): WizardValidationError | nu
   if (form.purpose === "LOCAL_PAYMENTS" && !/^https?:\/\//i.test(form.paymentUrl.trim())) return { key: "validation.paymentUrl" };
 
   return null;
+}
+
+function describeInvalidField(form: WizardForm, key: MessageKey): string {
+  const badUrl = (value: string) => Boolean(value.trim()) && !/^https?:\/\//i.test(value.trim());
+  if (key === "validation.profileProjectUrl") {
+    for (const [index, project] of form.profile.projects.entries()) {
+      if (badUrl(project.url)) return `Showcase > Project ${index + 1} > Project URL`;
+      if (badUrl(project.imageUrl)) return `Showcase > Project ${index + 1} > Image URL`;
+      for (const [stepIndex, step] of project.steps.entries()) if (badUrl(step.imageUrl)) return `Showcase > Project ${index + 1} > Step ${stepIndex + 1} > Image URL`;
+    }
+    for (const [index, item] of form.profile.products.entries()) {
+      if (badUrl(item.imageUrl)) return `Showcase > Product ${index + 1} > Image URL`;
+      if (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)) return `Showcase > Product ${index + 1} > Price`;
+      for (const [childIndex, child] of item.variants.entries()) if (badUrl(child.imageUrl)) return `Showcase > Product ${index + 1} > Detail ${childIndex + 1} > Image URL`;
+    }
+    for (const [index, item] of form.profile.services.entries()) {
+      if (badUrl(item.imageUrl)) return `Showcase > Service ${index + 1} > Image URL`;
+      if (item.price.trim() && (!Number.isFinite(Number(item.price)) || Number(item.price) < 0)) return `Showcase > Service ${index + 1} > Price`;
+    }
+  }
+  if (key === "validation.profileWebsite") {
+    if (badUrl(form.profile.website)) return "Profile > Website URL";
+    if (badUrl(form.profile.announcements.find((item) => badUrl(item.link ?? ""))?.link ?? "")) return `Announcements > Link URL`;
+  }
+  if (key === "validation.profileFileUrl") {
+    if (badUrl(form.profile.announcements.find((item) => badUrl(item.mediaUrl ?? ""))?.mediaUrl ?? "") || form.profile.announcements.some((item) => item.type && item.type !== "text" && (item.text.trim() || item.badge?.trim() || item.link?.trim()) && !item.mediaUrl?.trim())) return "Announcements > Media URL (enter a valid HTTP or HTTPS URL, or upload media)";
+    return "Profile > Credentials > File URL (enter a valid HTTP or HTTPS URL)";
+  }
+  if (key === "validation.profileSocialUrl") return `Profile > Social links > ${form.profile.socialLinks.findIndex((item) => badUrl(item.url)) + 1} > URL`;
+  if (key === "validation.profileMapUrl") return "Profile > Map URL";
+  if (key === "validation.email") return form.purpose === "SECTOR_PROFILE" ? "Profile > Email" : "Contact details > Email";
+  if (key === "validation.profileNameRequired") return "Profile > First name and Last name";
+  if (key === "validation.profileRoleRequired") return "Profile > Role";
+  if (key === "validation.customSectorRequired") return "Profile > Custom sector name";
+  if (key === "validation.titleRequired") return "QR details > Title";
+  if (key === "validation.choosePurpose") return "QR details > Destination type";
+  if (key === "validation.brandNameTooLong") return "Branding > Brand name (maximum 120 characters)";
+  if (key === "validation.invalidAccent") return "Branding > Accent color";
+  if (key === "validation.qrContrast") return "Branding > QR foreground color";
+  if (key === "validation.logoUrl") return "Branding > Logo URL";
+  if (key === "validation.imageUrl") return "Landing page > Hero image URL";
+  if (key === "validation.buttonUrl") return "Landing page > Button URL";
+  if (key === "validation.contactNames") return "Contact details > First name and Last name";
+  if (key === "validation.menuItemRequired") return "Menu > Add at least one named item";
+  if (key === "validation.menuCategoryPrice") return `Menu > Item ${form.menuItems.findIndex((item) => !item.category.trim() || !item.priceETB.trim() || !Number.isFinite(Number(item.priceETB)) || Number(item.priceETB) < 0) + 1} > Category or price`;
+  if (key === "validation.menuImageUrl") return `Menu > Item ${form.menuItems.findIndex((item) => badUrl(item.imageUrl)) + 1} > Image URL`;
+  if (key === "validation.checkoutUrl") return "Menu > Telebirr checkout URL";
+  if (key === "validation.audioRequired") return "Tourism audio > Add at least one audio URL";
+  if (key === "validation.coordinates") return "Tourism audio > Latitude and Longitude";
+  if (key === "validation.gpsRange") return "Tourism audio > Latitude (-90 to 90) or Longitude (-180 to 180)";
+  if (key === "validation.audioUrl") return "Tourism audio > Audio URL (enter a valid HTTP or HTTPS URL)";
+  if (key === "validation.mediaUrl") return "Tourism audio > Historical media URL";
+  if (key === "validation.pdfUrl") return "PDF destination > File URL (enter a valid HTTP or HTTPS URL)";
+  if (key === "validation.pdfFileName") return "PDF destination > File name";
+  if (key === "validation.fileSize") return "PDF destination > File size";
+  if (key === "validation.paymentUrl") return "Payment destination > Payment URL (enter a valid HTTP or HTTPS URL)";
+  return "Review the corresponding field";
+}
+
+export function validateWizardForm(form: WizardForm): WizardValidationError | null {
+  const issue = findWizardValidationError(form);
+  return issue ? { ...issue, field: describeInvalidField(form, issue.key) } : null;
 }
 
 export function buildDestinationPayload(form: WizardForm): Record<string, unknown> {
@@ -539,9 +601,9 @@ export function buildDestinationPayload(form: WizardForm): Record<string, unknow
       mapUrl: optionalWebUrl(form.profile.mapUrl),
       socialLinks: form.profile.socialLinks.filter((item) => item.url.trim()).map((item) => ({ platform: item.platform.trim() || "Social", label: item.label.trim() || item.platform.trim() || "Profile", url: item.url.trim(), ...(item.avatarUrl?.trim() ? { avatarUrl: item.avatarUrl.trim() } : {}) })),
       highlights: form.profile.highlights.map((item) => item.trim()).filter(Boolean),
-      projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl), steps: item.steps.filter((step) => step.title.trim() || step.description.trim() || step.imageUrl.trim()).map((step) => ({ title: step.title.trim() || "Step", description: optional(step.description), imageUrl: optionalWebUrl(step.imageUrl), ...(step.children.some((child) => child.title.trim() || child.description.trim() || child.attachments.length) ? { children: step.children.filter((child) => child.title.trim() || child.description.trim() || child.attachments.length).map((child) => ({ title: child.title.trim() || "Detail", description: optional(child.description), ...(child.attachments.length ? { attachments: child.attachments.filter((file) => file.url.trim()).map((file) => ({ url: file.url, fileName: file.fileName, mimeType: file.mimeType })) } : {}) })) } : {}) })) })),
+      projects: form.profile.projects.filter((item) => item.title.trim()).map((item) => ({ title: item.title.trim(), description: optional(item.description), url: optionalWebUrl(item.url), imageUrl: optionalWebUrl(item.imageUrl), steps: item.steps.filter((step) => step.title.trim() || step.description.trim() || step.imageUrl.trim() || step.children.some((child) => child.title.trim() || child.description.trim() || child.attachments.length)).map((step) => ({ title: step.title.trim() || "Step", description: optional(step.description), imageUrl: optionalWebUrl(step.imageUrl), ...(step.children.some((child) => child.title.trim() || child.description.trim() || child.attachments.length) ? { children: step.children.filter((child) => child.title.trim() || child.description.trim() || child.attachments.length).map((child) => ({ title: child.title.trim() || "Detail", description: optional(child.description), ...(child.attachments.length ? { attachments: child.attachments.filter((file) => file.url.trim()).map((file) => ({ url: file.url, fileName: file.fileName, mimeType: file.mimeType, ...(file.fileSizeBytes ? { fileSizeBytes: file.fileSizeBytes } : {}) })) } : {}) })) } : {}) })) })),
       showcaseMode: form.profile.showcaseMode,
-      products: form.profile.products.filter((item) => item.name.trim()).map((item) => ({ name: item.name.trim(), description: optional(item.description), imageUrl: optionalWebUrl(item.imageUrl), price: item.price.trim() ? Number(item.price) : undefined, currency: optional(item.currency), availability: item.availability, ...(item.variants.some((variant) => variant.title.trim() || variant.description.trim() || variant.imageUrl.trim()) ? { variants: item.variants.filter((variant) => variant.title.trim() || variant.description.trim() || variant.imageUrl.trim()).map((variant) => ({ title: optional(variant.title), description: optional(variant.description), imageUrl: optionalWebUrl(variant.imageUrl), link: optionalWebUrl(variant.link), ...(variant.attachments.length ? { attachments: variant.attachments.filter((file) => file.url.trim()).map((file) => ({ url: file.url, fileName: file.fileName, mimeType: file.mimeType })) } : {}) })) } : {}) })),
+      products: form.profile.products.filter((item) => item.name.trim()).map((item) => ({ name: item.name.trim(), description: optional(item.description), imageUrl: optionalWebUrl(item.imageUrl), price: item.price.trim() ? Number(item.price) : undefined, currency: optional(item.currency), availability: item.availability, ...(item.variants.some((variant) => variant.title.trim() || variant.description.trim() || variant.imageUrl.trim() || variant.link.trim() || variant.attachments.length) ? { variants: item.variants.filter((variant) => variant.title.trim() || variant.description.trim() || variant.imageUrl.trim() || variant.link.trim() || variant.attachments.length).map((variant) => ({ title: optional(variant.title), description: optional(variant.description), imageUrl: optionalWebUrl(variant.imageUrl), link: optionalWebUrl(variant.link), ...(variant.attachments.length ? { attachments: variant.attachments.filter((file) => file.url.trim()).map((file) => ({ url: file.url, fileName: file.fileName, mimeType: file.mimeType, ...(file.fileSizeBytes ? { fileSizeBytes: file.fileSizeBytes } : {}) })) } : {}) })) } : {}) })),
       services: form.profile.services.filter((item) => item.name.trim()).map((item) => ({ name: item.name.trim(), description: optional(item.description), imageUrl: optionalWebUrl(item.imageUrl), price: item.price.trim() ? Number(item.price) : undefined, currency: optional(item.currency), duration: optional(item.duration) })),
       credentials: form.profile.credentials.filter((item) => item.fileUrl.trim()).map((item) => ({ title: item.title.trim(), issuer: optional(item.issuer), year: optional(item.year), fileUrl: item.fileUrl.trim(), fileName: item.fileName.trim(), mimeType: item.mimeType })),
       reviews: form.profile.reviews.filter((item) => item.quote.trim()).map((item) => ({ name: item.name.trim(), role: optional(item.role), rating: item.rating, quote: item.quote.trim() })),

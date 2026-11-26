@@ -144,7 +144,7 @@ export default function QRCodeWizard() {
       setStep(1);
     } else if (step === 1) {
       const issue = validateWizardForm(form);
-      if (issue) return setError(t(issue.key));
+      if (issue) return setError(`${t(issue.key)} Field: ${issue.field}.`);
       setStep(2);
     }
   }
@@ -152,7 +152,7 @@ export default function QRCodeWizard() {
   async function saveQrCode() {
     const issue = validateWizardForm(form);
     if (issue || !form.purpose) {
-      setError(issue ? t(issue.key) : t("validation.choosePurpose"));
+      setError(issue ? `${t(issue.key)} Field: ${issue.field}.` : `${t("validation.choosePurpose")} Field: QR details > Destination type.`);
       setStep(1);
       return;
     }
