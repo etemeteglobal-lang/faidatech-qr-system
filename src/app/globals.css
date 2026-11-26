@@ -555,6 +555,11 @@ html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-vi
   background-color: var(--dashboard-surface) !important;
 }
 
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-white/90"],
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="bg-white/95"] {
+  background-color: var(--dashboard-surface) !important;
+}
+
 html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).bg-slate-50,
 html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).hover\:bg-slate-50:hover {
   background-color: var(--dashboard-surface-raised) !important;
@@ -635,6 +640,10 @@ html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-vi
 html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-200,
 html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-300,
 html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *).border-slate-400 {
+  border-color: var(--dashboard-border) !important;
+}
+
+html[data-theme="dark"] .dashboard-root :not(#public-visitor-preview, #public-visitor-preview *, .qr-artwork-preserve, .qr-artwork-preserve *, .profile-qr-compact, .profile-qr-compact *)[class~="border-slate-200/80"] {
   border-color: var(--dashboard-border) !important;
 }
 
