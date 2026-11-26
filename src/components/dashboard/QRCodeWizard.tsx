@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PayloadEditor from "@/components/dashboard/wizard/PayloadEditor";
 import BrandingEditor from "@/components/dashboard/wizard/BrandingEditor";
+import StorageAllowanceIndicator from "@/components/dashboard/wizard/StorageAllowanceIndicator";
 import LocalizedContentEditor from "@/components/dashboard/wizard/LocalizedContentEditor";
 import DashboardPageHeading from "@/components/dashboard/DashboardPageHeading";
 import {
@@ -239,6 +240,7 @@ export default function QRCodeWizard() {
                 <Field label={t("wizard.qrTitle")} value={form.title} onChange={(value) => setForm({ ...form, title: value })} placeholder={t("wizard.titlePlaceholder")} required />
                 <Field label={t("wizard.visitorDescription")} value={form.description} onChange={(value) => setForm({ ...form, description: value })} placeholder={t("wizard.descriptionPlaceholder")} />
               </div>
+              <StorageAllowanceIndicator />
               <BrandingEditor form={form} setFormAction={setForm} />
               <PayloadEditor form={form} setFormAction={setForm} />
               <LocalizedContentEditor form={form} setFormAction={setForm} />

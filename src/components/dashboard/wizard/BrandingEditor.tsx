@@ -6,6 +6,8 @@ import { colorContrastRatio, getReadableTextColor, isScanSafeQrForeground } from
 import type { ApiErrorEnvelope } from "@/lib/qr/client-types";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { localizedApiError } from "@/i18n/api-errors";
+import { createUploadProgress, uploadMultipartFile, type UploadProgressState } from "@/lib/profile/upload";
+import UploadProgressFeedback from "@/components/dashboard/wizard/UploadProgressFeedback";
 
 type UploadResponse = ApiErrorEnvelope & { data?: { url?: string; key?: string } };
 
@@ -14,6 +16,7 @@ export default function BrandingEditor({ form, setFormAction }: { form: WizardFo
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [uploadMessage, setUploadMessage] = useState("");
+  const [uploadProgress, setUploadProgress] = useState<UploadProgressState>(() => createUploadProgress());
   const brand = form.branding;
 
   async function uploadLogo(file: File | undefined) {
@@ -22,19 +25,25 @@ export default function BrandingEditor({ form, setFormAction }: { form: WizardFo
     setUploadMessage("");
     if (file.size > 2 * 1024 * 1024) {
       setUploadError(t("error.uploadTooLarge", { size: "2" }));
+      setUploadProgress(createUploadProgress(file, "failed"));
       return;
     }
     setUploading(true);
+    let latestProgress = createUploadProgress(file, "uploading");
+    setUploadProgress(latestProgress);
     try {
-      const body = new FormData();
-      body.set("file", file);
-      const response = await fetch("/api/assets", { method: "POST", body });
-      const result = (await response.json().catch(() => ({}))) as UploadResponse;
+      const response = await uploadMultipartFile<UploadResponse>("/api/assets", file, { onProgress: (progress) => {
+        latestProgress = { ...latestProgress, ...progress, status: "uploading" };
+        setUploadProgress(latestProgress);
+      } });
+      const result = response.data;
       if (!response.ok || !result.data?.url) throw new Error(localizedApiError(result, "branding.uploadFallback", t));
       setFormAction({ ...form, branding: { ...brand, logoUrl: result.data.url } });
       setUploadMessage(t("branding.uploadSuccess"));
+      setUploadProgress({ ...latestProgress, status: "completed", percentage: 100, uploadedBytes: file.size, totalBytes: file.size });
     } catch (reason) {
       setUploadError(reason instanceof Error ? reason.message : t("branding.uploadFallback"));
+      setUploadProgress({ ...latestProgress, status: "failed" });
     } finally {
       setUploading(false);
     }
@@ -69,6 +78,7 @@ export default function BrandingEditor({ form, setFormAction }: { form: WizardFo
               {brand.logoUrl ? <button type="button" onClick={() => { setFormAction({ ...form, branding: { ...brand, logoUrl: "" } }); setUploadMessage(""); }} className="rounded-lg px-2 py-2 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-700">{t("branding.removeLogo")}</button> : null}
             </div>
             <p className="mt-1.5 text-[11px] leading-5 text-faida-slate">{t("branding.imageRequirements")}</p>
+            <UploadProgressFeedback state={uploadProgress} />
             {uploadMessage ? <p role="status" className="mt-1 text-xs font-medium text-emerald-800">{uploadMessage}</p> : null}
             {uploadError ? <p role="alert" className="mt-1 text-xs text-rose-700">{uploadError}</p> : null}
           </div>

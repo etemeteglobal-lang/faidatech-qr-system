@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { ProfileAnnouncement } from "@/lib/qr/announcements";
-import { uploadProfileFile } from "@/lib/profile/upload";
+import { createUploadProgress, uploadProfileFile, type UploadProgressState } from "@/lib/profile/upload";
+import UploadProgressFeedback from "@/components/dashboard/wizard/UploadProgressFeedback";
 
 const MIN_SLOTS = 3;
 const MAX_SLOTS = 5;
@@ -32,12 +33,10 @@ async function validateVideoDuration(file: File) {
 export default function AnnouncementItemsEditor({ announcements, onChange }: { announcements: ProfileAnnouncement[]; onChange: (next: ProfileAnnouncement[]) => void }) {
   const slots = withMinimumSlots(announcements);
   const latestItems = useRef(announcements);
+  useEffect(() => { latestItems.current = announcements; }, [announcements]);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [uploadError, setUploadError] = useState("");
-
-  useEffect(() => {
-    latestItems.current = announcements;
-  }, [announcements]);
+  const [uploadProgress, setUploadProgress] = useState<Record<number, UploadProgressState[]>>({});
 
   function update(index: number, patch: Partial<ProfileAnnouncement>) {
     onChange(slots.map((item, itemIndex) => itemIndex === index ? { ...item, ...patch } : item));
@@ -94,7 +93,28 @@ export default function AnnouncementItemsEditor({ announcements, onChange }: { a
     setUploadingIndex(index);
     try {
       const uploadedFiles = [];
-      for (const file of files) uploadedFiles.push(await uploadProfileFile(file));
+      const states = files.map((file) => createUploadProgress(file, "uploading"));
+      setUploadProgress((current) => ({ ...current, [index]: states }));
+      for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+        const file = files[fileIndex];
+        let progress = states[fileIndex];
+        try {
+          const uploaded = await uploadProfileFile(file, (transfer) => {
+            progress = { ...progress, ...transfer, status: "uploading" };
+            states[fileIndex] = progress;
+            setUploadProgress((current) => ({ ...current, [index]: [...states] }));
+          });
+          uploadedFiles.push(uploaded);
+          progress = { ...progress, status: "completed", percentage: 100, uploadedBytes: file.size, totalBytes: file.size };
+          states[fileIndex] = progress;
+          setUploadProgress((current) => ({ ...current, [index]: [...states] }));
+        } catch (error) {
+          progress = { ...progress, status: "failed", error: error instanceof Error ? error.message : "The announcement media could not be uploaded." };
+          states[fileIndex] = progress;
+          setUploadProgress((current) => ({ ...current, [index]: [...states] }));
+          throw error;
+        }
+      }
       const latestSlots = withMinimumSlots(latestItems.current);
       for (let slotIndex = 0; slotIndex < uploadedFiles.length; slotIndex += 1) {
         while (latestSlots.length <= destinations[slotIndex]) latestSlots.push(emptyAnnouncement());
@@ -133,12 +153,12 @@ export default function AnnouncementItemsEditor({ announcements, onChange }: { a
             <label className="block text-sm font-semibold text-slate-700"><span>{type === "text" ? "Announcement text" : "Caption (optional)"}</span><input type="text" value={item.text} onChange={(event) => update(index, { text: event.target.value })} maxLength={500} placeholder={type === "text" ? "Share a timely update, offer, or news item" : "Add a short caption"} className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>
           </div>
           {type === "image" ? <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <label className="block text-sm font-semibold text-slate-700"><span>Upload image</span><input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={uploadingIndex !== null} onChange={(event) => { const files = Array.from(event.currentTarget.files ?? []); if (files.length) void uploadMedia(index, files, "image"); event.currentTarget.value = ""; }} className="mt-1.5 block w-full text-xs" />{uploadingIndex === index ? <span className="mt-1 block text-xs text-teal-800">Uploading image…</span> : <span className="mt-1 block text-xs font-normal text-slate-500">Select one or more PNG, JPEG, or WebP files; up to 10 MiB each.</span>}</label>
+            <label className="block text-sm font-semibold text-slate-700"><span>Upload image</span><input type="file" accept="image/png,image/jpeg,image/webp" multiple disabled={uploadingIndex !== null} onChange={(event) => { const files = Array.from(event.currentTarget.files ?? []); if (files.length) void uploadMedia(index, files, "image"); event.currentTarget.value = ""; }} className="mt-1.5 block w-full text-xs" />{uploadProgress[index]?.length ? uploadProgress[index].map((state, stateIndex) => <UploadProgressFeedback key={`${state.fileName}-${stateIndex}`} state={state} />) : <UploadProgressFeedback />}<span className="mt-1 block text-xs font-normal text-slate-500">Select one or more PNG, JPEG, or WebP files; up to 10 MiB each.</span></label>
             <label className="block text-sm font-semibold text-slate-700"><span>Image URL</span><input type="url" value={item.mediaUrl ?? ""} onChange={(event) => update(index, { mediaUrl: event.target.value })} placeholder="https://example.com/image.jpg" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>
           </div> : null}
           {type === "video" ? <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-semibold text-slate-700"><span>Video URL</span><input type="url" value={item.mediaUrl ?? ""} onChange={(event) => update(index, { mediaUrl: event.target.value })} placeholder="https://example.com/clip.mp4" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>
-            <label className="block text-sm font-semibold text-slate-700"><span>Upload video</span><input type="file" accept="video/mp4,video/webm,video/ogg" disabled={uploadingIndex !== null} onChange={(event) => { const files = Array.from(event.currentTarget.files ?? []); if (files.length) void uploadMedia(index, files, "video"); event.currentTarget.value = ""; }} className="mt-1.5 block w-full text-xs" />{uploadingIndex === index ? <span className="mt-1 block text-xs text-teal-800">Uploading video…</span> : <span className="mt-1 block text-xs font-normal text-slate-500">MP4, WebM, or OGG; up to 10 MiB and 30 seconds.</span>}</label>
+            <label className="block text-sm font-semibold text-slate-700"><span>Upload video</span><input type="file" accept="video/mp4,video/webm,video/ogg" disabled={uploadingIndex !== null} onChange={(event) => { const files = Array.from(event.currentTarget.files ?? []); if (files.length) void uploadMedia(index, files, "video"); event.currentTarget.value = ""; }} className="mt-1.5 block w-full text-xs" />{uploadProgress[index]?.length ? uploadProgress[index].map((state, stateIndex) => <UploadProgressFeedback key={`${state.fileName}-${stateIndex}`} state={state} />) : <UploadProgressFeedback />}<span className="mt-1 block text-xs font-normal text-slate-500">MP4, WebM, or OGG; up to 10 MiB and 30 seconds.</span></label>
           </div> : null}
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <label className="block text-sm font-semibold text-slate-700"><span>Badge (optional)</span><input type="text" value={item.badge ?? ""} onChange={(event) => update(index, { badge: event.target.value })} maxLength={40} placeholder="e.g. NEW" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-normal text-faida-navy outline-none focus:border-faida-teal focus:ring-4 focus:ring-teal-50" /></label>

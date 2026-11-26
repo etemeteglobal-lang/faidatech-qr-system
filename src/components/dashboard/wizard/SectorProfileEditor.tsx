@@ -7,7 +7,8 @@ import { getSectorShowcaseLabels, profileFieldTypes, sectorOptions } from "@/lib
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementItemsEditor from "@/components/dashboard/wizard/AnnouncementItemsEditor";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
-import { uploadProfileFile } from "@/lib/profile/upload";
+import { createUploadProgress, uploadProfileFile, type UploadedProfileFile, type UploadProgressState } from "@/lib/profile/upload";
+import UploadProgressFeedback from "@/components/dashboard/wizard/UploadProgressFeedback";
 
 type Props = { form: WizardForm; setFormAction: (next: WizardForm) => void };
 
@@ -90,7 +91,9 @@ function LiveProfileQr({ form }: Props) {
     {form.profile.qrFrame === "badge" ? <p className="mt-2 text-center text-xs font-bold text-emerald-900">Scan to view profile</p> : null}
   </aside>;
 }
-function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Partial<WizardForm["profile"]>) => void }) {
+type ProfileUploadRunner = (key: string, file: File, onComplete: (result: UploadedProfileFile) => void) => Promise<void>;
+
+function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectImage }: { form: WizardForm; update: (next: Partial<WizardForm["profile"]>) => void; uploadStates: Record<string, UploadProgressState>; runUpload: ProfileUploadRunner; uploadProjectImage: (index: number, file: File, stepIndex?: number) => void }) {
   const { t } = useI18n();
   const profile = form.profile;
   const mode = profile.showcaseMode;
@@ -100,24 +103,25 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
   };
   const defaultMode = sectorDefault[profile.sector] || "SERVICE_MENU";
   const labels = getSectorShowcaseLabels(profile.sector, mode, profile.customSectorName);
-  type ProductVariant = WizardForm["profile"]["products"][number]["variants"][number];
-  async function uploadImage(file: File, kind: "product" | "service", index: number) {
-    const row = await uploadProfileFile(file);
-    if (kind === "product") update({ products: profile.products.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
-    else update({ services: profile.services.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
+  const modes = ["PRODUCT_CATALOG", "SERVICE_MENU", "PROJECT_PROCESS"] as const;
+  function uploadImage(file: File, kind: "product" | "service", index: number) {
+    const key = `${kind}-${index}`;
+    void runUpload(key, file, (row) => {
+      if (kind === "product") update({ products: profile.products.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
+      else update({ services: profile.services.map((item, i) => i === index ? { ...item, imageUrl: row.url } : item) });
+    });
   }
   function addProductVariant(productIndex: number) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: [...item.variants, { title: "", description: "", imageUrl: "" }] } : item) });
   }
-  function updateProductVariant(productIndex: number, variantIndex: number, fields: Partial<ProductVariant>) {
+  function updateProductVariant(productIndex: number, variantIndex: number, fields: Partial<WizardForm["profile"]["products"][number]["variants"][number]>) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: item.variants.map((variant, childIndex) => childIndex === variantIndex ? { ...variant, ...fields } : variant) } : item) });
   }
   function removeProductVariant(productIndex: number, variantIndex: number) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: item.variants.filter((_, childIndex) => childIndex !== variantIndex) } : item) });
   }
-  async function uploadVariantImage(file: File, productIndex: number, variantIndex: number) {
-    const row = await uploadProfileFile(file);
-    updateProductVariant(productIndex, variantIndex, { imageUrl: row.url });
+  function uploadVariantImage(file: File, productIndex: number, variantIndex: number) {
+    void runUpload(`product-${productIndex}-variant-${variantIndex}`, file, (row) => updateProductVariant(productIndex, variantIndex, { imageUrl: row.url }));
   }
   return <section id="profile-projects" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
     <div><h3 className="font-semibold text-faida-navy">{labels.sectionTitle}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.projectsNote")}</p></div>
@@ -130,7 +134,7 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
         <TextInput label="Currency (e.g. ETB)" value={item.currency} onChange={(currency) => update({ products: profile.products.map((row, i) => i === index ? { ...row, currency } : row) })} />
         <label className="block text-sm font-semibold text-slate-700">Availability<select value={item.availability} onChange={(e) => update({ products: profile.products.map((row, i) => i === index ? { ...row, availability: e.target.value as typeof row.availability } : row) })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5"><option value="AVAILABLE">Available</option><option value="OUT_OF_STOCK">Out of stock</option><option value="PREORDER">Pre-order</option><option value="BY_REQUEST">By request</option></select></label>
         <TextArea label={labels.parentDescriptionLabel} value={item.description} onChange={(description) => update({ products: profile.products.map((row, i) => i === index ? { ...row, description } : row) })} />
-        <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file, "product", index); }} className="mt-1 block w-full text-xs" />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
+        <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file, "product", index); }} className="mt-1 block w-full text-xs" /><UploadProgressFeedback state={uploadStates[`product-${index}`]} />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
         <button type="button" onClick={() => update({ products: profile.products.filter((_, i) => i !== index) })} className="text-left text-xs font-semibold text-red-700">{labels.removeParentLabel}</button>
         <div className="sm:col-span-2 rounded-xl border border-slate-200 bg-white p-3">
           <div className="flex items-center justify-between gap-3"><h4 className="text-sm font-semibold text-faida-navy">{labels.childPlural}</h4><button type="button" onClick={() => addProductVariant(index)} className="rounded-lg border px-2 py-1 text-xs font-semibold">{labels.addChildLabel}</button></div>
@@ -138,7 +142,7 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
             <p className="text-xs font-bold text-teal-800">{labels.childSingular} {variantIndex + 1}</p>
             <TextInput label={labels.childTitleLabel} value={variant.title} onChange={(title) => updateProductVariant(index, variantIndex, { title })} />
             <TextArea label={labels.childDescriptionLabel} value={variant.description} onChange={(description) => updateProductVariant(index, variantIndex, { description })} />
-            <label className="mt-2 block text-xs font-semibold">{labels.childImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadVariantImage(file, index, variantIndex); }} className="mt-1 block w-full" />{variant.imageUrl ? <img src={variant.imageUrl} alt="" className="mt-2 h-36 w-full rounded-lg object-cover" /> : null}</label>
+            <label className="mt-2 block text-xs font-semibold">{labels.childImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadVariantImage(file, index, variantIndex); }} className="mt-1 block w-full" /><UploadProgressFeedback state={uploadStates[`product-${index}-variant-${variantIndex}`]} />{variant.imageUrl ? <img src={variant.imageUrl} alt="" className="mt-2 h-36 w-full rounded-lg object-cover" /> : null}</label>
             <button type="button" onClick={() => removeProductVariant(index, variantIndex)} className="mt-2 text-xs font-semibold text-red-700">Remove {labels.childSingular.toLowerCase()}</button>
           </article>)}</div> : <p className="mt-2 text-xs text-slate-500">Add options such as a dress size, color, or shoe style.</p>}
         </div>
@@ -152,7 +156,7 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
         <TextInput label="Currency" value={item.currency} onChange={(currency) => update({ services: profile.services.map((row, i) => i === index ? { ...row, currency } : row) })} />
         <TextInput label="Duration (optional)" value={item.duration} onChange={(duration) => update({ services: profile.services.map((row, i) => i === index ? { ...row, duration } : row) })} />
         <TextArea label={labels.parentDescriptionLabel} value={item.description} onChange={(description) => update({ services: profile.services.map((row, i) => i === index ? { ...row, description } : row) })} />
-        <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file, "service", index); }} className="mt-1 block w-full text-xs" />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
+        <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadImage(file, "service", index); }} className="mt-1 block w-full text-xs" /><UploadProgressFeedback state={uploadStates[`service-${index}`]} />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
         <button type="button" onClick={() => update({ services: profile.services.filter((_, i) => i !== index) })} className="text-left text-xs font-semibold text-red-700">{labels.removeParentLabel}</button>
       </div>)}
     </div> : null}
@@ -160,9 +164,9 @@ function ShowcaseEditor({ form, update }: { form: WizardForm; update: (next: Par
       <TextInput label={labels.parentTitleLabel} value={item.title} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, title: value } : row) })} />
       <TextInput label={t("profile.url")} value={item.url} onChange={(url) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, url } : row) })} type="url" />
       <TextArea label={labels.parentDescriptionLabel} value={item.description} onChange={(value) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, description: value } : row) })} />
-      <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadProfileFile(file).then((uploaded) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, imageUrl: uploaded.url } : row) })); }} className="mt-1 block w-full text-xs" />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
+      <label className="block text-sm font-semibold">{labels.parentImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadProjectImage(index, file); }} className="mt-1 block w-full text-xs" /><UploadProgressFeedback state={uploadStates[`project-${index}-cover`]} />{item.imageUrl ? <img src={item.imageUrl} alt="" className="mt-2 h-40 w-full rounded-lg object-cover" /> : null}</label>
       <div className="sm:col-span-2"><div className="flex items-center justify-between"><h4 className="text-sm font-semibold">{labels.childPlural}</h4><button type="button" onClick={() => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: [...row.steps, { title: "", description: "", imageUrl: "" }] } : row) })} className="rounded-lg border px-2 py-1 text-xs font-semibold">{labels.addChildLabel}</button></div>
-        <div className="mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 touch-pan-x">{item.steps.map((step, stepIndex) => <article key={stepIndex} className="w-72 shrink-0 snap-start rounded-xl border bg-white p-3"><p className="text-xs font-bold text-teal-800">{labels.childSingular} {stepIndex + 1}</p><TextInput label={labels.childTitleLabel} value={step.title} onChange={(title) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: row.steps.map((entry, j) => j === stepIndex ? { ...entry, title } : entry) } : row) })} /><TextArea label={labels.childDescriptionLabel} value={step.description} onChange={(description) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: row.steps.map((entry, j) => j === stepIndex ? { ...entry, description } : entry) } : row) })} /><label className="mt-2 block text-xs font-semibold">{labels.childImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadProfileFile(file).then((uploaded) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: row.steps.map((entry, j) => j === stepIndex ? { ...entry, imageUrl: uploaded.url } : entry) } : row) })); }} className="mt-1 block w-full" />{step.imageUrl ? <img src={step.imageUrl} alt="" className="mt-2 h-36 w-full rounded object-cover" /> : null}</label></article>)}</div>
+        <div className="mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2 touch-pan-x">{item.steps.map((step, stepIndex) => <article key={stepIndex} className="w-72 shrink-0 snap-start rounded-xl border bg-white p-3"><p className="text-xs font-bold text-teal-800">{labels.childSingular} {stepIndex + 1}</p><TextInput label={labels.childTitleLabel} value={step.title} onChange={(title) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: row.steps.map((entry, j) => j === stepIndex ? { ...entry, title } : entry) } : row) })} /><TextArea label={labels.childDescriptionLabel} value={step.description} onChange={(description) => update({ projects: profile.projects.map((row, i) => i === index ? { ...row, steps: row.steps.map((entry, j) => j === stepIndex ? { ...entry, description } : entry) } : row) })} /><label className="mt-2 block text-xs font-semibold">{labels.childImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadProjectImage(index, file, stepIndex); }} className="mt-1 block w-full" /><UploadProgressFeedback state={uploadStates[`project-${index}-step-${stepIndex}`]} />{step.imageUrl ? <img src={step.imageUrl} alt="" className="mt-2 h-36 w-full rounded object-cover" /> : null}</label></article>)}</div>
       </div><button type="button" onClick={() => update({ projects: profile.projects.filter((_, i) => i !== index) })} className="text-left text-xs font-semibold text-red-700">{labels.removeParentLabel}</button></div>)}</> : null}
 
   </section>;
@@ -172,30 +176,41 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
   const { t } = useI18n();
   const profile = form.profile;
   const update = (next: Partial<WizardForm["profile"]>) => setFormAction({ ...form, profile: { ...profile, ...next } });
-  const [uploading, setUploading] = useState("");
-  const [uploadError, setUploadError] = useState("");
+  const [uploadStates, setUploadStates] = useState<Record<string, UploadProgressState>>({});
 
-  async function uploadLogo(file: File) {
-    setUploading("logo"); setUploadError("");
-    try { const result = await uploadProfileFile(file); setFormAction({ ...form, branding: { ...form.branding, logoUrl: result.url } }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
-  }
-
-  async function uploadAboutImage(file: File) {
-    setUploading("about"); setUploadError("");
-    try { const result = await uploadProfileFile(file); update({ aboutImageUrl: result.url }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
-  }
-
-  async function uploadProjectImage(index: number, file: File, stepIndex?: number) {
-    setUploading(`project-${index}-${stepIndex ?? "cover"}`); setUploadError("");
+  async function runProfileUpload(key: string, file: File, onComplete: (result: UploadedProfileFile) => void) {
+    let progress = createUploadProgress(file, "uploading");
+    setUploadStates((current) => ({ ...current, [key]: progress }));
     try {
-      const result = await uploadProfileFile(file);
-      update({ projects: profile.projects.map((project, i) => i !== index ? project : stepIndex === undefined ? { ...project, imageUrl: result.url } : { ...project, steps: project.steps.map((step, j) => j === stepIndex ? { ...step, imageUrl: result.url } : step) }) });
-    } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
+      const result = await uploadProfileFile(file, (transfer) => {
+        progress = { ...progress, ...transfer, status: "uploading" };
+        setUploadStates((current) => ({ ...current, [key]: progress }));
+      });
+      onComplete(result);
+      progress = { ...progress, status: "completed", percentage: 100, uploadedBytes: file.size, totalBytes: file.size };
+    } catch (error) {
+      progress = { ...progress, status: "failed", error: error instanceof Error ? error.message : t("profile.uploadError") };
+    }
+    setUploadStates((current) => ({ ...current, [key]: progress }));
   }
 
-  async function uploadCredential(index: number, file: File) {
-    setUploading(`credential-${index}`); setUploadError("");
-    try { const result = await uploadProfileFile(file); update({ credentials: profile.credentials.map((item, row) => row === index ? { ...item, fileUrl: result.url, fileName: result.fileName, mimeType: result.mimeType } : item) }); } catch (error) { setUploadError(error instanceof Error ? error.message : t("profile.uploadError")); } finally { setUploading(""); }
+  function uploadLogo(file: File) {
+    void runProfileUpload("logo", file, (result) => setFormAction({ ...form, branding: { ...form.branding, logoUrl: result.url } }));
+  }
+
+  function uploadAboutImage(file: File) {
+    void runProfileUpload("about", file, (result) => update({ aboutImageUrl: result.url }));
+  }
+
+  function uploadProjectImage(index: number, file: File, stepIndex?: number) {
+    const key = stepIndex === undefined ? `project-${index}-cover` : `project-${index}-step-${stepIndex}`;
+    void runProfileUpload(key, file, (result) => {
+      update({ projects: profile.projects.map((project, i) => i !== index ? project : stepIndex === undefined ? { ...project, imageUrl: result.url } : { ...project, steps: project.steps.map((step, j) => j === stepIndex ? { ...step, imageUrl: result.url } : step) }) });
+    });
+  }
+
+  function uploadCredential(index: number, file: File) {
+    void runProfileUpload(`credential-${index}`, file, (result) => update({ credentials: profile.credentials.map((item, row) => row === index ? { ...item, fileUrl: result.url, fileName: result.fileName, mimeType: result.mimeType } : item) }));
   }
 
   const sections = [
@@ -217,7 +232,7 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
       <TextInput label={t("profile.tagline")} value={profile.tagline} onChange={(value) => update({ tagline: value })} placeholder={t("profile.taglinePlaceholder")} />
     </div></section>
 
-    <section id="profile-about" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.builder.about")}</h3><TextArea label={t("profile.bio")} value={profile.bio} onChange={(value) => update({ bio: value })} placeholder={t("profile.bioPlaceholder")} /><label className="block text-sm font-semibold text-slate-700"><span>Key Highlights / Service Badges (one per line)</span><textarea value={profile.highlights.join("\n")} onChange={(event) => update({ highlights: event.target.value.split("\n").slice(0, 12) })} rows={3} maxLength={1000} placeholder="Locally owned\nSame-day service\nLicensed professionals" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-normal" /></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.aboutImage")}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAboutImage(file); }} className="mt-2 block w-full text-xs" />{uploading === "about" ? <span className="mt-1 block text-xs">{t("profile.uploading")}</span> : null}</label>{profile.aboutImageUrl ? <img src={profile.aboutImageUrl} alt={t("profile.aboutImage")} className="h-36 w-full rounded-xl object-cover" /> : null}</section>
+    <section id="profile-about" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.builder.about")}</h3><TextArea label={t("profile.bio")} value={profile.bio} onChange={(value) => update({ bio: value })} placeholder={t("profile.bioPlaceholder")} /><label className="block text-sm font-semibold text-slate-700"><span>Key Highlights / Service Badges (one per line)</span><textarea value={profile.highlights.join("\n")} onChange={(event) => update({ highlights: event.target.value.split("\n").slice(0, 12) })} rows={3} maxLength={1000} placeholder="Locally owned\nSame-day service\nLicensed professionals" className="mt-1.5 w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-normal" /></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.aboutImage")}</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadAboutImage(file); }} className="mt-2 block w-full text-xs" /><UploadProgressFeedback state={uploadStates.about} /></label>{profile.aboutImageUrl ? <img src={profile.aboutImageUrl} alt={t("profile.aboutImage")} className="h-36 w-full rounded-xl object-cover" /> : null}</section>
 
     <section id="profile-news" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4">
       <h3 className="font-semibold text-faida-navy">{t("profile.builder.news")}</h3>
@@ -226,19 +241,18 @@ export default function SectorProfileEditor({ form, setFormAction }: Props) {
 
     <section id="profile-contact" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.contactTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><TextInput label={t("profile.phone")} value={profile.phone} onChange={(value) => update({ phone: value })} type="tel" /><TextInput label={t("profile.email")} value={profile.email} onChange={(value) => update({ email: value })} type="email" /><TextInput label="Opening hours" value={profile.hours} onChange={(value) => update({ hours: value })} placeholder="Mon–Fri, 9:00–17:00" /><TextInput label={t("profile.website")} value={profile.website} onChange={(value) => update({ website: value })} type="url" /><TextInput label={t("profile.address")} value={profile.address} onChange={(value) => update({ address: value })} /><TextInput label={t("profile.mapUrl")} value={profile.mapUrl} onChange={(value) => update({ mapUrl: value })} type="url" /></div></section>
 
-    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-faida-navy">{t("profile.logoTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.uploadNote")}</p></div><label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-faida-navy">{uploading === "logo" ? t("profile.uploading") : t("profile.uploadLogo")}<input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadLogo(file); }} /></label></div>{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-16 w-16 rounded-xl border border-slate-200 bg-white object-contain p-1" /> : null}</section>
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between gap-3"><div><h3 className="font-semibold text-faida-navy">{t("profile.logoTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.uploadNote")}</p></div><label className="cursor-pointer rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold text-faida-navy">{t("profile.uploadLogo")}<input type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadLogo(file); }} /></label><UploadProgressFeedback state={uploadStates.logo} /></div>{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-16 w-16 rounded-xl border border-slate-200 bg-white object-contain p-1" /> : null}</section>
 
     <section className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-faida-navy">{t("profile.socialTitle")}</h3><button type="button" onClick={() => update({ socialLinks: [...profile.socialLinks, { platform: "LinkedIn", label: "", url: "", avatarUrl: "" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.socialLinks.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-[.7fr_1fr_1.5fr_auto]"><TextInput label={t("profile.platform")} value={item.platform} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, platform: value } : row) })} /><TextInput label={t("profile.label")} value={item.label} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, label: value } : row) })} /><TextInput label={t("profile.url")} value={item.url} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, url: value } : row) })} type="url" /><TextInput label="Profile photo URL" value={item.avatarUrl || ""} onChange={(value) => update({ socialLinks: profile.socialLinks.map((row, i) => i === index ? { ...row, avatarUrl: value } : row) })} type="url" /><button type="button" aria-label={t("profile.removeItem")} onClick={() => update({ socialLinks: profile.socialLinks.filter((_, i) => i !== index) })} className="self-end rounded-lg px-2 py-2 text-slate-500">×</button></div>)}</section>
 
-    <ShowcaseEditor form={form} update={update} />
-    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><div><h3 className="font-semibold text-faida-navy">{t("profile.credentialsTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.credentialsNote")}</p></div><button type="button" onClick={() => update({ credentials: [...profile.credentials, { title: "", issuer: "", year: "", fileUrl: "", fileName: "", mimeType: "application/pdf" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.credentials.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-2"><TextInput label={t("profile.credentialTitle")} value={item.title} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, title: value } : row) })} /><TextInput label={t("profile.issuer")} value={item.issuer} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, issuer: value } : row) })} /><TextInput label={t("profile.year")} value={item.year} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, year: value } : row) })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.file")}</span><input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadCredential(index, file); }} className="mt-1.5 block w-full text-xs" />{uploading === `credential-${index}` ? <span className="mt-1 block text-xs text-teal-800">{t("profile.uploading")}</span> : item.fileName ? <span className="mt-1 block truncate text-xs text-slate-600">{item.fileName}</span> : null}</label></div>)}</section>
+    <ShowcaseEditor form={form} update={update} uploadStates={uploadStates} runUpload={runProfileUpload} uploadProjectImage={uploadProjectImage} />
+    <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><div><h3 className="font-semibold text-faida-navy">{t("profile.credentialsTitle")}</h3><p className="mt-1 text-xs text-faida-slate">{t("profile.credentialsNote")}</p></div><button type="button" onClick={() => update({ credentials: [...profile.credentials, { title: "", issuer: "", year: "", fileUrl: "", fileName: "", mimeType: "application/pdf" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.credentials.map((item, index) => <div key={index} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-2"><TextInput label={t("profile.credentialTitle")} value={item.title} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, title: value } : row) })} /><TextInput label={t("profile.issuer")} value={item.issuer} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, issuer: value } : row) })} /><TextInput label={t("profile.year")} value={item.year} onChange={(value) => update({ credentials: profile.credentials.map((row, i) => i === index ? { ...row, year: value } : row) })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.file")}</span><input type="file" accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(event) => { const file = event.target.files?.[0]; if (file) void uploadCredential(index, file); }} className="mt-1.5 block w-full text-xs" /><UploadProgressFeedback state={uploadStates[`credential-${index}`]} />{item.fileName ? <span className="mt-1 block truncate text-xs text-slate-600">{item.fileName}</span> : null}</label></div>)}</section>
 
     <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><div className="flex items-center justify-between"><h3 className="font-semibold text-faida-navy">{t("profile.customFieldsTitle")}</h3><button type="button" onClick={() => update({ customFields: [...profile.customFields, { id: `field-${Date.now()}`, label: "", type: "text", value: "" }] })} className="rounded-lg border border-slate-300 px-3 py-2 text-xs font-bold">+ {t("profile.addItem")}</button></div>{profile.customFields.map((item, index) => <div key={item.id} className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-3"><TextInput label={t("profile.fieldLabel")} value={item.label} onChange={(value) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, label: value } : row) })} /><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.fieldType")}</span><select value={item.type} onChange={(event) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, type: event.target.value as typeof row.type } : row) })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm">{profileFieldTypes.map((type) => <option key={type.id} value={type.id}>{type.label}</option>)}</select></label><TextInput label={t("profile.fieldValue")} value={item.value} onChange={(value) => update({ customFields: profile.customFields.map((row, i) => i === index ? { ...row, value } : row) })} /></div>)}</section>
 
     <section className="space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.visibilityTitle")}</h3><div className="grid gap-2 sm:grid-cols-2">{(Object.keys(profile.sectionVisibility) as (keyof typeof profile.sectionVisibility)[]).map((key) => <label key={key} className="flex items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={profile.sectionVisibility[key]} onChange={(event) => update({ sectionVisibility: { ...profile.sectionVisibility, [key]: event.target.checked } })} className="h-4 w-4 accent-emerald-700" />{t(`profile.visibility.${key}` as never)}</label>)}</div></section>
 
     <section id="profile-qr-style" className="scroll-mt-24 space-y-4 rounded-2xl border border-slate-200 p-4"><h3 className="font-semibold text-faida-navy">{t("profile.qrStyleTitle")}</h3><div className="grid gap-4 sm:grid-cols-2"><div className="grid grid-cols-[3rem_1fr] items-end gap-2"><TextInput label={t("profile.qrBackground")} value={profile.qrPageBackground} onChange={(value) => update({ qrPageBackground: value.toUpperCase() })} type="color" /><TextInput label={t("profile.qrHexValue")} value={profile.qrPageBackground} onChange={(value) => /^#[0-9a-fA-F]{6}$/.test(value) && update({ qrPageBackground: value.toUpperCase() })} placeholder="#FFFFFF" /></div><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrFrame")}</span><select value={profile.qrFrame} onChange={(event) => update({ qrFrame: event.target.value as typeof profile.qrFrame })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrFrameNone")}</option><option value="square">{t("profile.qrFrameSquare")}</option><option value="rounded">{t("profile.qrFrameRounded")}</option><option value="badge">{t("profile.qrFrameBadge")}</option><option value="circle">Circle</option><option value="brand">Brand frame</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrDots")}</span><select value={profile.qrDots} onChange={(event) => update({ qrDots: event.target.value as typeof profile.qrDots })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="square">{t("profile.qrDotsSquare")}</option><option value="round">{t("profile.qrDotsRound")}</option><option value="circle">Circle</option><option value="diamond">Diamond</option><option value="heart">Heart</option><option value="line">Line / Bars</option></select></label><label className="block text-sm font-semibold text-slate-700"><span>{t("profile.qrLogoPlacement")}</span><select value={profile.qrLogoPlacement} onChange={(event) => update({ qrLogoPlacement: event.target.value as typeof profile.qrLogoPlacement })} className="mt-1.5 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm"><option value="none">{t("profile.qrLogoNone")}</option><option value="center">{t("profile.qrLogoCenter")}</option><option value="above">{t("profile.qrLogoAbove")}</option></select></label></div></section>
-    {uploadError ? <p role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-900">{uploadError}</p> : null}
     <LiveProfileQr form={form} setFormAction={setFormAction} />
   </div>;
 }
