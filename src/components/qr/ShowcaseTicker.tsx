@@ -40,6 +40,17 @@ function attachmentTypeLabel(item: ShowcaseCardItem) {
   return extension || (isImageAttachment(item) ? "image" : "file");
 }
 
+function ShowcaseAttachment({ item }: { item: ShowcaseCardItem }) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const previewUrl = item.attachmentPreviewUrl ?? (isImageAttachment(item) ? item.link : undefined);
+  if (previewUrl && !imageFailed) {
+    return <a href={item.link ?? previewUrl} target="_blank" rel="noopener noreferrer" className="mt-2 block w-fit max-w-full" aria-label={`Open ${item.title}`}>
+      <img src={previewUrl} alt={item.title} loading="lazy" decoding="async" onError={() => setImageFailed(true)} className="max-h-72 max-w-full rounded-lg border border-slate-200 bg-white object-contain" />
+    </a>;
+  }
+  return item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">{item.linkLabel ?? `Open ${attachmentTypeLabel(item)} attachment`} ↗</a> : <strong>{item.title}</strong>;
+}
+
 type ShowcaseRailProps = {
   items: ShowcaseCardItem[];
   ariaLabel: string;
@@ -286,7 +297,7 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
             {child.meta ? <p className="mt-1 text-sm font-bold text-emerald-800">{child.meta}</p> : null}
             {child.description ? <p className="mt-2 text-sm leading-6 text-slate-600">{child.description}</p> : null}
             {child.link ? <a href={child.link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex text-sm font-semibold text-emerald-800 underline">{child.linkLabel ?? `Open ${attachmentTypeLabel(child)} attachment`} ↗</a> : null}
-            {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-2">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700">{nested.link ? <a href={nested.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">{nested.linkLabel ?? nested.title} ↗</a> : <strong>{nested.title}</strong>}{nested.meta ? ` · ${nested.meta}` : ""}{nested.description ? ` — ${nested.description}` : ""}</li>)}</ul></div> : null}
+            {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-3">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700"><p className="font-semibold">{nested.title}</p><ShowcaseAttachment item={nested} />{nested.meta ? <p className="mt-1">{nested.meta}</p> : null}{nested.description ? <p className="mt-1">{nested.description}</p> : null}</li>)}</ul></div> : null}
           </article>)}
         </div>
       </section> : null}
