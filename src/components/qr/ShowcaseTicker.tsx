@@ -34,6 +34,8 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
   const resumeTimeoutRef = useRef<number | null>(null);
   const lastFrameRef = useRef(0);
   const autoScrollingRef = useRef(false);
+  const programmaticScrollUntilRef = useRef(0);
+  const scrollPositionRef = useRef(0);
   const reducedMotionRef = useRef(false);
   const hoveredRef = useRef(false);
   const focusedRef = useRef(false);
@@ -78,8 +80,10 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
       lastFrameRef.current = now;
       if (viewport && !reducedMotionRef.current && !hoveredRef.current && !focusedRef.current && !dragRef.current.active && now >= interactionUntilRef.current && sequenceWidthRef.current > 0) {
         autoScrollingRef.current = true;
-        viewport.scrollLeft += elapsed * 0.014;
-        while (viewport.scrollLeft >= sequenceWidthRef.current) viewport.scrollLeft -= sequenceWidthRef.current;
+        programmaticScrollUntilRef.current = now + 120;
+        scrollPositionRef.current += elapsed * 0.028;
+        while (scrollPositionRef.current >= sequenceWidthRef.current) scrollPositionRef.current -= sequenceWidthRef.current;
+        viewport.scrollLeft = scrollPositionRef.current;
         autoScrollingRef.current = false;
       }
       animationFrameRef.current = window.requestAnimationFrame(tick);
@@ -105,6 +109,7 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
     if (event.pointerType === "mouse" && event.button !== 0) return;
     const viewport = viewportRef.current;
     if (!viewport) return;
+    scrollPositionRef.current = viewport.scrollLeft;
     dragRef.current = { active: true, pointerId: event.pointerId, startX: event.clientX, startScrollLeft: viewport.scrollLeft, moved: false };
     pauseAfterInteraction();
     viewport.setPointerCapture?.(event.pointerId);
@@ -139,7 +144,10 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
   }
 
   function handleScroll() {
-    if (!autoScrollingRef.current) pauseAfterInteraction();
+    if (!autoScrollingRef.current && performance.now() >= programmaticScrollUntilRef.current) {
+      scrollPositionRef.current = viewportRef.current?.scrollLeft ?? scrollPositionRef.current;
+      pauseAfterInteraction();
+    }
   }
 
   function handleFocus() {
