@@ -12,7 +12,7 @@ export default function DashboardPageHeading({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col justify-between gap-4 border-b border-slate-200/80 pb-5 sm:flex-row sm:items-end">
+    <div className="dashboard-page-heading flex flex-col justify-between gap-4 border-b border-slate-200/80 pb-5 sm:flex-row sm:items-end">
       <div className="min-w-0">
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-faida-teal">{eyebrow}</p>
         <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-faida-navy sm:text-[28px]">{title}</h1>

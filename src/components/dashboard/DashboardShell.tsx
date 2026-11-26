@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import LanguageSelector from "@/i18n/LanguageSelector";
 import { useI18n } from "@/i18n/LocaleProvider";
 import type { MessageKey } from "@/i18n/messages";
+import { applyThemePreference, readDashboardPreferences } from "@/lib/dashboard-preferences";
 
 type Session = {
   user: { id: string; name: string | null; email: string | null; role: string };
@@ -63,6 +64,21 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
   const wasMobileNavOpen = useRef(false);
+
+  useEffect(() => {
+    const syncTheme = () => applyThemePreference(readDashboardPreferences().theme);
+    const handleSystemThemeChange = () => {
+      if (readDashboardPreferences().theme === "system") syncTheme();
+    };
+    syncTheme();
+    window.addEventListener("faidatech:dashboard-preferences-changed", syncTheme);
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
+    colorScheme.addEventListener("change", handleSystemThemeChange);
+    return () => {
+      window.removeEventListener("faidatech:dashboard-preferences-changed", syncTheme);
+      colorScheme.removeEventListener("change", handleSystemThemeChange);
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -136,7 +152,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
   const backTarget = getBackTarget(pathname);
 
   return (
-    <div className="min-h-screen bg-[#f7faf9] text-faida-navy md:flex">
+    <div className="dashboard-root min-h-screen bg-[#f7faf9] text-faida-navy md:flex">
       <aside className={`relative z-40 border-b border-slate-200 bg-white md:sticky md:top-0 md:flex md:h-screen ${sidebarCollapsed ? "md:w-[88px]" : "md:w-[248px]"} md:shrink-0 md:flex-col md:border-b-0 md:border-r md:transition-[width] md:duration-200 md:ease-in-out motion-reduce:md:transition-none`}>
         <div className={`flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:py-6 ${sidebarCollapsed ? "md:justify-center md:px-2" : "md:px-5"}`}>
           <Link href="/dashboard" className="flex min-w-0 items-center" aria-label={`FaidATech ${t("nav.dashboard")}`}>

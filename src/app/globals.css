@@ -518,3 +518,24 @@ body {
     transition: none;
   }
 }
+
+html[data-theme="dark"] .dashboard-root {
+  background-color: #0f172a;
+  color: #e2e8f0;
+}
+
+html[data-theme="dark"] .dashboard-root main {
+  background-color: #0f172a;
+}
+
+html[data-theme="dark"] .dashboard-root .dashboard-page-heading {
+  border-bottom-color: #334155;
+}
+
+html[data-theme="dark"] .dashboard-root .dashboard-page-heading h1 {
+  color: #f8fafc;
+}
+
+html[data-theme="dark"] .dashboard-root .dashboard-page-heading div > p:last-child {
+  color: #cbd5e1;
+}

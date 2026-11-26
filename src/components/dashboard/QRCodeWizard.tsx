@@ -18,6 +18,7 @@ import {
 } from "@/components/dashboard/wizard/model";
 import type { ApiErrorEnvelope } from "@/lib/qr/client-types";
 import { getReadableTextColor } from "@/lib/qr/brand-presentation";
+import { readDashboardPreferences, type QrExportFormatPreference } from "@/lib/dashboard-preferences";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { localeMetadata } from "@/i18n/registry";
 import { localizedOverride, localizedText } from "@/i18n/localized-content";
@@ -148,11 +149,27 @@ export default function QRCodeWizard() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState<SaveResponse | null>(null);
   const [showPublicPreview, setShowPublicPreview] = useState(true);
+  const [preferredExportFormat, setPreferredExportFormat] = useState<QrExportFormatPreference>("png");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    setEditId(params.get("edit"));
-    if (params.get("pillar") === "profiles" && !params.get("edit")) setForm((current) => ({ ...current, purpose: "SECTOR_PROFILE" }));
+    const requestedEdit = params.get("edit");
+    const qrDefaults = readDashboardPreferences().qr;
+    setEditId(requestedEdit);
+    setPreferredExportFormat(qrDefaults.exportFormat);
+    if (!requestedEdit) setForm((current) => ({
+      ...current,
+      ...(params.get("pillar") === "profiles" ? { purpose: "SECTOR_PROFILE" as const } : {}),
+      branding: { ...current.branding, qrForeground: qrDefaults.moduleColor },
+      profile: {
+        ...current.profile,
+        qrPageBackground: qrDefaults.pageBackground,
+        qrEyeColor: qrDefaults.eyeColor,
+        qrFrame: qrDefaults.frame,
+        qrDots: qrDefaults.modules,
+        qrLogoPlacement: qrDefaults.logoPlacement,
+      },
+    }));
   }, []);
 
   useEffect(() => {
@@ -317,7 +334,7 @@ export default function QRCodeWizard() {
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-faida-slate">{editId ? t("wizard.destinationUpdated") : t("wizard.shortCodeReady")}</p>
               {success?.qrImageDataUrl ? <img src={success.qrImageDataUrl} alt={t("wizard.qrImage")} className="mx-auto mt-5 h-44 w-44 rounded-2xl border border-slate-200 bg-white p-2" /> : null}
               {publicPath ? <a href={publicPath} target="_blank" rel="noreferrer" className="mx-auto mt-4 block max-w-md break-all rounded-xl bg-slate-50 px-4 py-3 font-mono text-xs text-emerald-900 hover:bg-emerald-50">{typeof window !== "undefined" ? new URL(publicPath, window.location.origin).toString() : publicPath}</a> : null}
-              <div className="mt-6 flex flex-wrap justify-center gap-2"><Link href="/dashboard/qrcodes" className="rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy">{t("wizard.viewCodes")}</Link>{qrCode?.id ? <><a href={`/api/qrcodes/${qrCode.id}/image?format=svg`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadSvg")}</a><a href={`/api/qrcodes/${qrCode.id}/image?format=png`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadPng")}</a></> : null}<button type="button" onClick={startOver} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-slate">{t("wizard.createAnother")}</button></div>
+              <div className="mt-6 flex flex-wrap justify-center gap-2"><Link href="/dashboard/qrcodes" className="rounded-xl bg-faida-green px-4 py-2.5 text-sm font-bold text-faida-navy">{t("wizard.viewCodes")}</Link>{qrCode?.id ? preferredExportFormat === "svg" ? <><a href={`/api/qrcodes/${qrCode.id}/image?format=svg`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadSvg")}</a><a href={`/api/qrcodes/${qrCode.id}/image?format=png`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadPng")}</a></> : <><a href={`/api/qrcodes/${qrCode.id}/image?format=png`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadPng")}</a><a href={`/api/qrcodes/${qrCode.id}/image?format=svg`} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-navy">{t("common.downloadSvg")}</a></> : null}<button type="button" onClick={startOver} className="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-semibold text-faida-slate">{t("wizard.createAnother")}</button></div>
             </div>
           ) : null}
 
