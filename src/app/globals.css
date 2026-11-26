@@ -387,7 +387,8 @@ body {
 
 .profile-showcase-parent-stage {
   position: relative;
-  width: 100%;
+  width: calc(100% + 2rem);
+  margin-inline: -1rem;
 }
 
 .profile-showcase-parent-stage > .profile-showcase-card {
