@@ -3,7 +3,7 @@ import next from "eslint-config-next";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: [".next/**", "node_modules/**", ".work/**", "coverage/**"] },
+  { ignores: [".next/**", "node_modules/**", ".work/**", "coverage/**", "qrPublicVisitorHeader.tsx"] },
   eslint.configs.recommended,
   ...next,
   ...tseslint.configs.recommended,

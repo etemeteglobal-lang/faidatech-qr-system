@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type ChangeEvent, type FocusEvent, type FormEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import { useEffect, useRef, useState, type FocusEvent, type MouseEvent, type PointerEvent as ReactPointerEvent } from "react";
+import Link from "next/link";
 
 export type ShowcaseCardItem = {
   id: string;
@@ -198,29 +199,19 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
 
 function ShowcaseCard({ item, decorative, child }: { item: ShowcaseCardItem; decorative: boolean; child: boolean }) {
   if (child) {
-    return <button
-      type="button"
-      className="profile-showcase-child-card"
-      tabIndex={decorative ? -1 : undefined}
-      onClick={() => {
-        if (item.detailHref) window.location.href = item.detailHref;
-      }}
-      aria-label={`View details for ${item.title}`}
-    >
+    const content = <>
       {item.imageUrl
         ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} loading="lazy" decoding="async" className="profile-showcase-child-media" />
         : <div aria-hidden="true" className="profile-showcase-child-placeholder"><span>{item.kicker ?? "Detail"}</span></div>}
       <span className="profile-showcase-child-body">
         {item.kicker ? <span className="profile-showcase-child-kicker">{item.kicker.split(" · ").at(-1)}</span> : null}
-        <span className="flex items-start justify-between gap-2">
-          <span className="min-w-0 text-sm font-bold text-slate-900">{item.title}</span>
-          {item.badge ? <span className="profile-showcase-badge">{item.badge}</span> : null}
-        </span>
+        <span className="flex items-start justify-between gap-2"><span className="min-w-0 text-sm font-bold text-slate-900">{item.title}</span>{item.badge ? <span className="profile-showcase-badge">{item.badge}</span> : null}</span>
         {item.meta ? <span className="mt-1 block text-xs font-bold text-emerald-800">{item.meta}</span> : null}
         {item.description ? <span className="mt-1 block line-clamp-3 text-left text-xs leading-5 text-slate-600">{item.description}</span> : null}
         <span className="mt-2 block text-left text-xs font-bold text-emerald-800 underline">View details <span aria-hidden="true">↗</span></span>
       </span>
-    </button>;
+    </>;
+    return item.detailHref ? <Link href={item.detailHref} className="profile-showcase-child-card" tabIndex={decorative ? -1 : undefined} aria-label={`View details for ${item.title}`} draggable={false}>{content}</Link> : <article className="profile-showcase-child-card">{content}</article>;
   }
 
   return <article className="profile-showcase-card">
@@ -250,45 +241,7 @@ function ShowcaseCard({ item, decorative, child }: { item: ShowcaseCardItem; dec
   </article>;
 }
 
-type ShowcaseUploadConfig = { accept: string; label: string; helperText: string };
-
-function ShowcaseUploadForm({ config }: { config: ShowcaseUploadConfig }) {
-  const [file, setFile] = useState<File | null>(null);
-  const [message, setMessage] = useState("");
-
-  function selectFile(event: ChangeEvent<HTMLInputElement>) {
-    const selected = event.target.files?.[0] ?? null;
-    if (!selected) return;
-    if (selected.size > 10 * 1024 * 1024) {
-      setFile(null);
-      setMessage("Files must be 10 MB or smaller.");
-      event.target.value = "";
-      return;
-    }
-    setFile(selected);
-    setMessage("");
-  }
-
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setMessage(file ? "File selected and ready for submission." : "Choose a file before submitting.");
-  }
-
-  function clear() {
-    setFile(null);
-    setMessage("Selection cleared.");
-  }
-
-  return <form className="profile-showcase-upload" onSubmit={submit}>
-    <div><h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{config.label}</h2><p className="mt-1 text-sm leading-6 text-slate-600">{config.helperText}</p></div>
-    <label className="profile-showcase-upload-picker"><span>Select a file</span><input type="file" accept={config.accept} onChange={selectFile} /></label>
-    {file ? <p className="profile-showcase-upload-file"><strong>{file.name}</strong><span>{file.type || "Unknown type"} · {(file.size / 1024 / 1024).toFixed(2)} MB</span></p> : null}
-    <div className="flex flex-wrap gap-2"><button type="submit" className="rounded-lg bg-emerald-700 px-3 py-2 text-sm font-bold text-white">Submit file</button>{file ? <button type="button" onClick={clear} className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-bold text-slate-700">Clear</button> : null}</div>
-    {message ? <p role="status" className="text-sm font-semibold text-slate-700">{message}</p> : null}
-  </form>;
-}
-
-export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showcase", uploadConfig }: { item: ShowcaseCardItem; backHref: string; backLabel?: string; uploadConfig?: ShowcaseUploadConfig }) {
+export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showcase" }: { item: ShowcaseCardItem; backHref: string; backLabel?: string }) {
   return <article className="profile-showcase-detail-page">
     <a href={backHref} className="profile-showcase-back-link">← {backLabel}</a>
     {item.imageUrl ? <img src={item.imageUrl} alt={item.imageAlt ?? item.title} className="profile-showcase-detail-media" /> : null}
@@ -297,7 +250,7 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
       <div className="flex items-start justify-between gap-3"><h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{item.title}</h1>{item.badge ? <span className="profile-showcase-badge">{item.badge}</span> : null}</div>
       {item.meta ? <p className="mt-3 text-base font-bold text-emerald-800">{item.meta}</p> : null}
       {item.description ? <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-700">{item.description}</p> : null}
-      {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 underline">{item.linkLabel ?? "View details"}<span aria-hidden="true">↗</span></a> : null}
+      {item.link ? <a href={item.link} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-1 text-sm font-bold text-emerald-800 underline">{item.linkLabel ?? "Continue externally"}<span aria-hidden="true">↗</span></a> : null}
       {item.children?.length ? <section className="profile-showcase-detail-children" aria-label={item.childrenLabel ?? "More details"}>
         <h2 className="text-sm font-bold uppercase tracking-wide text-slate-500">{item.childrenLabel ?? "More details"}</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -306,11 +259,10 @@ export function ShowcaseDetailView({ item, backHref, backLabel = "Back to showca
             <div className="flex items-start justify-between gap-2"><h3 className="font-semibold text-slate-900">{child.title}</h3>{child.badge ? <span className="profile-showcase-badge">{child.badge}</span> : null}</div>
             {child.meta ? <p className="mt-1 text-sm font-bold text-emerald-800">{child.meta}</p> : null}
             {child.description ? <p className="mt-2 text-sm leading-6 text-slate-600">{child.description}</p> : null}
-            {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-2">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700"><strong>{nested.title}</strong>{nested.meta ? ` · ${nested.meta}` : ""}{nested.description ? ` — ${nested.description}` : ""}</li>)}</ul></div> : null}
+            {child.children?.length ? <div className="mt-3 border-t border-slate-200 pt-3"><p className="text-xs font-bold uppercase tracking-wide text-slate-500">{child.childrenLabel ?? "Options"}</p><ul className="mt-2 space-y-2">{child.children.map((nested) => <li key={nested.id} className="text-sm text-slate-700">{nested.link ? <a href={nested.link} target="_blank" rel="noopener noreferrer" className="font-semibold text-emerald-800 underline">{nested.linkLabel ?? nested.title} ↗</a> : <strong>{nested.title}</strong>}{nested.meta ? ` · ${nested.meta}` : ""}{nested.description ? ` — ${nested.description}` : ""}</li>)}</ul></div> : null}
           </article>)}
         </div>
       </section> : null}
-      {uploadConfig ? <ShowcaseUploadForm config={uploadConfig} /> : null}
     </div>
   </article>;
 }

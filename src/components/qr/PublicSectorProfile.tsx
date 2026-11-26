@@ -262,15 +262,9 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
     const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
     if (!detailItem) return null;
     const parentId = parentIdForShowcaseItem(detailItem);
-    const uploadConfigured = Object.values(custom).some((value) => {
-      const record = object(value);
-      const kind = fieldKind(record);
-      return kind === "file" || kind === "document";
-    });
     return <ShowcaseDetailView
       item={detailItem}
       backHref={`/p/${encodeURIComponent(slug)}?showcaseParent=${encodeURIComponent(parentId)}#showcase`}
-      uploadConfig={uploadConfigured ? { accept: "image/*,.pdf,.doc,.docx,.txt", label: "Submit a related file", helperText: "Images, PDFs, and common document files up to 10 MB are accepted." } : undefined}
     />;
   }
   const ratingMode = text(data._ratingMode ?? custom._ratingMode) ?? "off";

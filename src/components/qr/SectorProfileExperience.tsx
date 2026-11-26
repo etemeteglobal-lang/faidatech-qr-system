@@ -28,8 +28,8 @@ function mapProfileShowcaseChild(child: ProfileShowcaseChild, parentTitle: strin
     description: child.description,
     link: child.link,
     detailHref: `${detailBase}/${encodeURIComponent(id)}`,
-    children: (child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label, `${id}-child`, detailBase)),
-    childrenLabel: label,
+    children: [...(child.children ?? []).map((nested, nestedIndex) => mapProfileShowcaseChild(nested, child.title || childLabel, nestedIndex, label, `${id}-child`, detailBase)), ...(child.attachments ?? []).map((file, fileIndex) => ({ id: `${id}-file-${fileIndex}`, title: file.fileName, link: file.url, linkLabel: "Open attachment" }))],
+    childrenLabel: child.attachments?.length ? "Attachments and options" : label,
   };
 }
 
@@ -131,11 +131,9 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
     const detailItem = findShowcaseItem(showcaseItems, showcaseItemId);
     if (!detailItem) return null;
     const parentId = parentIdForShowcaseItem(detailItem);
-    const uploadConfigured = payload.customFields.some((field) => field.type === "file" || field.type === "document");
     return <ShowcaseDetailView
       item={detailItem}
       backHref={`/r/${encodeURIComponent(shortCode)}?showcaseParent=${encodeURIComponent(parentId)}#showcase`}
-      uploadConfig={uploadConfigured ? { accept: "image/*,.pdf,.doc,.docx,.txt", label: "Submit a related file", helperText: "Images, PDFs, and common document files up to 10 MB are accepted." } : undefined}
     />;
   }
 

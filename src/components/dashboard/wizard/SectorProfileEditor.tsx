@@ -113,7 +113,7 @@ function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectIm
     });
   }
   function addProductVariant(productIndex: number) {
-    update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: [...item.variants, { title: "", description: "", imageUrl: "" }] } : item) });
+    update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: [...item.variants, { title: "", description: "", imageUrl: "", link: "", attachments: [] }] } : item) });
   }
   function updateProductVariant(productIndex: number, variantIndex: number, fields: Partial<WizardForm["profile"]["products"][number]["variants"][number]>) {
     update({ products: profile.products.map((item, index) => index === productIndex ? { ...item, variants: item.variants.map((variant, childIndex) => childIndex === variantIndex ? { ...variant, ...fields } : variant) } : item) });
@@ -144,6 +144,8 @@ function ShowcaseEditor({ form, update, uploadStates, runUpload, uploadProjectIm
             <p className="text-xs font-bold text-teal-800">{labels.childSingular} {variantIndex + 1}</p>
             <TextInput label={labels.childTitleLabel} value={variant.title} onChange={(title) => updateProductVariant(index, variantIndex, { title })} />
             <TextArea label={labels.childDescriptionLabel} value={variant.description} onChange={(description) => updateProductVariant(index, variantIndex, { description })} />
+            <TextInput label="External submission URL (optional)" type="url" value={variant.link} onChange={(link) => updateProductVariant(index, variantIndex, { link })} placeholder="https://forms.example.com/…" />
+            <label className="mt-2 block text-xs font-semibold">Attachments (optional)<input type="file" multiple accept="application/pdf,image/png,image/jpeg,image/webp" onChange={(e) => { const files = Array.from(e.target.files ?? []); files.forEach((file) => void runUpload(`product-${index}-variant-${variantIndex}-file-${file.name}`, file, undefined, (uploaded) => updateProductVariant(index, variantIndex, { attachments: [...(profile.products[index]?.variants[variantIndex]?.attachments ?? []), { url: uploaded.url, fileName: uploaded.fileName, mimeType: uploaded.mimeType }] }))); e.currentTarget.value = ""; }} className="mt-1 block w-full" />{variant.attachments?.map((file, fileIndex) => <span key={`${file.url}-${fileIndex}`} className="mt-1 block truncate text-slate-600">{file.fileName}</span>)}</label>
             <label className="mt-2 block text-xs font-semibold">{labels.childImageLabel}<input type="file" accept="image/png,image/jpeg,image/webp" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadVariantImage(file, index, variantIndex); }} className="mt-1 block w-full" /><UploadProgressFeedback state={uploadStates[`product-${index}-variant-${variantIndex}`]} />{variant.imageUrl ? <img src={variant.imageUrl} alt="" className="mt-2 h-36 w-full rounded-lg object-cover" /> : null}</label>
             <button type="button" onClick={() => removeProductVariant(index, variantIndex)} className="mt-2 text-xs font-semibold text-red-700">Remove {labels.childSingular.toLowerCase()}</button>
           </article>)}</div> : <p className="mt-2 text-xs text-slate-500">Add options such as a dress size, color, or shoe style.</p>}

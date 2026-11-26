@@ -66,6 +66,7 @@ type ProfileShowcaseChildPayload = {
   badge?: string;
   link?: string;
   children?: ProfileShowcaseChildPayload[];
+  attachments?: { url: string; fileName: string; mimeType: string }[];
 };
 
 const profileShowcaseChildSchema: z.ZodType<ProfileShowcaseChildPayload> = z.lazy(() => z.object({
@@ -77,6 +78,7 @@ const profileShowcaseChildSchema: z.ZodType<ProfileShowcaseChildPayload> = z.laz
   badge: optionalText(80),
   link: profileUrl,
   children: profileShowcaseChildSchema.array().max(20).optional(),
+  attachments: z.array(z.object({ url: webUrl, fileName: z.string().trim().min(1).max(255), mimeType: z.string().trim().max(120) }).strict()).max(10).optional(),
 }).strict());
 
 const profileSocialLinkSchema = z.object({
