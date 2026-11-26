@@ -2,6 +2,9 @@ import { Prisma } from "@prisma/client";
 import { ApiError } from "@/lib/api/errors";
 import { prisma } from "@/lib/prisma";
 
+// Larger non-production allowance for upload testing; production Starter remains 50 MiB.
+export const STARTER_STORAGE_BYTES_LIMIT = BigInt(process.env.NODE_ENV === "production" ? 50 * 1024 * 1024 : 5 * 1024 * 1024 * 1024);
+
 export const STARTER_PLAN = {
   code: "starter_free_monthly_etb",
   name: "Starter / Free",
@@ -12,7 +15,7 @@ export const STARTER_PLAN = {
   scanLimit: 1_000,
   teamSeatLimit: 1,
   customDomainLimit: 0,
-  storageBytesLimit: BigInt(50 * 1024 * 1024),
+  storageBytesLimit: STARTER_STORAGE_BYTES_LIMIT,
   featureFlags: { analytics: true, multilingual: true },
 };
 
@@ -26,7 +29,7 @@ export async function ensureDefaultBillingForOrganization(organizationId: string
       const plan = await transaction.plan.upsert({
         where: { code: STARTER_PLAN.code },
         create: STARTER_PLAN,
-        update: { active: true },
+        update: { active: true, storageBytesLimit: STARTER_PLAN.storageBytesLimit },
       });
       await transaction.planQuota.upsert({
         where: { organizationId_planId: { organizationId, planId: plan.id } },
