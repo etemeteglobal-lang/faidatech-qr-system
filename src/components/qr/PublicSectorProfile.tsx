@@ -1,10 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
 import { useI18n } from "@/i18n/LocaleProvider";
 import { useState } from "react";
 import type { MessageKey } from "@/i18n/messages";
-import { verticalTemplates } from "@/lib/templates/registry";
 import ProfileShareActions from "@/components/qr/ProfileShareActions";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
 import ShowcaseTicker, { type ShowcaseCardItem, ShowcaseDetailView } from "@/components/qr/ShowcaseTicker";
@@ -45,8 +43,6 @@ const SOCIAL_BRANDS: Record<string, SocialBrand> = {
   x: { name: "X", mark: "𝕏", color: "bg-slate-950" },
   twitter: { name: "X", mark: "𝕏", color: "bg-slate-950" },
 };
-const knownTemplateFields = new Set<string>(verticalTemplates.flatMap((template) => [...template.fields]));
-
 function object(value: unknown): JsonObject {
   return value && typeof value === "object" && !Array.isArray(value) ? value as JsonObject : {};
 }
@@ -282,7 +278,6 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const testimonial = fieldValue(custom.Testimonial) ?? text(review.text ?? review.content);
   const ratingValue = Number(fieldValue(custom.Rating));
   const ratingStars = Number.isFinite(ratingValue) && ratingValue >= 0 && ratingValue <= 5 ? "★".repeat(Math.round(ratingValue)) + "☆".repeat(5 - Math.round(ratingValue)) : "";
-  const showDetails = data._showDetails !== false && data._showDetails !== "false";
   const showSocial = data._showSocial !== false && data._showSocial !== "false";
   const showDocuments = data._showDocuments !== false && data._showDocuments !== "false";
   const showReviews = data._showReviews !== false && data._showReviews !== "false";
@@ -292,37 +287,10 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
   const customEntries = Object.entries(custom).filter(([key, value]) => key !== "customSectorName" && key !== "announcements" && !key.startsWith("_") && value !== null && value !== undefined && value !== "");
   const socialEntries = [...displayData, ...customEntries].filter(([, value]) => fieldKind(object(value)) === "social");
   const documents = [...displayData, ...customEntries].filter(([, value]) => fieldKind(object(value)) === "file");
-  const otherDisplayData = displayData.filter(([, value]) => !["social", "file"].includes(fieldKind(object(value))));
-  const customData = customEntries.filter(([, value]) => !["social", "file"].includes(fieldKind(object(value))));
   const sectorName = sector === "OTHER"
     ? text(custom.customSectorName) ?? t("templates.customSector")
     : t(`template.sector.${sector}` as MessageKey);
   const profileTypeKey = entityType === "GOVERNANCE" ? "profile.entityGovernance" : entityType === "GROUP" ? "profile.entityGroup" : entityType === "INDIVIDUAL" ? "profile.entityIndividual" : ({ INDIVIDUAL: "templates.individual", ORGANIZATION: "templates.organization", GOVERNMENT: "templates.government", GROUP: "templates.group" } as Record<string, MessageKey>)[profileKind] ?? "templates.organization";
-  const displayLabel = (key: string, item: unknown) => {
-    const record = object(item);
-    const explicit = text(record.label ?? record.name);
-    if (explicit && explicit !== key) return explicit;
-    return knownTemplateFields.has(key) ? t(`template.field.${key}` as MessageKey) : humanize(key);
-  };
-  const renderValue = (value: unknown, key: string): ReactNode => {
-    const item = object(value);
-    const kind = fieldKind(item);
-    const content = item.value ?? item.url ?? item.href;
-    if (kind === "link" || kind === "url") {
-      const href = safeHttpUrl(content);
-      return href ? <a className="break-all font-semibold text-teal-800 underline underline-offset-2" href={href} target="_blank" rel="noopener noreferrer">{text(item.value ?? item.label) ?? href}</a> : null;
-    }
-    if (kind === "file") {
-      const href = safeHttpUrl(item.url ?? item.href ?? item.value);
-      return href ? <a className="font-semibold text-teal-800 underline underline-offset-2" href={href} target="_blank" rel="noopener noreferrer">{text(item.fileName ?? item.name) ?? key}</a> : null;
-    }
-    if (kind === "text" || kind === "textarea" || kind === "email" || kind === "phone") {
-      const valueText = text(content);
-      return valueText ? <span className="whitespace-pre-wrap break-words">{valueText}</span> : null;
-    }
-    const plain = text(value);
-    return plain ? <span className="whitespace-pre-wrap break-words">{plain}</span> : null;
-  };
   const reviewsEnabled = showReviews && (ratingMode === "stars" || ratingMode === "stars-review");
 
   return <main className="min-h-screen px-4 py-6 sm:px-6 sm:py-10" style={{ backgroundColor: background }}>
@@ -360,7 +328,6 @@ export default function PublicSectorProfile({ slug, displayName, sector, profile
             <span aria-hidden="true" className="text-xl text-slate-400">↗</span>
           </a>;
         })}</div></section> : null}
-        {showDetails && (otherDisplayData.length > 0 || customData.length > 0) ? <section aria-label={t("profile.details")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.details")}</h2><div className="grid gap-3 sm:grid-cols-2">{otherDisplayData.map(([key, value]) => <div key={key} className="min-w-0 rounded-2xl bg-slate-50 p-4"><h3 className="mb-2 text-sm font-semibold text-slate-700">{displayLabel(key, value)}</h3><div className="text-sm leading-6 text-slate-800">{renderValue(value, key)}</div></div>)}</div>{customData.length > 0 ? <dl className="mt-4 divide-y divide-slate-100 rounded-2xl border border-slate-100 px-4">{customData.map(([key, value]) => <div key={key} className="grid gap-1 py-4 sm:grid-cols-[minmax(9rem,.4fr)_1fr] sm:gap-6"><dt className="text-sm font-semibold text-slate-600">{displayLabel(key, value)}</dt><dd className="min-w-0 text-sm leading-6 text-slate-800">{renderValue(value, key)}</dd></div>)}</dl> : null}</section> : null}
         {showDocuments && documents.length > 0 ? <section id="credentials" data-visitor-section data-visitor-label={t("profile.credentialsTitle")} aria-label={t("profile.files")}><h2 className="mb-3 text-lg font-bold text-slate-900">{t("profile.files")}</h2><div className="grid gap-3 sm:grid-cols-2">{documents.map(([key, value]) => {
           const record = object(value);
           const href = safeHttpUrl(record.url ?? record.href ?? record.value);
