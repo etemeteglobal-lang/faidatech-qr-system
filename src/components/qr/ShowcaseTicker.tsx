@@ -113,7 +113,6 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
     scrollPositionRef.current = viewport.scrollLeft;
     dragRef.current = { active: true, pointerId: event.pointerId, startX: event.clientX, startScrollLeft: viewport.scrollLeft, moved: false };
     pauseAfterInteraction();
-    viewport.setPointerCapture?.(event.pointerId);
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
@@ -121,7 +120,10 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
     const viewport = viewportRef.current;
     if (!drag.active || drag.pointerId !== event.pointerId || !viewport) return;
     const distance = event.clientX - drag.startX;
-    if (Math.abs(distance) > 5) drag.moved = true;
+    if (Math.abs(distance) > 5 && !drag.moved) {
+      drag.moved = true;
+      viewport.setPointerCapture?.(event.pointerId);
+    }
     if (!drag.moved) return;
     event.preventDefault();
     viewport.scrollLeft = drag.startScrollLeft - distance;
@@ -132,7 +134,10 @@ function ShowcaseRail({ items, ariaLabel, className = "", child = false }: Showc
     const viewport = viewportRef.current;
     if (!drag.active || drag.pointerId !== event.pointerId) return;
     if (viewport?.hasPointerCapture?.(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
-    if (drag.moved) suppressClickRef.current = true;
+    if (drag.moved) {
+      suppressClickRef.current = true;
+      window.setTimeout(() => { suppressClickRef.current = false; }, 0);
+    }
     dragRef.current = { active: false, pointerId: null, startX: 0, startScrollLeft: 0, moved: false };
     pauseAfterInteraction();
   }
