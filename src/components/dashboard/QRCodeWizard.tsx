@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import PayloadEditor from "@/components/dashboard/wizard/PayloadEditor";
 import BrandingEditor from "@/components/dashboard/wizard/BrandingEditor";
+import SectorProfileExperience from "@/components/qr/SectorProfileExperience";
 import StorageAllowanceIndicator from "@/components/dashboard/wizard/StorageAllowanceIndicator";
 import LocalizedContentEditor from "@/components/dashboard/wizard/LocalizedContentEditor";
 import DashboardPageHeading from "@/components/dashboard/DashboardPageHeading";
@@ -49,6 +50,42 @@ type SaveResponse = ApiErrorEnvelope & {
   qrImageDataUrl?: string;
 };
 
+function SectorVisitorPreview({ form, title, description, brandName }: { form: WizardForm; title: string; description: string; brandName: string }) {
+  const localizedEntries = Object.entries(form.localizedContent).flatMap(([code, content]) => {
+    if (!content) return [];
+    const fields = [
+      ["Title", content.title],
+      ["Brand name", content.displayName],
+      ["Description", content.description],
+      ["Summary", content.summary],
+      ["Body", content.body],
+      ["Button label", content.buttonLabel],
+    ].filter((entry): entry is [string, string] => typeof entry[1] === "string" && Boolean(entry[1].trim()));
+    return fields.length ? [{ code, fields }] : [];
+  });
+  const previewPayload = buildDestinationPayload(form) as Parameters<typeof SectorProfileExperience>[0]["payload"];
+
+  return <div className="space-y-3">
+    <header className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+      <div className="flex min-w-0 items-center gap-3">
+        {form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-10 w-10 shrink-0 rounded-xl border border-slate-100 bg-white object-contain p-1" /> : <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-xs font-black" style={{ backgroundColor: form.branding.accentColor, color: getReadableTextColor(form.branding.accentColor) }}>{brandName.slice(0, 1).toUpperCase()}</span>}
+        <div className="min-w-0"><p className="truncate text-xs font-bold text-faida-navy">{brandName}</p><p className="mt-0.5 break-words text-sm font-semibold text-slate-700">{title}</p></div>
+      </div>
+      {description ? <p className="mt-2 whitespace-pre-wrap break-words text-xs leading-5 text-faida-slate">{description}</p> : null}
+    </header>
+    <div className="pointer-events-none">
+      <SectorProfileExperience payload={previewPayload} shortCode="preview" previewMode />
+    </div>
+    {localizedEntries.length ? <section className="rounded-2xl border border-violet-100 bg-violet-50/60 p-3">
+      <h3 className="text-xs font-bold text-violet-950">Localized visitor text</h3>
+      <div className="mt-2 space-y-3">{localizedEntries.map(({ code, fields }) => <div key={code} className="rounded-xl bg-white p-3">
+        <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-violet-800">{localeMetadata[code as keyof typeof localeMetadata]?.nativeName ?? code}</p>
+        {fields.map(([label, value]) => <p key={label} className="mt-1 whitespace-pre-wrap break-words text-xs leading-5 text-slate-700"><span className="font-semibold">{label}: </span>{value}</p>)}
+      </div>)}</div>
+    </section> : null}
+  </div>;
+}
+
 function MobilePreview({ form }: { form: WizardForm }) {
   const { locale, t } = useI18n();
   const purpose = form.purpose;
@@ -66,15 +103,15 @@ function MobilePreview({ form }: { form: WizardForm }) {
   const accentText = getReadableTextColor(accent);
 
   return (
-    <aside className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:overflow-y-auto lg:overscroll-contain">
+    <aside className="flex max-h-[70dvh] min-h-0 flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:max-h-[calc(100dvh-7rem)]">
       <div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-faida-teal">{t("preview.live")}</p><p className="mt-1 text-xs text-faida-slate">{t("preview.updates")}</p></div><span className="grid h-8 w-8 place-items-center rounded-xl bg-slate-100 text-xs font-bold text-faida-slate">↗</span></div>
-      <div className="mx-auto mt-5 w-full max-w-[292px] rounded-[34px] border-[7px] border-faida-navy bg-faida-navy p-1.5 shadow-xl">
+      <div role="region" aria-label={t("preview.live")} tabIndex={0} className="mt-4 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-faida-teal">
+      {purpose === "SECTOR_PROFILE" ? <SectorVisitorPreview form={form} title={title} description={description} brandName={brandName} /> : <div className="mx-auto mt-1 w-full max-w-[292px] rounded-[34px] border-[7px] border-faida-navy bg-faida-navy p-1.5 shadow-xl">
         <div className="overflow-hidden rounded-[25px] bg-[#f7faf9]">
           <div className="flex h-8 items-center justify-center bg-white"><span className="h-1.5 w-14 rounded-full bg-slate-200" /></div>
           <div className="min-h-[410px] px-4 pb-5 pt-4">
             <div className="flex items-center gap-2">{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-7 w-7 rounded-lg border border-slate-100 bg-white object-contain p-0.5" /> : <span className="grid h-7 w-7 place-items-center rounded-lg text-[10px] font-black" style={{ backgroundColor: accent, color: accentText }}>{brandName.slice(0, 1).toUpperCase()}</span>}<span className="max-w-28 truncate text-[10px] font-extrabold text-faida-navy">{brandName}</span><span className="ms-auto max-w-24 truncate text-[9px] text-slate-400">{label}</span></div>
             {description ? <p className="mt-2 line-clamp-2 text-[9px] leading-4 text-faida-slate">{description}</p> : null}
-            {purpose === "SECTOR_PROFILE" ? <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="bg-faida-navy p-4 text-white">{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-10 w-10 rounded-xl bg-white object-contain p-1" /> : null}<p className="mt-3 text-[9px] font-bold uppercase tracking-widest" style={{ color: accent }}>{form.profile.role || label}</p><p className="mt-1 text-sm font-semibold">{`${form.profile.firstName} ${form.profile.lastName}`.trim() || title}</p><p className="mt-1 line-clamp-2 text-[10px] text-slate-300">{form.profile.tagline || form.profile.bio || t("profile.guidedNote")}</p></div><div className="space-y-2 p-3"><span className="block rounded-lg bg-emerald-50 px-3 py-2 text-[9px] font-bold text-emerald-900">{t("profile.saveContact")}</span><span className="block rounded-lg border border-slate-100 px-3 py-2 text-[9px] text-slate-600">{form.profile.organization || t("profile.organization")}</span></div></div> : null}
             {purpose === "LANDING_PAGE" ? <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">{form.landing.imageUrl ? <img src={form.landing.imageUrl} alt="" className="h-24 w-full object-cover" /> : <div className="grid h-20 place-items-center text-xs font-bold" style={{ backgroundColor: `${accent}22`, color: "#0F172A" }}>{brandName}</div>}<div className="p-3"><p className="truncate text-sm font-semibold text-faida-navy">{title}</p><p className="mt-1 line-clamp-3 text-[10px] leading-4 text-faida-slate">{landingSummary}</p>{buttonLabel ? <span className="mt-3 inline-flex rounded-lg px-3 py-1.5 text-[9px] font-bold" style={{ backgroundColor: accent, color: accentText }}>{buttonLabel}</span> : null}{landingBody && landingBody !== landingSummary ? <span className="sr-only">{landingBody}</span> : null}</div></div> : null}
             {purpose === "VCARD" ? (
               <div className="mt-5 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"><div className="bg-faida-navy px-4 py-5 text-white"><span className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl text-xs font-black" style={{ backgroundColor: accent, color: accentText }}>{form.branding.logoUrl ? <img src={form.branding.logoUrl} alt="" className="h-full w-full object-contain" /> : initials}</span><p className="mt-3 text-[9px] font-bold uppercase tracking-widest" style={{ color: accent }}>{t("preview.businessCard")}</p><p className="mt-1 truncate text-sm font-semibold">{`${form.vcard.firstName} ${form.vcard.lastName}`.trim() || title}</p><p className="mt-1 truncate text-[10px] text-slate-300">{form.vcard.jobTitle || form.vcard.organization || t("preview.contactDetails")}</p></div><div className="space-y-2 p-3">{form.vcard.phone ? <div className="rounded-lg border border-slate-100 px-3 py-2 text-[10px] text-slate-500">{form.vcard.phone}</div> : null}{form.vcard.email ? <div className="truncate rounded-lg border border-slate-100 px-3 py-2 text-[10px] text-slate-500">{form.vcard.email}</div> : null}<div className="rounded-lg px-3 py-2 text-center text-[10px] font-bold" style={{ backgroundColor: accent, color: accentText }}>{t("preview.saveContact")}</div></div></div>
@@ -91,8 +128,9 @@ function MobilePreview({ form }: { form: WizardForm }) {
           </div>
           <div className="flex h-6 items-center justify-center bg-white"><span className="h-1 w-16 rounded-full bg-slate-300" /></div>
         </div>
+      </div>}
+      {purpose !== "SECTOR_PROFILE" ? <p className="mt-4 text-center text-[11px] text-faida-slate">{t("preview.mobileWidth")}</p> : null}
       </div>
-      <p className="mt-4 text-center text-[11px] text-faida-slate">{t("preview.mobileWidth")}</p>
     </aside>
   );
 }
@@ -286,7 +324,7 @@ export default function QRCodeWizard() {
           ) : null}
         </section>
 
-        <div id="public-visitor-preview" hidden={!showPublicPreview} className="min-w-0">
+        <div id="public-visitor-preview" hidden={!showPublicPreview} className="min-w-0 lg:sticky lg:top-24 lg:max-h-[calc(100dvh-7rem)] lg:self-start">
           <MobilePreview form={form} />
         </div>
       </div>
