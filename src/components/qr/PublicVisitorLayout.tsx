@@ -6,6 +6,7 @@ import type { LocalizedContent } from "@/i18n/localized-content";
 import { useI18n } from "@/i18n/LocaleProvider";
 import PublicVisitorHeader from "@/components/qr/PublicVisitorHeader";
 import GoogleAutoTranslate from "@/components/qr/GoogleAutoTranslate";
+import FaidatechSystemMark from "@/components/qr/FaidatechSystemMark";
 
 const PUBLIC_VISITOR_THEME_KEY = "faidatech.public-visitor-theme.v1";
 type PublicVisitorTheme = "light" | "dark";
@@ -17,6 +18,7 @@ export default function PublicVisitorLayout({
   branding,
   hidePromotionalFooter = false,
   wide = false,
+  showScanEntryMoment = false,
 }: {
   children: ReactNode;
   title: string;
@@ -24,9 +26,11 @@ export default function PublicVisitorLayout({
   branding?: BrandIdentity;
   hidePromotionalFooter?: boolean;
   wide?: boolean;
+  showScanEntryMoment?: boolean;
 }) {
   const { direction, t } = useI18n();
   const [theme, setTheme] = useState<PublicVisitorTheme>("light");
+  const [scanEntryVisible, setScanEntryVisible] = useState(showScanEntryMoment);
 
   useEffect(() => {
     try {
@@ -79,6 +83,18 @@ export default function PublicVisitorLayout({
     };
   }, [theme]);
 
+  useEffect(() => {
+    if (!showScanEntryMoment) {
+      setScanEntryVisible(false);
+      return;
+    }
+
+    setScanEntryVisible(true);
+    const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timeout = window.setTimeout(() => setScanEntryVisible(false), prefersReducedMotion ? 1800 : 2200);
+    return () => window.clearTimeout(timeout);
+  }, [showScanEntryMoment]);
+
   function toggleTheme() {
     const nextTheme: PublicVisitorTheme = theme === "dark" ? "light" : "dark";
     setTheme(nextTheme);
@@ -93,6 +109,25 @@ export default function PublicVisitorLayout({
     <div dir={direction} data-public-theme={theme} className={`public-visitor-theme mx-auto min-h-screen w-full ${wide ? "max-w-6xl" : "max-w-3xl"} px-4 py-5 sm:px-7 sm:py-10`}>
       <GoogleAutoTranslate />
       <PublicVisitorHeader title={title} localizedContent={localizedContent} branding={branding} />
+      {showScanEntryMoment && scanEntryVisible ? <div className="pointer-events-none fixed inset-x-0 top-20 z-[80] flex justify-center px-4 sm:top-24">
+        <div className={`scan-entry-moment pointer-events-auto flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-xl ${theme === "dark" ? "border-slate-700 bg-slate-900 text-white" : "border-slate-200 bg-white text-slate-900"}`}>
+          <FaidatechSystemMark size={42} theme={theme} />
+          <span role="status" aria-live="polite" className="sr-only">Live profile opened from a dynamic QR code.</span>
+          <button type="button" onClick={() => setScanEntryVisible(false)} className={`rounded-lg px-3 py-2 text-xs font-semibold underline underline-offset-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${theme === "dark" ? "text-slate-200 focus-visible:outline-cyan-300" : "text-slate-600 focus-visible:outline-blue-600"}`}>
+            Skip
+          </button>
+        </div>
+        <style jsx>{`
+          .scan-entry-moment { animation: scan-entry-in 220ms ease-out both; }
+          @keyframes scan-entry-in {
+            from { opacity: 0; transform: translateY(-6px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+          }
+          @media (prefers-reduced-motion: reduce) {
+            .scan-entry-moment { animation: none; }
+          }
+        `}</style>
+      </div> : null}
       <div className="public-theme-toggle-row flex justify-end pb-3">
         <button
           type="button"
@@ -106,7 +141,7 @@ export default function PublicVisitorLayout({
         </button>
       </div>
       {children}
-      {!hidePromotionalFooter ? <footer translate="no" className="notranslate py-5 text-center text-[11px] text-slate-400">{t("visitor.poweredBy")}</footer> : null}
+      {!hidePromotionalFooter ? <footer translate="no" className="notranslate flex items-center justify-center gap-2 py-5 text-center text-[11px] text-slate-400"><FaidatechSystemMark size={16} theme={theme} />{t("visitor.poweredBy")}</footer> : null}
     </div>
   );
 }
