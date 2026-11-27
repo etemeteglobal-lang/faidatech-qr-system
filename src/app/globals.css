@@ -1049,10 +1049,28 @@ html[data-public-visitor-theme="dark"] {
   padding: 0.25rem;
 }
 
+#visitor-side-menu img.public-drawer-brand-logo {
+  content: normal;
+  object-fit: contain;
+  background-color: transparent;
+  border-radius: 0.375rem;
+  padding: 0;
+}
+
+#visitor-side-menu img.public-drawer-brand-logo--fallback {
+  background-color: #fff;
+  padding: 0.25rem;
+}
+
 html[data-public-visitor-theme="dark"] #visitor-side-menu {
   border-color: #334155 !important;
   background-color: #111c2e !important;
   color: #e2e8f0;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu img.public-drawer-brand-logo:not(.public-drawer-brand-logo--fallback) {
+  background-color: #e2e8f0;
+  padding: 0.2rem;
 }
 
 html[data-public-visitor-theme="dark"] #visitor-side-menu .text-faida-navy,

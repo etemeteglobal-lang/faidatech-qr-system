@@ -46,6 +46,33 @@ export default function PublicVisitorLayout({
   }, []);
 
   useEffect(() => {
+    const configuredLogo = branding?.logoUrl?.trim();
+    const failedLogoUrls = new WeakMap<HTMLImageElement, string>();
+    const updateDrawerLogo = () => {
+      const logo = document.querySelector<HTMLImageElement>("#visitor-side-menu > div:first-child img");
+      if (!logo) return;
+      const useConfiguredLogo = Boolean(configuredLogo && failedLogoUrls.get(logo) !== configuredLogo);
+      logo.classList.add("public-drawer-brand-logo");
+      logo.classList.toggle("public-drawer-brand-logo--fallback", !useConfiguredLogo);
+      logo.alt = useConfiguredLogo ? "Organization logo" : "FaidATech";
+      logo.onerror = () => {
+        logo.onerror = null;
+        if (configuredLogo) failedLogoUrls.set(logo, configuredLogo);
+        logo.classList.add("public-drawer-brand-logo--fallback");
+        logo.src = "/logo.webp";
+        logo.alt = "FaidATech";
+      };
+      const desiredSrc = useConfiguredLogo ? configuredLogo || "/logo.webp" : "/logo.webp";
+      if (logo.getAttribute("src") !== desiredSrc) logo.src = desiredSrc;
+    };
+
+    updateDrawerLogo();
+    const observer = new MutationObserver(updateDrawerLogo);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, [branding?.logoUrl]);
+
+  useEffect(() => {
     document.documentElement.dataset.publicVisitorTheme = theme;
     return () => {
       delete document.documentElement.dataset.publicVisitorTheme;
