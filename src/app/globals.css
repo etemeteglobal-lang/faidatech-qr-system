@@ -1042,6 +1042,10 @@ html[data-public-visitor-theme="dark"] {
 }
 
 /* The visitor drawer is portaled to document.body, outside the themed page wrapper. */
+#visitor-side-menu > div.mt-4.min-h-0.flex-1 > div.mt-3 {
+  display: none !important;
+}
+
 #visitor-side-menu img[src="/logo.png"] {
   content: url("/logo.webp");
   width: min(9rem, calc(50vw - 1.5rem));
