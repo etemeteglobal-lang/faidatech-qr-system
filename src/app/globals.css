@@ -747,6 +747,23 @@ html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcas
   color: var(--dashboard-text);
 }
 
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .public-social-card {
+  border-color: var(--dashboard-border) !important;
+  background-color: var(--dashboard-surface-raised) !important;
+  background-image: none !important;
+  color: var(--dashboard-text) !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .public-social-card:hover,
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .public-social-card:focus-visible {
+  border-color: #34d399 !important;
+  background-color: #1b2b40 !important;
+}
+
+html[data-theme="dark"] .dashboard-root #public-visitor-preview .public-social-card .text-emerald-800 {
+  color: #6ee7c8 !important;
+}
+
 html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-children-title,
 html[data-theme="dark"] .dashboard-root #public-visitor-preview .profile-showcase-parent-indicator {
   color: var(--dashboard-text-muted) !important;
@@ -1022,4 +1039,44 @@ html[data-public-visitor-theme="dark"] {
   .public-visitor-theme .profile-showcase-upload-file {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* The visitor drawer is portaled to document.body, outside the themed page wrapper. */
+#visitor-side-menu img[src="/logo.png"] {
+  content: url("/logo.webp");
+  border-radius: 0.5rem;
+  background-color: #fff;
+  padding: 0.25rem;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu {
+  border-color: #334155 !important;
+  background-color: #111c2e !important;
+  color: #e2e8f0;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .text-faida-navy,
+html[data-public-visitor-theme="dark"] #visitor-side-menu .text-slate-700,
+html[data-public-visitor-theme="dark"] #visitor-side-menu .text-slate-600 {
+  color: #e2e8f0 !important;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .text-slate-500 {
+  color: #a7b4c6 !important;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .border-emerald-100 {
+  border-color: #28564d !important;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .bg-emerald-50 {
+  background-color: #12352f !important;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .text-emerald-900 {
+  color: #6ee7c8 !important;
+}
+
+html[data-public-visitor-theme="dark"] #visitor-side-menu .hover\:bg-slate-50:hover {
+  background-color: #243247 !important;
 }
