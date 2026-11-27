@@ -130,6 +130,7 @@ const profileCredentialSchema = z.object({
   fileUrl: webUrl,
   fileName: z.string().trim().min(1).max(255),
   mimeType: z.enum(["application/pdf", "image/png", "image/jpeg", "image/webp"]).default("application/pdf"),
+  allowVisitorDownload: z.boolean().default(false),
 }).strict();
 
 const profileReviewSchema = z.object({
