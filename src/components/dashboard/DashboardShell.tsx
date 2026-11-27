@@ -156,7 +156,7 @@ export default function DashboardShell({ children }: { children: React.ReactNode
       <aside className={`relative z-40 border-b border-slate-200 bg-white md:sticky md:top-0 md:flex md:h-screen ${sidebarCollapsed ? "md:w-[88px]" : "md:w-[248px]"} md:shrink-0 md:flex-col md:border-b-0 md:border-r md:transition-[width] md:duration-200 md:ease-in-out motion-reduce:md:transition-none`}>
         <div className={`flex items-center justify-between gap-3 px-4 py-4 sm:px-6 md:py-6 ${sidebarCollapsed ? "md:justify-center md:px-2" : "md:px-5"}`}>
           <Link href="/dashboard" className="flex min-w-0 items-center" aria-label={`FaidATech ${t("nav.dashboard")}`}>
-            <Image src="/logo.webp" alt="FaidATech" width={661} height={354} priority className={`h-auto w-[144px] rounded-lg bg-white p-1 object-contain ${sidebarCollapsed ? "md:w-6" : ""}`} />
+            <Image src="/logo.webp" alt="FaidATech" width={661} height={354} priority className={`h-auto w-[164px] object-contain md:w-[190px] ${sidebarCollapsed ? "md:hidden" : ""}`} />
           </Link>
           <div className="flex items-center gap-2">
             <Link href="/dashboard/create" className="rounded-xl bg-faida-green px-3 py-2 text-xs font-bold text-faida-navy transition hover:bg-emerald-300 md:hidden">＋ {t("shell.create")}</Link>
