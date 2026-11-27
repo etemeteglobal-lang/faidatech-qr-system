@@ -1111,3 +1111,30 @@ html[data-public-visitor-theme="dark"] #visitor-side-menu .text-emerald-900 {
 html[data-public-visitor-theme="dark"] #visitor-side-menu .hover\:bg-slate-50:hover {
   background-color: #243247 !important;
 }
+
+.public-visitor-theme > header.sticky > .ml-auto {
+  gap: 0.625rem !important;
+}
+
+.public-visitor-theme > header.sticky > .ml-auto > a > span.grid {
+  width: 3.25rem !important;
+  height: 3.25rem !important;
+}
+
+@media (min-width: 640px) {
+  .public-visitor-theme > header.sticky > .ml-auto {
+    gap: 1rem !important;
+  }
+
+  .public-visitor-theme > header.sticky > .ml-auto > a > span.grid {
+    width: 4rem !important;
+    height: 4rem !important;
+  }
+}
+
+@media (min-width: 768px) {
+  #visitor-side-menu {
+    width: min(23rem, 42vw) !important;
+    max-width: min(23rem, 85vw) !important;
+  }
+}
