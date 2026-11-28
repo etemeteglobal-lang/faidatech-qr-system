@@ -18,9 +18,13 @@ export default function FaidatechSystemMark({
 }: FaidatechSystemMarkProps) {
   const arrowMaskId = `faidatech-arrow-mask-${useId().replace(/:/g, "")}`;
   const colors = theme === "dark"
-    ? { navy: "#8CC7FF", green: "#8FD49A", arrowBlue: "#75B8F5", arrowGreen: "#83CF91" }
-    : { navy: "#143C64", green: "#3F7D4C", arrowBlue: "#143C64", arrowGreen: "#3F7D4C" };
+    ? { navy: "#8CC7FF", green: "#8FD49A", arrowBlue: "#75B8F5", arrowGreen: "#83CF91", cutout: "#020617" }
+    : { navy: "#143C64", green: "#3F7D4C", arrowBlue: "#143C64", arrowGreen: "#3F7D4C", cutout: "#FFFFFF" };
   const arrowSweepPath = "M141 156 C158 181 179 193 204 195 C239 198 269 168 293 127 C306 105 316 80 325 54 C329 42 332 28 332 14";
+  const arrowBodyGreenPath = "M141 156 C161 184 186 199 213 201 C254 202 289 169 314 128 C328 104 338 77 347 45 L325 54 C316 80 306 105 293 127 C269 168 239 198 204 195 C179 193 158 181 141 156 Z";
+  const arrowBodyBluePath = "M141 156 C158 181 179 193 204 195 C239 198 269 168 293 127 C306 105 316 80 325 54 L308 59 C299 80 289 104 276 126 C252 165 227 193 196 191 C172 189 155 177 141 156 Z";
+  const arrowHeadGreenPath = "M332 14 L359 75 L339 61 L309 58 L325 54 Z";
+  const arrowHeadBluePath = "M332 14 L286 53 L309 58 L325 54 Z";
 
   return (
     <svg
@@ -133,18 +137,18 @@ export default function FaidatechSystemMark({
         </mask>
 
         <g mask={`url(#${arrowMaskId})`}>
-          {/* The green outer ribbon and blue inner ribbon share a curved seam without overlap. */}
-          <path
-            d="M141 156 C160 183 183 197 210 198 C249 200 282 169 306 128 C320 104 330 78 339 49 L325 54 C316 80 306 105 293 127 C269 168 239 198 204 195 C179 193 158 181 141 156 Z"
-            fill={colors.arrowGreen}
-          />
-          <path
-            d="M141 156 C158 181 179 193 204 195 C239 198 269 168 293 127 C306 105 316 80 325 54 L312 58 C303 80 293 104 280 126 C256 166 230 194 198 192 C174 190 156 178 141 156 Z"
-            fill={colors.arrowBlue}
-          />
-          {/* The head keeps the same side-by-side split as the widening shaft. */}
-          <path d="M332 14 L354 75 L335 60 L309 58 L325 54 Z" fill={colors.arrowGreen} />
-          <path d="M332 14 L281 53 L309 58 L325 54 Z" fill={colors.arrowBlue} />
+          {/* The background keyline separates the curve cleanly from D and A where they meet. */}
+          <g fill="none" stroke={colors.cutout} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round">
+            <path d={arrowBodyGreenPath} />
+            <path d={arrowBodyBluePath} />
+            <path d={arrowHeadGreenPath} />
+            <path d={arrowHeadBluePath} />
+          </g>
+          {/* Adjacent ribbons share one center seam; matching halves continue into the head. */}
+          <path d={arrowBodyGreenPath} fill={colors.arrowGreen} />
+          <path d={arrowBodyBluePath} fill={colors.arrowBlue} />
+          <path d={arrowHeadGreenPath} fill={colors.arrowGreen} />
+          <path d={arrowHeadBluePath} fill={colors.arrowBlue} />
         </g>
       </g>
     </svg>
