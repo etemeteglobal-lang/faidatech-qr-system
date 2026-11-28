@@ -94,8 +94,8 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
 
     setEntryVisible(true);
     setEntryFading(false);
-    const fadeTimer = window.setTimeout(() => setEntryFading(true), 1800);
-    const hideTimer = window.setTimeout(() => setEntryVisible(false), 2300);
+    const fadeTimer = window.setTimeout(() => setEntryFading(true), 2250);
+    const hideTimer = window.setTimeout(() => setEntryVisible(false), 2750);
     return () => {
       window.clearTimeout(fadeTimer);
       window.clearTimeout(hideTimer);
