@@ -16,12 +16,11 @@ export default function FaidatechSystemMark({
   title,
   animate = false,
 }: FaidatechSystemMarkProps) {
-  const maskPrefix = `faidatech-arrow-mask-${useId().replace(/:/g, "")}`;
-  const arrowMaskId = `${maskPrefix}-body`;
-  const arrowHeadMaskId = `${maskPrefix}-head`;
+  const arrowMaskId = `faidatech-arrow-mask-${useId().replace(/:/g, "")}`;
   const colors = theme === "dark"
     ? { navy: "#8CC7FF", green: "#8FD49A", arrowBlue: "#75B8F5", arrowGreen: "#83CF91" }
     : { navy: "#143C64", green: "#3F7D4C", arrowBlue: "#143C64", arrowGreen: "#3F7D4C" };
+  const arrowSweepPath = "M141 156 C158 181 179 193 204 195 C239 198 269 168 293 127 C306 105 316 80 325 54 C329 42 332 28 332 14";
 
   return (
     <svg
@@ -43,7 +42,7 @@ export default function FaidatechSystemMark({
           100% { opacity: 1; transform: translateY(0); }
         }
         @keyframes faidatech-arrow-sweep {
-          from { stroke-dashoffset: 400; }
+          from { stroke-dashoffset: 1; }
           to { stroke-dashoffset: 0; }
         }
         @keyframes faidatech-logo-settle {
@@ -62,7 +61,7 @@ export default function FaidatechSystemMark({
           animation: faidatech-wordmark-enter 460ms cubic-bezier(.2,.75,.25,1) both;
         }
         .faidatech-arrow-draw {
-          stroke-dasharray: 400;
+          stroke-dasharray: 1;
           animation: faidatech-arrow-sweep 1.1s cubic-bezier(.2,.75,.25,1) 460ms both;
         }
         @media (prefers-reduced-motion: reduce) {
@@ -121,47 +120,32 @@ export default function FaidatechSystemMark({
         <mask id={arrowMaskId} maskUnits="userSpaceOnUse" x="0" y="0" width="661" height="213">
           <rect width="661" height="213" fill="black" />
           <path
-            d="M141 156 C157 180 178 195 203 196 C240 198 271 172 296 132 C310 108 320 81 329 55"
+            d={arrowSweepPath}
             fill="none"
             stroke="white"
-            strokeWidth="58"
+            strokeWidth="88"
             strokeLinecap="round"
             strokeLinejoin="round"
-            strokeDasharray={animate ? "400" : undefined}
-            strokeDashoffset={animate ? "400" : "0"}
-            className={animate ? "faidatech-arrow-draw" : undefined}
-          />
-        </mask>
-
-        <mask id={arrowHeadMaskId} maskUnits="userSpaceOnUse" x="0" y="0" width="661" height="213">
-          <rect width="661" height="213" fill="black" />
-          <path
-            d="M141 156 C157 180 178 195 203 196 C240 198 271 172 296 132 C310 108 320 81 329 55 C330 43 332 28 332 14"
-            fill="none"
-            stroke="white"
-            strokeWidth="104"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeDasharray={animate ? "400" : undefined}
-            strokeDashoffset={animate ? "400" : "0"}
+            pathLength={animate ? 1 : undefined}
+            strokeDasharray={animate ? "1" : undefined}
+            strokeDashoffset={animate ? "1" : "0"}
             className={animate ? "faidatech-arrow-draw" : undefined}
           />
         </mask>
 
         <g mask={`url(#${arrowMaskId})`}>
+          {/* The green outer ribbon and blue inner ribbon share a curved seam without overlap. */}
           <path
-            d="M141 156 C161 182 189 196 216 195 C257 193 287 160 309 120 C320 99 329 73 338 51 L329 55 C320 81 310 108 296 132 C271 172 240 198 203 196 C178 195 157 180 141 156 Z"
+            d="M141 156 C160 183 183 197 210 198 C249 200 282 169 306 128 C320 104 330 78 339 49 L325 54 C316 80 306 105 293 127 C269 168 239 198 204 195 C179 193 158 181 141 156 Z"
             fill={colors.arrowGreen}
           />
           <path
-            d="M141 156 C157 180 178 195 203 196 C240 198 271 172 296 132 C310 108 320 81 329 55 L320 59 C311 90 300 117 282 145 C256 184 223 202 190 198 C169 195 151 178 141 156 Z"
+            d="M141 156 C158 181 179 193 204 195 C239 198 269 168 293 127 C306 105 316 80 325 54 L312 58 C303 80 293 104 280 126 C256 166 230 194 198 192 C174 190 156 178 141 156 Z"
             fill={colors.arrowBlue}
           />
-        </g>
-
-        <g mask={`url(#${arrowHeadMaskId})`}>
-          <path d="M332 14 L354 75 L335 60 L317 47 L309 58 Z" fill={colors.arrowGreen} />
-          <path d="M281 53 L332 14 L309 58 L300 68 Z" fill={colors.arrowBlue} />
+          {/* The head keeps the same side-by-side split as the widening shaft. */}
+          <path d="M332 14 L354 75 L335 60 L309 58 L325 54 Z" fill={colors.arrowGreen} />
+          <path d="M332 14 L281 53 L309 58 L325 54 Z" fill={colors.arrowBlue} />
         </g>
       </g>
     </svg>
