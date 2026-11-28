@@ -207,8 +207,8 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
       }
     `}</style>
     {entryVisible && !previewMode && !showcaseItemId ? <div className={`faidatech-entry-overlay fixed inset-0 z-50 flex items-center justify-center ${visitorTheme === "dark" ? "bg-slate-950 text-white" : "bg-white text-slate-900"}${entryFading ? " faidatech-entry-overlay--fading" : ""}`}>
-      <div className="px-6 text-center">
-        <FaidatechSystemMark size={120} theme={visitorTheme} animate title="FaiDATech" className="h-auto w-[min(80vw,32rem)]" />
+      <div className="px-4 text-center">
+        <FaidatechSystemMark size={132} theme={visitorTheme} animate title="FaiDATech" className="h-auto w-[min(84vw,36rem)]" />
         <span role="status" aria-live="polite" className="sr-only">Opening the current public profile from its dynamic QR code.</span>
       </div>
     </div> : null}

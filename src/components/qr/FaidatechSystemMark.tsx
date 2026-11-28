@@ -37,17 +37,17 @@ export default function FaidatechSystemMark({
     >
       {animate ? <style>{`
         @keyframes faidatech-wordmark-enter {
-          0% { opacity: 0; transform: translateY(7px); }
-          72% { opacity: 1; transform: translateY(-1px); }
-          100% { opacity: 1; transform: translateY(0); }
+          0% { opacity: 0; transform: translateY(9px) scale(.9); }
+          68% { opacity: 1; transform: translateY(-1px) scale(1.035); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes faidatech-arrow-sweep {
-          from { stroke-dashoffset: 1; }
+          from { stroke-dashoffset: 400; }
           to { stroke-dashoffset: 0; }
         }
         @keyframes faidatech-logo-settle {
           0% { transform: scale(1); }
-          62% { transform: scale(1.012); }
+          62% { transform: scale(1.03); }
           100% { transform: scale(1); }
         }
         .faidatech-logo-settle {
@@ -61,7 +61,7 @@ export default function FaidatechSystemMark({
           animation: faidatech-wordmark-enter 460ms cubic-bezier(.2,.75,.25,1) both;
         }
         .faidatech-arrow-draw {
-          stroke-dasharray: 1;
+          stroke-dasharray: 400;
           animation: faidatech-arrow-sweep 1.1s cubic-bezier(.2,.75,.25,1) 460ms both;
         }
         @media (prefers-reduced-motion: reduce) {
@@ -126,9 +126,8 @@ export default function FaidatechSystemMark({
             strokeWidth="88"
             strokeLinecap="round"
             strokeLinejoin="round"
-            pathLength={animate ? 1 : undefined}
-            strokeDasharray={animate ? "1" : undefined}
-            strokeDashoffset={animate ? "1" : "0"}
+            strokeDasharray={animate ? "400" : undefined}
+            strokeDashoffset={animate ? "400" : "0"}
             className={animate ? "faidatech-arrow-draw" : undefined}
           />
         </mask>
