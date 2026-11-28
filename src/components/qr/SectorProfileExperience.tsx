@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { z } from "zod";
 import { sectorProfilePayloadSchema } from "@/lib/qr/payload-schemas";
 import { getReadableTextColor } from "@/lib/qr/brand-presentation";
@@ -8,6 +8,7 @@ import { getSectorShowcaseLabels } from "@/lib/profile/sectors";
 import { useI18n } from "@/i18n/LocaleProvider";
 import AnnouncementTicker from "@/components/qr/AnnouncementTicker";
 import ShowcaseTicker, { type ShowcaseCardItem, ShowcaseDetailView } from "@/components/qr/ShowcaseTicker";
+import FaidatechSystemMark from "@/components/qr/FaidatechSystemMark";
 import { normalizeAnnouncements } from "@/lib/qr/announcements";
 
 type ProfilePayload = z.infer<typeof sectorProfilePayloadSchema>;
@@ -62,6 +63,9 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   const [credentialPreview, setCredentialPreview] = useState<{ title: string; url: string } | null>(null);
+  const [entryVisible, setEntryVisible] = useState(() => !previewMode && !showcaseItemId);
+  const [entryFading, setEntryFading] = useState(false);
+  const [visitorTheme, setVisitorTheme] = useState<"light" | "dark">("light");
   const accent = payload.branding?.accentColor ?? "#10B981";
   const accentText = getReadableTextColor(accent);
   const announcements = normalizeAnnouncements(payload.announcements, { text: payload.spotlight, spotlightType: payload.spotlightType, spotlightMediaUrl: payload.spotlightMediaUrl });
@@ -75,6 +79,36 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
   const mapTarget = payload.sectionVisibility.contact ? publicMapHref(payload.mapUrl || payload.address) : undefined;
   const hasContactSection = Boolean(callTarget || emailTarget || websiteTarget || mapTarget);
   const mobileActionCount = [callTarget, mapTarget, hasContactSection].filter(Boolean).length;
+
+  useEffect(() => {
+    if (previewMode || showcaseItemId) {
+      setEntryVisible(false);
+      return;
+    }
+
+    const prefersReducedMotion = typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReducedMotion) {
+      setEntryVisible(false);
+      return;
+    }
+
+    setEntryVisible(true);
+    setEntryFading(false);
+    const fadeTimer = window.setTimeout(() => setEntryFading(true), 1800);
+    const hideTimer = window.setTimeout(() => setEntryVisible(false), 2300);
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(hideTimer);
+    };
+  }, [previewMode, showcaseItemId]);
+
+  useEffect(() => {
+    const syncTheme = () => setVisitorTheme(document.documentElement.dataset.publicVisitorTheme === "dark" ? "dark" : "light");
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-public-visitor-theme"] });
+    return () => observer.disconnect();
+  }, []);
 
   async function shareProfile() {
     try {
@@ -155,7 +189,33 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
     />;
   }
 
-  return <article className="overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
+  return <article className="public-sector-profile-experience overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
+    <style jsx global>{`
+      .public-visitor-theme:has(.public-sector-profile-experience) .scan-entry-moment {
+        display: none !important;
+      }
+      .faidatech-entry-overlay {
+        opacity: 1;
+        transition: opacity 480ms cubic-bezier(.4, 0, .2, 1);
+      }
+      .faidatech-entry-overlay--fading {
+        opacity: 0;
+        pointer-events: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .faidatech-entry-overlay {
+          display: none !important;
+          transition: none;
+        }
+      }
+    `}</style>
+    {entryVisible && !previewMode && !showcaseItemId ? <div className={`faidatech-entry-overlay fixed inset-0 z-50 flex items-center justify-center ${visitorTheme === "dark" ? "bg-slate-950 text-white" : "bg-white text-slate-900"}${entryFading ? " faidatech-entry-overlay--fading" : ""}`}>
+      <div className="flex flex-col items-center gap-5 px-6 text-center">
+        <FaidatechSystemMark size={92} theme={visitorTheme} animate />
+        <span className="text-3xl font-semibold tracking-[0.16em] sm:text-4xl">FaidATech</span>
+        <span role="status" aria-live="polite" className="sr-only">Opening the current public profile from its dynamic QR code.</span>
+      </div>
+    </div> : null}
     <AnnouncementTicker announcements={announcements} />
     <header className="relative overflow-hidden bg-faida-navy p-6 text-white sm:p-9">
       {payload.spotlight && !announcements.length ? <div id="spotlight" data-visitor-section data-visitor-label={t("profile.featured")} className="mb-5 overflow-hidden rounded-2xl border border-white/15 bg-white/10 px-3 py-2 text-xs leading-5 text-emerald-50"><p>{payload.spotlight}</p>{payload.spotlightType === "image" && payload.spotlightMediaUrl ? <img src={payload.spotlightMediaUrl} alt="" className="mt-3 max-h-72 w-full rounded-xl object-cover" /> : null}{payload.spotlightType === "video" && payload.spotlightMediaUrl ? <video className="mt-3 max-h-72 w-full rounded-xl" controls playsInline preload="metadata"><source src={payload.spotlightMediaUrl} /></video> : null}</div> : null}
