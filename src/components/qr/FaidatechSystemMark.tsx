@@ -97,7 +97,7 @@ export default function FaidatechSystemMark({
             fontSize="112"
             fontWeight="600"
             letterSpacing="-3"
-            textLength="213"
+            textLength="203"
             lengthAdjust="spacingAndGlyphs"
           >FaiD</text>
 
@@ -129,7 +129,7 @@ export default function FaidatechSystemMark({
         <mask id={arrowMaskId} maskUnits="userSpaceOnUse" x="0" y="0" width="661" height="213">
           <rect width="661" height="213" fill="black" />
           <path
-            d="M141 156 C169 187 202 198 231 187 C273 171 303 126 334 51"
+            d="M141 156 C157 180 178 195 203 196 C240 198 271 172 296 132 C310 108 320 81 329 55"
             fill="none"
             stroke="white"
             strokeWidth="58"
@@ -143,18 +143,18 @@ export default function FaidatechSystemMark({
 
         <g mask={`url(#${arrowMaskId})`}>
           <path
-            d="M141 156 C161 182 189 196 216 195 C257 193 287 160 309 120 C320 99 329 73 338 51 L320 59 C311 90 300 117 282 145 C256 184 223 202 190 198 C169 195 151 178 141 156 Z"
+            d="M141 156 C161 182 189 196 216 195 C257 193 287 160 309 120 C320 99 329 73 338 51 L329 55 C320 81 310 108 296 132 C271 172 240 198 203 196 C178 195 157 180 141 156 Z"
             fill={colors.arrowGreen}
           />
           <path
-            d="M142 156 C165 180 189 189 214 187 C249 184 276 151 298 110 C309 89 319 62 328 43 L337 58 C318 111 295 152 268 179 C241 204 209 209 180 194 C163 185 150 169 142 156 Z"
+            d="M141 156 C157 180 178 195 203 196 C240 198 271 172 296 132 C310 108 320 81 329 55 L320 59 C311 90 300 117 282 145 C256 184 223 202 190 198 C169 195 151 178 141 156 Z"
             fill={colors.arrowBlue}
           />
         </g>
 
         <g className={animate ? "faidatech-arrowhead-enter" : undefined}>
-          <path d="M281 53 L332 14 L354 75 L335 60 L317 47 L300 68 Z" fill={colors.arrowGreen} />
-          <path d="M281 53 L332 14 L319 49 L300 68 Z" fill={colors.arrowBlue} />
+          <path d="M332 14 L354 75 L335 60 L317 47 L309 58 Z" fill={colors.arrowGreen} />
+          <path d="M281 53 L332 14 L309 58 L300 68 Z" fill={colors.arrowBlue} />
         </g>
       </g>
     </svg>
