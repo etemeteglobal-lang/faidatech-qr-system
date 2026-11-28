@@ -38,7 +38,7 @@ export default function FaidatechSystemMark({
       {animate ? <style>{`
         @keyframes faidatech-wordmark-enter {
           0% { opacity: 0; transform: translateY(9px) scale(.9); }
-          68% { opacity: 1; transform: translateY(-1px) scale(1.035); }
+          68% { opacity: 1; transform: translateY(-1px) scale(1.04); }
           100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes faidatech-arrow-sweep {
@@ -47,7 +47,7 @@ export default function FaidatechSystemMark({
         }
         @keyframes faidatech-logo-settle {
           0% { transform: scale(1); }
-          62% { transform: scale(1.03); }
+          62% { transform: scale(1.04); }
           100% { transform: scale(1); }
         }
         .faidatech-logo-settle {
