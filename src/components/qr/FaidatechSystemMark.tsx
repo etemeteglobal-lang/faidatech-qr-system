@@ -1,4 +1,5 @@
 type FaidatechSystemMarkProps = {
+  /** Rendered logo height in pixels; the wordmark keeps its wide brand ratio. */
   size?: number;
   theme?: "light" | "dark";
   className?: string;
@@ -14,15 +15,16 @@ export default function FaidatechSystemMark({
   animate = false,
 }: FaidatechSystemMarkProps) {
   const colors = theme === "dark"
-    ? { surface: "#101C2C", outline: "#294056", blue: "#67E8F9", purple: "#C4B5FD", green: "#6EE7B7", glow: "rgba(103, 232, 249, .38)" }
-    : { surface: "#FFFFFF", outline: "#DCE5EF", blue: "#2563EB", purple: "#7C3AED", green: "#059669", glow: "rgba(37, 99, 235, .3)" };
+    ? { navy: "#8CC7FF", green: "#8FD49A", arrowBlue: "#75B8F5", arrowGreen: "#83CF91" }
+    : { navy: "#143C64", green: "#3F7D4C", arrowBlue: "#143C64", arrowGreen: "#3F7D4C" };
 
   return (
     <svg
-      width={size}
+      width={size * (661 / 213)}
       height={size}
-      viewBox="0 0 56 56"
+      viewBox="0 0 661 213"
       fill="none"
+      preserveAspectRatio="xMidYMid meet"
       className={className}
       role={title ? "img" : undefined}
       aria-label={title}
@@ -30,24 +32,82 @@ export default function FaidatechSystemMark({
       focusable="false"
     >
       {animate ? <style>{`
-        @keyframes faidatech-mark-reveal {
-          0% { opacity: 0; transform: scale(.82); filter: drop-shadow(0 0 0 ${colors.glow}); }
-          68% { opacity: 1; transform: scale(1.045); filter: drop-shadow(0 0 9px ${colors.glow}); }
-          100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 2px ${colors.glow}); }
+        @keyframes faidatech-wordmark-arrive {
+          0% { opacity: 0; transform: scale(.97); }
+          100% { opacity: 1; transform: scale(1); }
         }
-        .faidatech-mark-motion { transform-box: fill-box; transform-origin: center; animation: faidatech-mark-reveal 1.35s cubic-bezier(.2,.75,.25,1) both; }
+        @keyframes faidatech-arrow-arrive {
+          0% { opacity: 0; transform: scale(.32); }
+          100% { opacity: 1; transform: scale(1); }
+        }
+        .faidatech-wordmark-motion {
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: faidatech-wordmark-arrive 760ms cubic-bezier(.2,.75,.25,1) both;
+        }
+        .faidatech-arrow-motion {
+          transform-box: fill-box;
+          transform-origin: left bottom;
+          animation: faidatech-arrow-arrive 980ms cubic-bezier(.2,.75,.25,1) 180ms both;
+        }
         @media (prefers-reduced-motion: reduce) {
-          .faidatech-mark-motion { animation: none; }
+          .faidatech-wordmark-motion,
+          .faidatech-arrow-motion {
+            animation: none;
+            opacity: 1;
+            transform: none;
+          }
         }
       `}</style> : null}
-      <g className={animate ? "faidatech-mark-motion" : undefined}>
-        <rect x="2.75" y="2.75" width="50.5" height="50.5" rx="17" fill={colors.surface} stroke={colors.outline} strokeWidth="1.5" />
-        <path d="M20 12h-4a4 4 0 0 0-4 4v4" stroke={colors.blue} strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M36 12h4a4 4 0 0 1 4 4v4" stroke={colors.purple} strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M12 36v4a4 4 0 0 0 4 4h4" stroke={colors.green} strokeWidth="3.5" strokeLinecap="round" />
-        <path d="M36 44h4a4 4 0 0 0 4-4v-4" stroke={colors.blue} strokeWidth="3.5" strokeLinecap="round" />
-        <path d="m16.5 37.5 7.5-7.5 5 4 10.5-12" stroke={colors.green} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M33.5 22h6v6" stroke={colors.purple} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+
+      <g className={animate ? "faidatech-wordmark-motion" : undefined}>
+        <text
+          x="75"
+          y="145"
+          fill={colors.navy}
+          fontFamily="Arial, Helvetica, sans-serif"
+          fontSize="112"
+          fontWeight="600"
+          letterSpacing="-3"
+          textLength="213"
+          lengthAdjust="spacingAndGlyphs"
+        >Faid</text>
+
+        <text
+          x="278"
+          y="145"
+          fill={colors.green}
+          fontFamily="Arial, Helvetica, sans-serif"
+          fontSize="112"
+          fontWeight="600"
+          letterSpacing="-2"
+          textLength="77"
+          lengthAdjust="spacingAndGlyphs"
+        >A</text>
+
+        <text
+          x="369"
+          y="145"
+          fill={colors.green}
+          fontFamily="Arial, Helvetica, sans-serif"
+          fontSize="112"
+          fontWeight="600"
+          letterSpacing="-3"
+          textLength="216"
+          lengthAdjust="spacingAndGlyphs"
+        >Tech</text>
+      </g>
+
+      <g className={animate ? "faidatech-arrow-motion" : undefined}>
+        <path
+          d="M141 156 C161 182 189 196 216 195 C257 193 287 160 309 120 C320 99 329 73 338 39 L316 49 L332 14 L354 75 L337 61 C318 115 297 157 270 184 C242 212 207 218 177 202 C160 193 148 176 141 156 Z"
+          fill={colors.arrowGreen}
+        />
+        <path
+          d="M142 156 C165 180 189 189 214 187 C249 184 276 151 298 110 C309 89 319 62 328 38 L337 57 C318 111 295 152 268 179 C241 204 209 209 180 194 C163 185 150 169 142 156 Z"
+          fill={colors.arrowBlue}
+        />
+        <path d="M281 53 L332 14 L319 49 L300 68 Z" fill={colors.arrowBlue} />
       </g>
     </svg>
   );
