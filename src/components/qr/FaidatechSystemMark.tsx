@@ -63,7 +63,7 @@ export default function FaidatechSystemMark({
         }
         .faidatech-arrow-draw {
           stroke-dasharray: 400;
-          animation: faidatech-arrow-sweep 1.1s cubic-bezier(.2,.75,.25,1) 420ms both;
+          animation: faidatech-arrow-sweep 1.1s cubic-bezier(.2,.75,.25,1) 460ms both;
         }
         @media (prefers-reduced-motion: reduce) {
           .faidatech-logo-settle,

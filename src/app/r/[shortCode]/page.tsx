@@ -66,7 +66,7 @@ export default async function PublicQrPage({ params }: PageProps) {
 
   const hidePromotionalFooter = await shouldHidePublicPromoFooter(qrCode.organizationId);
   return (
-    <PublicVisitorLayout wide={qrCode.destinationType === "SECTOR_PROFILE"} hidePromotionalFooter={hidePromotionalFooter} title={qrCode.title} localizedContent={qrCode.destinationType === "SECTOR_PROFILE" ? undefined : payload.localizedContent} branding={payload.branding} showScanEntryMoment>
+    <PublicVisitorLayout wide={qrCode.destinationType === "SECTOR_PROFILE"} hidePromotionalFooter={hidePromotionalFooter} title={qrCode.title} localizedContent={qrCode.destinationType === "SECTOR_PROFILE" ? undefined : payload.localizedContent} branding={payload.branding}>
       <PublicQrExperience
         shortCode={qrCode.shortCode}
         title={qrCode.title}

@@ -191,9 +191,6 @@ export default function SectorProfileExperience({ payload, shortCode, showcaseIt
 
   return <article className="public-sector-profile-experience overflow-hidden rounded-[30px] border border-slate-200 bg-white pb-16 shadow-soft sm:pb-0">
     <style jsx global>{`
-      .scan-entry-moment {
-        display: none !important;
-      }
       .faidatech-entry-overlay {
         opacity: 1;
         transition: opacity 480ms cubic-bezier(.4, 0, .2, 1);
